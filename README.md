@@ -167,9 +167,12 @@ documentation ou un traitement de texte.
 - **Icônes** : glissez vos images (PNG, JPG, SVG, WebP) dans la bibliothèque. Le nom du fichier devient le nom du
   type : `moteur.png` s'utilise avec `(i:moteur,…)`. Les bibliothèques s'importent et s'exportent en JSON pour être
   partagées.
+- **Types de liens** : un éditeur visuel (Réglages → *Types de liens*, ou le crayon à côté du choix du type de
+  lien) permet de créer ses propres liens et d'en régler le code, le libellé, la couleur, l'épaisseur, le trait
+  (continu, tirets, pointillés, tiret-point ou motif libre) et l'extrémité (flèche pleine ou ouverte, triangle
+  creux, losange, rond, barre), éventuellement aux deux bouts, avec un aperçu immédiat.
 - **Réglages** : dimensions et espacements, courbure des liens, légende, couleurs, fond transparent. Les statuts,
-  bulles, types de liens et règles de mise en forme se définissent en JSON. Les réglages s'exportent et
-  s'importent.
+  bulles et règles de mise en forme se définissent en JSON. Les réglages s'exportent et s'importent.
 - **Référence** : le panneau *Référence* liste tous les types, statuts, bulles et liens disponibles. Un clic les
   insère dans le texte.
 

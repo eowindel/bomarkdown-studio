@@ -322,6 +322,25 @@ dialog.modal::backdrop { background: rgba(10, 14, 22, .45); backdrop-filter: blu
 .modal-body { padding: 16px 18px; overflow: auto; min-height: 0; }
 .modal-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 .modal-foot .left { margin-right: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin: -4px 0 16px; }
+.tabs button { border: 0; background: transparent; padding: 8px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13.5px; }
+.tabs button:hover { color: var(--fg); }
+.tabs button.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tabpanel[hidden] { display: none; }
+.lk-grid { display: grid; grid-template-columns: 104px 70px minmax(110px, 1fr) 62px 76px 128px 144px 52px 34px; gap: 6px 8px; align-items: center; }
+.lk-grid .hd { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.lk-grid input[type=text], .lk-grid input[type=number], .lk-grid select {
+  width: 100%; height: 32px; border: 1px solid var(--border); border-radius: 7px; padding: 0 8px; background: var(--panel-2); min-width: 0;
+}
+.lk-grid input.bad { border-color: var(--err); }
+.lk-grid input[type=color] { width: 44px; height: 32px; padding: 2px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-2); }
+.lk-grid .both { display: flex; justify-content: center; }
+.lk-grid .both input { width: 16px; height: 16px; }
+.lk-prev { width: 104px; height: 32px; background: #fff; border: 1px solid var(--border); border-radius: 7px; display: block; }
+.lk-dashc { margin-top: 4px; }
+.lk-fixed { font-family: var(--mono); font-size: 13px; padding-left: 8px; color: var(--muted); }
+.lk-add { margin-top: 14px; }
+@media (max-width: 820px) { .lk-grid { grid-template-columns: 104px 1fr 1fr; } .lk-grid .hd { display: none; } }
 .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
 .field label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
 .field input[type=number], .field input[type=text] {
@@ -490,6 +509,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
         <button class="btn" data-gact="root" title="Ajouter une racine dans la colonne de l'élément sélectionné (ou double-clic sur le fond)"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl opt">Racine</span></button>
         <button class="btn" data-gact="column" title="Ajouter une colonne après celle de l'élément sélectionné"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="1.5"/><path d="M17 8v8M13 12h8"/></svg><span class="lbl opt">Colonne</span></button>
         <select id="linktype" title="Type des liens créés depuis le graphe"></select>
+        <button class="btn icon" id="lk-edit" title="Modifier les types de liens"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
       </div>
       <div class="spacer"></div>
       <div class="zoom-ctl">
@@ -553,7 +573,12 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <dialog class="modal" id="dlg-settings">
   <div class="modal-head"><h2>Réglages</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="modal-body">
-    <h3 class="sec">Mise en page</h3>
+    <div class="tabs" role="tablist" id="s-tabs">
+      <button data-tab="layout" role="tab">Mise en page</button>
+      <button data-tab="links" role="tab">Types de liens</button>
+      <button data-tab="adv" role="tab">Avancé (JSON)</button>
+    </div>
+    <div class="tabpanel" data-panel="layout">
     <div class="field-grid">
       <div class="field"><label for="s-h">Hauteur d'un élément (h)</label><input type="number" id="s-h" min="10" max="80" step="1"></div>
       <div class="field"><label for="s-gap">Espace entre éléments d'une ligne (gap)</label><input type="number" id="s-gap" min="0" max="40" step="1"></div>
@@ -567,15 +592,26 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
       <div class="field check"><input type="checkbox" id="s-legend"><label for="s-legend">Afficher la légende</label></div>
       <div class="field check"><input type="checkbox" id="s-transparent"><label for="s-transparent">Fond transparent</label></div>
     </div>
-    <h3 class="sec">Définitions avancées (JSON)</h3>
+    </div>
+    <div class="tabpanel" data-panel="links" hidden>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Chaque type s'utilise dans le texte avec son code : <code>(l:code:alias)</code>. Changer un code ne modifie pas les documents existants.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Each type is used in the text through its code: <code>(l:code:alias)</code>. Changing a code does not update existing documents.</p>
+      <div class="lk-grid" id="lk-rows"></div>
+      <div class="err-msg" id="lk-err"></div>
+      <button class="btn outline lk-add" id="lk-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un type de lien</button>
+    </div>
+    <div class="tabpanel" data-panel="adv" hidden>
     <textarea class="json" id="s-json" spellcheck="false"></textarea>
     <div class="err-msg" id="s-json-err"></div>
-    <p class="hint" data-only="en">Keys: <code>links</code> (link types: label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
+    <p class="hint" data-only="en">Keys: <code>status</code>, <code>bubbles</code> (SVG + label),
       <code>emphasis</code> (label emphasis rules), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (replacements in effectivity).
+      Link types are edited in the “Link types” tab.
       Import also accepts a VS Code <code>settings.json</code> containing <code>bomarkdown.*</code> keys.</p>
-    <p class="hint" data-only="fr">Clés : <code>links</code> (types de liens : label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
+    <p class="hint" data-only="fr">Clés : <code>status</code>, <code>bubbles</code> (SVG + label),
       <code>emphasis</code> (règles d'emphase des libellés), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (remplacements dans l'effectivité).
+      Les types de liens se modifient dans l'onglet « Types de liens ».
       L'import accepte aussi un <code>settings.json</code> de VS Code contenant des clés <code>bomarkdown.*</code>.</p>
+    </div>
   </div>
   <div class="modal-foot">
     <div class="left">
@@ -1023,13 +1059,15 @@ const EN = {
   'Révision : fond': 'Revision: background', 'Révision : texte': 'Revision: text', 'Fond du SVG': 'SVG background',
   'Afficher la légende': 'Show legend', 'Fond transparent': 'Transparent background', 'Définitions avancées (JSON)': 'Advanced definitions (JSON)',
   'Importer…': 'Import…', 'Réinitialiser': 'Reset', 'Annuler': 'Cancel', 'Appliquer': 'Apply',
+  'Types de liens': 'Link types', 'Avancé (JSON)': 'Advanced (JSON)', 'Ajouter un type de lien': 'Add a link type',
+  'Modifier les types de liens': 'Edit link types',
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
   'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
   'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
   "Déposez un fichier .md / .bmd pour l'ouvrir": 'Drop a .md / .bmd file to open it',
 };
-const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
-const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, [data-only], #toasts';
+const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
+const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #lk-rows, [data-only], #toasts';
 const i18nText = new WeakMap(), i18nAttr = new WeakMap();
 function translateStatic() {
   const tr = orig => { const k = orig.trim(); const v = lang === 'en' && k ? EN[k] : null; return v ? orig.replace(k, v) : orig; };
@@ -1082,7 +1120,7 @@ const DEFAULT_SETTINGS = {
   },
   utf8replacement: { '#oo': '&#x221E;', '->': '&#x2192;', '<-': '&#x2190;' },
 };
-const ADVANCED_KEYS = ['links', 'status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement'];
+const ADVANCED_KEYS = ['status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement'];
 /* Correspondance des clés de l'extension VS Code (settings.json et blocs ${{ }}$) */
 const LEGACY_KEYS = {
   haslegend: 'renderlegend', Linksdefinition: 'links', satus: 'status', MandatoryDefs: 'mandatoryDefs', UTF8replacement: 'utf8replacement',
@@ -1312,6 +1350,7 @@ function lineProps(def, key) {
   let s = `stroke="${attr(def.Color ?? def.color ?? 'black')}" stroke-width="${attr(def.thickness ?? 1)}"`;
   if (def.dashpattern) s += ` stroke-dasharray="${attr(def.dashpattern)}"`;
   if (def.arrow) s += ` marker-end="url(#arrow_${sid(key)})"`;
+  if (def.arrow && def.arrowBoth) s += ` marker-start="url(#arrow_${sid(key)})"`;
   return s;
 }
 
@@ -2133,23 +2172,145 @@ function fillSettingsForm(s) {
   $('#s-legend').checked = s.renderlegend !== false;
   $('#s-transparent').checked = !!s.transparent;
   $('#s-revbg').value = s.revision.background; $('#s-revfont').value = s.revision.font; $('#s-bg').value = s.background;
-  $$('#dlg-settings input[type=color]').forEach(c => { c.value = cssColorToHex($('#' + c.dataset.for).value); });
+  $$('#dlg-settings input[type=color][data-for]').forEach(c => { c.value = cssColorToHex($('#' + c.dataset.for).value); });
   $('#s-json').value = JSON.stringify(Object.fromEntries(ADVANCED_KEYS.map(k => [k, s[k]])), null, 2);
   $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = '';
+  lkDraft = Object.entries(s.links || {}).map(([key, def]) => ({ key, def: { ...def }, style: detectArrow(def) }));
+  renderLinkRows();
 }
 function readSettingsForm() {
   let adv;
   try { adv = JSON.parse($('#s-json').value); } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = T('JSON invalide : ', 'Invalid JSON: ') + e.message; return null; }
-  const s = normalizeSettings({ ...settings, ...adv });
+  const links = readLinkRows(); if (!links) { setSettingsTab('links'); return null; }
+  const s = normalizeSettings({ ...settings, ...adv, links });
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) { const v = parseFloat($('#s-' + k).value); if (Number.isFinite(v)) s[k] = v; }
   s.renderlegend = $('#s-legend').checked; s.transparent = $('#s-transparent').checked;
   s.revision = { background: $('#s-revbg').value || 'dimgrey', font: $('#s-revfont').value || 'white' };
   s.background = $('#s-bg').value || '#ffffff';
   return s;
 }
-$$('#dlg-settings input[type=color]').forEach(c => c.addEventListener('input', () => { $('#' + c.dataset.for).value = c.value; }));
+$$('#dlg-settings input[type=color][data-for]').forEach(c => c.addEventListener('input', () => { $('#' + c.dataset.for).value = c.value; }));
 $('#s-json').addEventListener('input', () => { try { JSON.parse($('#s-json').value); $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = ''; } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = e.message; } });
-$('#btn-settings').onclick = () => { fillSettingsForm(settings); $('#dlg-settings').showModal(); };
+$('#btn-settings').onclick = () => openSettings();
+/* ---------- Éditeur graphique des types de liens ---------- */
+const ARROWS = {
+  none: null,
+  triangle: { fr: 'Flèche pleine', en: 'Filled arrow', ref: [6, 3], size: [6, 6], svg: c => `<path d="M 0 0 L 6 3 L 0 6 z" fill="${c}"/>` },
+  open: { fr: 'Flèche ouverte', en: 'Open arrow', ref: [6, 3], size: [7, 7], svg: c => `<path d="M 0.5 0.5 L 6 3 L 0.5 5.5" fill="none" stroke="${c}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>` },
+  hollow: { fr: 'Triangle creux', en: 'Hollow triangle', ref: [6, 3], size: [7, 7], svg: c => `<path d="M 0.5 0.5 L 6 3 L 0.5 5.5 z" fill="white" stroke="${c}" stroke-width="1" stroke-linejoin="round"/>` },
+  diamond: { fr: 'Losange', en: 'Diamond', ref: [7, 3.5], size: [8, 8], svg: c => `<path d="M 0 3.5 L 3.5 0.5 L 7 3.5 L 3.5 6.5 z" fill="${c}"/>` },
+  circle: { fr: 'Rond', en: 'Dot', ref: [5.5, 3], size: [6, 6], svg: c => `<circle cx="3" cy="3" r="2.5" fill="${c}"/>` },
+  bar: { fr: 'Barre', en: 'Bar', ref: [1, 3.5], size: [3, 8], svg: c => `<path d="M 1 0 L 1 7" stroke="${c}" stroke-width="1.5"/>` },
+};
+const DASHES = [['', 'Continu', 'Solid'], ['6 4', 'Tirets', 'Dashed'], ['2 2', 'Pointillés', 'Dotted'], ['6 3 2 3', 'Tiret-point', 'Dash-dot']];
+let lkDraft = [];
+function makeMarker(style, key, color) {
+  const a = ARROWS[style]; if (!a) return '';
+  return `<marker id="arrow_${sid(key)}" refX="${a.ref[0]}" refY="${a.ref[1]}" markerWidth="${a.size[0]}" markerHeight="${a.size[1]}" orient="auto-start-reverse" overflow="visible">${a.svg(attr(color))}</marker>`;
+}
+function detectArrow(def) {
+  if (def.arrowStyle && (def.arrowStyle in ARROWS || def.arrowStyle === 'custom')) return def.arrowStyle;
+  if (!def.arrow) return 'none';
+  return /M 0 0 L 6 3 L 0 6 z/.test(def.arrow) ? 'triangle' : 'custom';
+}
+function rowMarker(r, key) {
+  if (r.style === 'custom') return String(r.def.arrow || '').replace(/id\s*=\s*"[^"]*"/, `id="arrow_${sid(key)}"`);
+  return makeMarker(r.style, key, r.def.Color ?? r.def.color ?? 'black');
+}
+function linkPreview(r, i) {
+  const k = 'pv' + i, d = { ...r.def, arrow: rowMarker(r, k) };
+  return swatchSvg(`<defs>${d.arrow}</defs><path d="M 12 16 C 40 4, 64 28, 90 16" fill="none" ${lineProps(d, k)} stroke-linecap="round"/>`, '0 0 104 32', 'lk-prev');
+}
+function renderLinkRows() {
+  const H = (fr, en) => `<div class="hd">${T(fr, en)}</div>`;
+  const opts = (list, cur) => list.map(([v, fr, en]) => `<option value="${attr(v)}"${v === cur ? ' selected' : ''}>${escapeHtml(T(fr, en))}</option>`).join('');
+  let html = H('Aperçu', 'Preview') + H('Code', 'Code') + H('Libellé', 'Label') + H('Couleur', 'Color') + H('Épaisseur', 'Width')
+    + H('Trait', 'Line') + H('Extrémité', 'Arrow head') + H('2 bouts', 'Both') + '<div></div>';
+  lkDraft.forEach((r, i) => {
+    const d = r.def, isH = r.key === 'h';
+    const dash = d.dashpattern || '', preset = DASHES.some(x => x[0] === dash) ? dash : 'custom';
+    const arrowOpts = [['none', 'Aucune', 'None'], ...Object.entries(ARROWS).filter(([, a]) => a).map(([k, a]) => [k, a.fr, a.en])]
+      .concat(r.style === 'custom' ? [['custom', 'Personnalisée (SVG)', 'Custom (SVG)']] : []);
+    html += `<div class="lk-pv" data-i="${i}">${linkPreview(r, i)}</div>`
+      + (isH ? `<div class="lk-fixed" title="${attr(T('Lien parent → enfant de la hiérarchie', 'Parent → child hierarchy link'))}">h</div>`
+        : `<input type="text" data-i="${i}" data-f="key" value="${attr(r.key)}" maxlength="16" spellcheck="false" title="${attr(T('Code utilisé dans (l:code:…)', 'Code used in (l:code:…)'))}">`)
+      + `<input type="text" data-i="${i}" data-f="label" value="${attr(d.label || '')}" placeholder="${attr(T('Libellé de légende', 'Legend label'))}">`
+      + `<input type="color" data-i="${i}" data-f="color" value="${cssColorToHex(d.Color ?? d.color ?? 'black')}">`
+      + `<input type="number" data-i="${i}" data-f="thickness" value="${attr(d.thickness ?? 1)}" min="0.25" max="10" step="0.25">`
+      + `<div><select data-i="${i}" data-f="dash">${opts(DASHES, preset)}<option value="custom"${preset === 'custom' ? ' selected' : ''}>${T('Personnalisé…', 'Custom…')}</option></select>`
+      + (preset === 'custom' ? `<input type="text" class="lk-dashc" data-i="${i}" data-f="dashc" value="${attr(dash)}" placeholder="ex. 8 3 1 3" title="stroke-dasharray">` : '') + '</div>'
+      + `<select data-i="${i}" data-f="arrow">${opts(arrowOpts, r.style)}</select>`
+      + `<div class="both"><input type="checkbox" data-i="${i}" data-f="both"${d.arrowBoth ? ' checked' : ''}${r.style === 'none' ? ' disabled' : ''} title="${attr(T('Extrémité aux deux bouts du lien', 'Arrow head at both ends'))}"></div>`
+      + (isH ? '<div></div>' : `<button class="btn icon danger" data-i="${i}" data-f="del" title="${attr(T('Supprimer ce type', 'Delete this type'))}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`);
+  });
+  $('#lk-rows').innerHTML = html;
+  $('#lk-err').textContent = '';
+}
+function refreshLinkPreview(i) { const el = $(`#lk-rows .lk-pv[data-i="${i}"]`); if (el) el.innerHTML = linkPreview(lkDraft[i], i); }
+$('#lk-rows').addEventListener('input', e => {
+  const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = lkDraft[i]; if (!r) return;
+  if (f === 'key') { r.key = el.value.trim(); validateLinkKeys(); return; }
+  if (f === 'label') r.def.label = el.value;
+  else if (f === 'color') r.def.Color = el.value;
+  else if (f === 'thickness') { const v = parseFloat(el.value); if (v > 0) r.def.thickness = v; }
+  else if (f === 'dashc') r.def.dashpattern = el.value.trim();
+  else return;
+  refreshLinkPreview(i);
+});
+$('#lk-rows').addEventListener('change', e => {
+  const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = lkDraft[i]; if (!r) return;
+  if (f === 'dash') { r.def.dashpattern = el.value === 'custom' ? (r.def.dashpattern || '8 3 1 3') : el.value; renderLinkRows(); return; }
+  if (f === 'arrow') { r.style = el.value; if (r.style === 'none') r.def.arrowBoth = false; renderLinkRows(); return; }
+  if (f === 'both') { r.def.arrowBoth = el.checked; refreshLinkPreview(i); }
+});
+$('#lk-rows').addEventListener('click', e => {
+  const b = e.target.closest('[data-f="del"]'); if (!b) return;
+  lkDraft.splice(+b.dataset.i, 1); renderLinkRows();
+});
+$('#lk-add').onclick = () => {
+  const used = new Set(lkDraft.map(r => r.key)); let k = 'x', n = 1;
+  for (const c of 'pdrvux') if (!used.has(c)) { k = c; break; }
+  while (used.has(k)) k = 'l' + n++;
+  lkDraft.push({ key: k, style: 'triangle', def: { label: T('nouveau lien', 'new link'), Color: '#7c3aed', thickness: 1, dashpattern: '' } });
+  renderLinkRows();
+  $(`#lk-rows input[data-i="${lkDraft.length - 1}"][data-f="label"]`)?.select();
+};
+function validateLinkKeys() {
+  const seen = new Map(); let msg = '';
+  $$('#lk-rows input[data-f="key"]').forEach(inp => {
+    const k = inp.value.trim(); let bad = '';
+    if (!/^[\w-]+$/.test(k)) bad = T('Code invalide : lettres, chiffres, - ou _ uniquement', 'Invalid code: letters, digits, - or _ only');
+    else if (k === 'h' || seen.has(k)) bad = T(`Le code « ${k} » est déjà utilisé`, `Code “${k}” is already used`);
+    seen.set(k, true);
+    inp.classList.toggle('bad', !!bad); if (bad && !msg) msg = bad;
+  });
+  $('#lk-err').textContent = msg;
+  return !msg;
+}
+function readLinkRows() {
+  if (!validateLinkKeys()) return null;
+  const out = {};
+  for (const r of lkDraft) {
+    const { arrowStyle, ...d } = r.def;
+    d.arrow = rowMarker(r, r.key);
+    if (r.style !== 'custom') d.arrowStyle = r.style;
+    if (!d.arrow) delete d.arrowBoth;
+    out[r.key] = d;
+  }
+  return out;
+}
+function setSettingsTab(t) {
+  $$('#s-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $$('#dlg-settings .tabpanel').forEach(p => { p.hidden = p.dataset.panel !== t; });
+  store.set('settingsTab', t);
+}
+$('#s-tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setSettingsTab(b.dataset.tab); });
+function openSettings(tab) {
+  fillSettingsForm(settings);
+  setSettingsTab(tab || store.get('settingsTab', 'layout'));
+  $('#dlg-settings').showModal();
+}
+$('#lk-edit').onclick = () => openSettings('links');
 $('#s-apply').onclick = () => {
   const s = readSettingsForm(); if (!s) return;
   settings = s; store.set('settings', settings); $('#dlg-settings').close(); fillLinkTypes(); renderPreview(); toast(T('Réglages appliqués', 'Settings applied'));
@@ -2793,6 +2954,7 @@ function setLang(l) {
   if (linkMode) setLinkMode(true);
   if ($('#drawer').classList.contains('open')) renderReference();
   if ($('#dlg-icons').open) renderIconGrid();
+  if ($('#dlg-settings').open) renderLinkRows();
 }
 $('#lang-sw').addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b && b.dataset.lang !== lang) setLang(b.dataset.lang); });
 
