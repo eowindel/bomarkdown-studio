@@ -1,21 +1,28 @@
 # BoMarkdown Studio
 
-**Décrivez une nomenclature (BOM) en quelques lignes de texte, et obtenez instantanément un diagramme en
-arborescence prêt à intégrer dans vos documents.**
+**Concevez vos nomenclatures (BOM) en texte, en graphique, ou les deux à la fois : écrivez quelques lignes ou
+construisez l'arborescence à la souris, les deux vues restent toujours synchronisées.**
 
 ![BoMarkdown Studio : le texte à gauche, le diagramme à droite](docs/screenshot.png)
 
-BoMarkdown Studio est un éditeur de nomenclatures qui tient dans **un seul fichier HTML**. Vous écrivez la structure
-de votre produit (assemblages, composants, spécifications, exigences…) dans une syntaxe simple, et l'application
-dessine le diagramme correspondant au fur et à mesure : icônes par type, révisions, statuts, effectivités, liens
-entre éléments et légende automatique. Le résultat s'exporte en SVG ou en PNG.
+BoMarkdown Studio est un éditeur de nomenclatures qui tient dans **un seul fichier HTML**. Il offre deux façons
+de concevoir la structure d'un produit (assemblages, composants, spécifications, exigences…), utilisables
+ensemble à tout moment :
+
+- **en texte**, avec une syntaxe courte et lisible, la coloration syntaxique et l'autocomplétion : idéal pour
+  saisir vite, copier-coller, versionner dans Git ;
+- **en graphique**, directement sur le diagramme : ajouter un enfant ou un frère, renommer, glisser un élément
+  pour le déplacer, tirer un lien d'un élément à un autre, ajouter une colonne.
+
+Chaque modification dans une vue apparaît aussitôt dans l'autre. Le diagramme affiche icônes par type, révisions,
+statuts, effectivités, liens entre éléments et légende automatique, et s'exporte en SVG ou en PNG.
 
 ## Points forts
 
+- **Conception textuelle et/ou graphique** : passez librement du clavier au diagramme, sans conversion ni
+  perte. Le texte reste la source, donc tout s'annule avec `Ctrl+Z` et se relit facilement.
 - **Rien à installer** : ouvrez `index.html` dans votre navigateur. Pas de serveur, pas de dépendance, fonctionne
   hors ligne.
-- **Texte ou diagramme, au choix** : tapez la nomenclature, ou construisez-la directement en cliquant sur le
-  diagramme. Les deux restent synchronisés.
 - **Aperçu en direct** avec coloration syntaxique, autocomplétion et détection des erreurs.
 - **Pensé pour la documentation** : un document Markdown peut contenir plusieurs diagrammes, et l'application
   exporte chacun d'eux et insère les liens image dans le texte.
@@ -31,7 +38,7 @@ entre éléments et légende automatique. Le résultat s'exporte en SVG ou en PN
 Votre travail est **sauvegardé automatiquement** dans le navigateur. **Ouvrir** et **Enregistrer** permettent de
 travailler sur des fichiers `.bmd` (une nomenclature seule) ou `.md` (un document Markdown).
 
-## Écrire une nomenclature
+## Concevoir en texte
 
 ### La hiérarchie
 
@@ -117,10 +124,13 @@ La première forme reste visible dans le Markdown. La seconde, en commentaire, e
 document : on n'y voit que l'image. Placez le curseur dans un bloc, ou choisissez-le en haut de l'aperçu, pour
 l'afficher.
 
-## Construire le modèle depuis le diagramme
+## Concevoir en graphique
 
-Cliquez sur un élément du diagramme : une barre d'actions apparaît. Chaque action met le texte à jour, et tout
+Tout ce qui s'écrit en texte peut aussi se faire directement sur le diagramme, et l'on peut alterner à volonté.
+Cliquez sur un élément : une barre d'actions apparaît. Chaque action met le texte à jour en même temps, et tout
 s'annule avec `Ctrl+Z`.
+
+![Édition graphique : barre d'actions et création d'un lien à la souris](docs/graph-editing.png)
 
 | Pour… | Faites… |
 |---|---|
