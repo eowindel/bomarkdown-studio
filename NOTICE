@@ -10,6 +10,7 @@ Third-party material
 -------------------------------------------------------------------------------
 
 This product is derived from "BoMarkdown", a Visual Studio Code extension
+created by Roeperni (https://github.com/Roeperni) and contributors
 (https://github.com/Roeperni/bomarkdown), distributed under the MIT License.
 It reuses that project's text syntax, its layout and SVG rendering logic
 (ported to the browser), its default settings, its default icons (embedded in

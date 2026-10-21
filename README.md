@@ -1,6 +1,7 @@
 # BoMarkdown Studio
 
-Version web autonome de l'extension VS Code [BoMarkdown](https://github.com/Roeperni/bomarkdown) : on décrit une
+Version web autonome de l'extension VS Code [BoMarkdown](https://github.com/Roeperni/bomarkdown) de
+[Roeperni](https://github.com/Roeperni) : on décrit une
 nomenclature (BOM) en texte et on obtient un graphe SVG en arborescence, avec types, révisions, statuts,
 bulles, effectivités et liens transverses.
 
@@ -91,6 +92,7 @@ Vous pouvez l'utiliser, le modifier et le redistribuer, y compris à des fins co
 - de conserver le fichier [`NOTICE`](NOTICE) et la mention de l'auteur dans toute redistribution ;
 - d'indiquer les fichiers que vous avez modifiés.
 
-Ce projet est dérivé de [Roeperni/bomarkdown](https://github.com/Roeperni/bomarkdown) (licence MIT) : syntaxe, logique de
-rendu, réglages et icônes par défaut, exemples du menu *Exemples*. Sa notice MIT est reproduite dans
+Ce projet est dérivé de l'extension [BoMarkdown](https://github.com/Roeperni/bomarkdown) créée par
+**[Roeperni](https://github.com/Roeperni)** et ses contributeurs (licence MIT), à qui l'on doit la syntaxe, la logique de
+rendu, les réglages et icônes par défaut, ainsi que les exemples du menu *Exemples*. Merci à eux ! Sa notice MIT est reproduite dans
 [`THIRD_PARTY_LICENSES`](THIRD_PARTY_LICENSES).
