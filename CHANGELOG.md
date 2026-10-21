@@ -4,7 +4,7 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [0.1.1] - 2026-10-21
 
 ### Corrigé
 - Réglages → *Avancé (JSON)* : une clé `links` (ou `bomarkdown.Linksdefinition`) collée dans le JSON avancé est
@@ -46,4 +46,5 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
 [0.1.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.0
