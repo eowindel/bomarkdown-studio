@@ -211,11 +211,59 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .stage { display: inline-flex; min-width: 100%; min-height: 100%; padding: 28px; align-items: flex-start; justify-content: center; }
 .sheet { line-height: 0; border-radius: 6px; box-shadow: var(--shadow); background: #fff; overflow: hidden; flex: none; }
 .sheet.transparent { background: repeating-conic-gradient(#e5e7eb 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
-.sheet svg { display: block; }
+.sheet svg { display: block; user-select: none; -webkit-user-select: none; }
 .sheet g[data-line] { cursor: pointer; }
 .sheet g[data-line] .hit { fill: transparent; stroke: none; }
 .sheet g[data-line]:hover .hit { fill: rgba(79, 107, 237, .08); }
 .sheet g[data-line].active .hit { fill: rgba(79, 107, 237, .14); stroke: #4f6bed; stroke-width: 1; }
+.preview:focus { outline: none; }
+.stage { position: relative; }
+.overlay { position: absolute; inset: 0; pointer-events: none; }
+.overlay > * { pointer-events: auto; }
+.overlay [hidden] { display: none !important; }
+.gtb {
+  position: absolute; z-index: 5; display: flex; align-items: center; gap: 1px; padding: 3px; white-space: nowrap;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow);
+}
+.gtb .btn { height: 28px; width: 28px; padding: 0; justify-content: center; border-radius: 7px; }
+.gtb .btn > * { pointer-events: none; }
+.gtb .btn.on { background: var(--accent); color: var(--accent-fg); }
+.gtb .btn img, .gtb .btn svg:not(.i) { width: 18px; height: 18px; }
+.gtb .vsep { width: 1px; height: 20px; background: var(--border); margin: 0 3px; }
+.gtb select { height: 28px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel); padding: 0 6px; font-size: 12.5px; }
+#ltb .btn { width: auto; padding: 0 8px; gap: 4px; font-size: 12.5px; }
+.link-handle {
+  position: absolute; z-index: 4; width: 14px; height: 14px; border-radius: 50%; cursor: crosshair; touch-action: none;
+  background: var(--accent); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35);
+}
+.link-handle:hover { transform: scale(1.25); }
+.gpop {
+  position: absolute; z-index: 6; min-width: 210px; max-height: 300px; overflow: auto; padding: 4px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow);
+}
+.gpop button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: left; font-size: 13px; }
+.gpop button:hover { background: var(--hover); }
+.gpop button.cur { background: var(--accent-soft); }
+.gpop img, .gpop svg { width: 20px; height: 20px; flex: none; }
+.gpop b { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
+.gpop small { color: var(--muted); margin-left: auto; padding-left: 10px; }
+.rename-in {
+  position: absolute; z-index: 7; padding: 0 4px; border: 2px solid var(--accent); border-radius: 5px; outline: none;
+  background: #fff; color: #111; font-family: var(--sans); box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.tmp-link { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none !important; overflow: visible; }
+.tmp-link path { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+.ghost { position: absolute; z-index: 8; pointer-events: none !important; padding: 3px 9px; border-radius: 6px; background: var(--accent); color: var(--accent-fg); font-size: 12px; white-space: nowrap; box-shadow: var(--shadow); }
+.gbanner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9; padding: 6px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: 13px; box-shadow: var(--shadow); white-space: nowrap; }
+.preview.linking, .preview.linking .sheet g[data-line] { cursor: crosshair; }
+.sheet g[data-line].drop .hit { fill: rgba(19, 138, 82, .16); stroke: #138a52; stroke-width: 1.5; stroke-dasharray: 4 2; }
+.sheet g.lk { cursor: pointer; }
+.sheet g.lk .lk-hit { stroke: transparent !important; stroke-width: 10 !important; fill: none; }
+.sheet g.lk:hover .lk-hit { stroke: rgba(79, 107, 237, .18) !important; }
+.sheet g.lk.sel .lk-hit { stroke: rgba(79, 107, 237, .35) !important; }
+.gtools { display: inline-flex; align-items: center; gap: 2px; }
+.gtools select { height: 30px; max-width: 130px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 0 6px; font-size: 12.5px; }
+.empty-state .btn { margin-top: 12px; }
 .empty-state { margin: auto; text-align: center; color: var(--muted); max-width: 360px; line-height: 1.6; }
 .empty-state b { color: var(--fg); }
 .zoom-ctl { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
@@ -352,7 +400,7 @@ textarea.json.bad { border-color: var(--err); }
   .brand { font-size: 0; margin-right: 2px; }
   .brand small { display: none; }
   .pane-head { overflow-x: auto; }
-  .pane-head .hint, #zoom-pct { display: none; }
+  .pane-head .hint, #zoom-pct, .gtools select { display: none; }
   select.blocksel { max-width: 140px; }
   .topbar { overflow-x: auto; }
   .cols2 { grid-template-columns: 1fr; }
@@ -421,6 +469,11 @@ textarea.json.bad { border-color: var(--err); }
     <div class="pane-head">
       <span class="pane-title">Aperçu</span>
       <select class="blocksel" id="blocksel" title="Bloc affiché"></select>
+      <div class="gtools">
+        <button class="btn" data-gact="root" title="Ajouter une racine dans la colonne de l'élément sélectionné (ou double-clic sur le fond)"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="lbl opt">Racine</span></button>
+        <button class="btn" data-gact="column" title="Ajouter une colonne après celle de l'élément sélectionné"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="1.5"/><path d="M17 8v8M13 12h8"/></svg><span class="lbl opt">Colonne</span></button>
+        <select id="linktype" title="Type des liens créés depuis le graphe"></select>
+      </div>
       <div class="spacer"></div>
       <div class="zoom-ctl">
         <button class="btn icon" id="zoom-out" title="Zoom arrière"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg></button>
@@ -432,7 +485,35 @@ textarea.json.bad { border-color: var(--err); }
       <button class="btn icon" data-act="copy-svg" title="Copier le SVG"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
     </div>
     <div class="preview-wrap">
-      <div class="preview" id="preview"><div class="stage" id="stage"><div class="sheet" id="sheet"></div></div></div>
+      <div class="preview" id="preview" tabindex="0" aria-label="Graphe : cliquez sur un élément pour l'éditer"><div class="stage" id="stage"><div class="sheet" id="sheet"></div>
+        <div class="overlay" id="overlay">
+          <div class="gtb gctl" id="gtb" hidden role="toolbar" aria-label="Actions sur l'élément">
+            <button class="btn" data-g="child" title="Ajouter un enfant (Tab)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="9" height="5" rx="1.5"/><path d="M7 8v8h5"/><path d="M18 13v6M15 16h6"/></svg></button>
+            <button class="btn" data-g="sibling" title="Ajouter un élément au même niveau (Entrée)"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="9" height="5" rx="1.5"/><path d="M7 8v3M3 11h9" /><rect x="3" y="14" width="9" height="5" rx="1.5" stroke-dasharray="2 2"/><path d="M18 13v6M15 16h6"/></svg></button>
+            <span class="vsep"></span>
+            <button class="btn" data-g="outdent" title="Remonter d'un niveau (Maj+Tab ou Alt+←)"><svg class="i" viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="M7 9l-3 3 3 3"/></svg></button>
+            <button class="btn" data-g="indent" title="Descendre d'un niveau (Alt+→)"><svg class="i" viewBox="0 0 24 24"><path d="M21 6H11M21 12H11M21 18H11"/><path d="M3 9l3 3-3 3"/></svg></button>
+            <button class="btn" data-g="up" title="Monter parmi les frères (Alt+↑)"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+            <button class="btn" data-g="down" title="Descendre parmi les frères (Alt+↓)"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+            <span class="vsep"></span>
+            <button class="btn" data-g="rename" title="Renommer (F2 ou double-clic)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
+            <button class="btn" data-g="type" title="Changer le type (T)"><span id="gtb-type"></span></button>
+            <button class="btn" data-g="status" title="Changer le statut (S)"><span id="gtb-status"></span></button>
+            <button class="btn" data-g="link" title="Créer un lien (L) : cliquez ensuite sur la cible, ou glissez la poignée bleue"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></button>
+            <span class="vsep"></span>
+            <button class="btn danger" data-g="delete" title="Supprimer avec ses enfants (Suppr)"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+          </div>
+          <div class="link-handle" id="link-handle" hidden title="Glisser vers un élément pour créer un lien"></div>
+          <div class="gpop gctl" id="gpop" hidden></div>
+          <div class="gtb gctl" id="ltb" hidden role="toolbar" aria-label="Actions sur le lien">
+            <select id="ltb-type" title="Type du lien"></select>
+            <button class="btn danger" data-g="unlink" title="Supprimer le lien (Suppr)"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Supprimer</button>
+          </div>
+          <svg class="tmp-link" id="tmp-link" hidden><path d=""/></svg>
+          <div class="ghost" id="ghost" hidden></div>
+        </div>
+      </div></div>
+      <div class="gbanner" id="gbanner" hidden></div>
       <div class="problems" id="problems">
         <div class="problems-head" id="problems-head">Problèmes <span class="count" id="prob-count">0</span>
           <svg class="i chev" viewBox="0 0 24 24" style="width:14px"><path d="M6 9l6 6 6-6"/></svg></div>
@@ -549,8 +630,28 @@ textarea.json.bad { border-color: var(--err); }
           <tr><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>E</kbd></td><td>Exporter le bloc en SVG</td></tr>
           <tr><td><kbd>Ctrl</kbd>+molette</td><td>Zoom de l'aperçu (glisser pour déplacer)</td></tr>
         </table>
-        <p class="hint">Cliquez sur un élément de l'aperçu pour aller à sa ligne. Tout est enregistré automatiquement dans le navigateur.</p>
+        <p class="hint">Tout est enregistré automatiquement dans le navigateur.</p>
       </div>
+    </div>
+    <h3 class="sec">Édition directe sur le graphe</h3>
+    <div class="cols2">
+      <table>
+        <tr><td>Clic sur un élément</td><td>Sélection + barre d'actions (<kbd>Ctrl</kbd>+clic : aller à la ligne source)</td></tr>
+        <tr><td>Double-clic / <kbd>F2</kbd></td><td>Renommer en place (<kbd>Tab</kbd> valide et ajoute un enfant)</td></tr>
+        <tr><td><kbd>Tab</kbd> / <kbd>Entrée</kbd></td><td>Ajouter un enfant / un élément au même niveau</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (ou <kbd>Maj</kbd>+<kbd>Tab</kbd>)</td><td>Descendre / remonter d'un niveau (avec les enfants)</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Réordonner parmi les frères</td></tr>
+        <tr><td>Flèches</td><td>Naviguer (←  parent, → premier enfant)</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Suppr</kbd></td><td>Type / statut / supprimer avec les enfants</td></tr>
+      </table>
+      <table>
+        <tr><td>Glisser un élément sur un autre</td><td>Il devient son enfant (avec <kbd>Maj</kbd> ou <kbd>Alt</kbd> : placé juste après, au même niveau)</td></tr>
+        <tr><td>Glisser la poignée bleue</td><td>Crée un lien vers l'élément lâché (type choisi en haut de l'aperçu ; alias créé si besoin)</td></tr>
+        <tr><td><kbd>L</kbd> puis clic</td><td>Même chose sans glisser</td></tr>
+        <tr><td>Clic sur un lien</td><td>Changer son type ou le supprimer (<kbd>Suppr</kbd>)</td></tr>
+        <tr><td><b>+ Racine</b> / <b>+ Colonne</b></td><td>En haut de l'aperçu ; double-clic sur le fond = nouvelle racine</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Annuler / rétablir (chaque action modifie le texte)</td></tr>
+      </table>
     </div>
   </div>
 </dialog>
@@ -1143,7 +1244,9 @@ function buildSvg(parsed, S, { meta = false } = {}) {
         cs = (fx - sx) / 2; cf = -cs;
       }
       const pts = [[sx, sy], [sx + cs, sy], [fx + cf, fy], [fx, fy]];
-      o.push(`<path fill="none" ${lineProps(links[r.linktype], r.linktype)} d="M ${n2(sx)} ${n2(sy)} C ${n2(sx + cs)} ${n2(sy)} ${n2(fx + cf)} ${n2(fy)} ${n2(fx)} ${n2(fy)}"/>`);
+      const d = `M ${n2(sx)} ${n2(sy)} C ${n2(sx + cs)} ${n2(sy)} ${n2(fx + cf)} ${n2(fy)} ${n2(fx)} ${n2(fy)}`;
+      const path = `<path fill="none" ${lineProps(links[r.linktype], r.linktype)} d="${d}"/>`;
+      o.push(meta ? `<g class="lk" data-src="${it.line}" data-type="${attr(r.linktype)}" data-alias="${attr(r.relative)}"><path class="lk-hit" d="${d}" stroke-linecap="round"/>${path}</g>` : path);
       if (r.label) {
         const [lx, ly] = bezierPoint(pts, r.pos === 'b' ? 0.18 : r.pos === 'e' ? 0.82 : 0.5);
         const col = links[r.linktype].Color ?? links[r.linktype].color ?? 'black';
@@ -1254,7 +1357,7 @@ const ta = $('#src'), hlCode = $('#hl-code'), hlPre = $('#hl'), gutter = $('#gut
 const docState = { name: store.get('docName', 'demo.md'), handle: null, dirty: store.get('docDirty', false) };
 let info = findBlocks('');
 let curLine = 0, curBlock = 0, lastRender = null, lineEls = [], diagByLine = new Map();
-let zoom = store.get('zoom', 1), fitMode = store.get('fit', true);
+let zoom = store.get('zoom', 1), fitMode = store.get('fit', true), suppressAc = false;
 
 function toast(msg, err = false) {
   const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg;
@@ -1353,6 +1456,7 @@ function setDocName(name) {
 }
 ta.addEventListener('input', e => {
   onTextChange();
+  if (suppressAc) return;
   if (e.inputType && e.inputType.startsWith('insert')) acUpdate(false);
   else if (ac.open) acUpdate(false);
 });
@@ -1417,8 +1521,8 @@ function renderPreview() {
   $('#st-items').textContent = `${r.count} élément${r.count > 1 ? 's' : ''}`;
   if (!r.count) {
     showEmpty(info.markdown
-      ? 'Ce bloc ne contient aucun élément. Ajoutez une ligne <b>+ (i:assembly,Mon produit)</b>.'
-      : 'Commencez à écrire, par exemple :<br><b>+ (i:assembly,Mon produit,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Pièce 1)</b>');
+      ? 'Ce bloc ne contient aucun élément. Ajoutez une ligne <b>+ (i:assembly,Mon produit)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>'
+      : 'Commencez à écrire, par exemple :<br><b>+ (i:assembly,Mon produit,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Pièce 1)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>');
     return;
   }
   const root = sanitizeSvg(r.svg);
@@ -1428,9 +1532,12 @@ function renderPreview() {
   sheet.hidden = false; $('#stage .empty-state')?.remove();
   applyZoom();
   highlightActiveItem();
+  markLinkSel();
+  positionOverlay();
 }
 function showEmpty(html) {
   sheet.hidden = true; sheet.replaceChildren();
+  if (typeof positionOverlay === 'function') positionOverlay();
   let e = $('#stage .empty-state');
   if (!e) { e = document.createElement('div'); e.className = 'empty-state'; $('#stage').append(e); }
   e.innerHTML = html;
@@ -1462,6 +1569,7 @@ function applyZoom() {
   svg.style.height = n2(lastRender.height * zoom) + 'px';
   $('#zoom-pct').textContent = Math.round(zoom * 100) + ' %';
   $('#zoom-fit').classList.toggle('primary', fitMode);
+  if (typeof positionOverlay === 'function') positionOverlay();
 }
 function setZoom(z, fit = false) { fitMode = fit; zoom = Math.max(0.1, Math.min(8, z)); store.set('zoom', zoom); store.set('fit', fitMode); applyZoom(); }
 $('#zoom-in').onclick = () => setZoom(zoom * 1.2);
@@ -1473,22 +1581,6 @@ preview.addEventListener('wheel', e => {
   if (!(e.ctrlKey || e.metaKey)) return;
   e.preventDefault(); setZoom(zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
 }, { passive: false });
-let drag = null;
-preview.addEventListener('pointerdown', e => {
-  if (e.button !== 0 && e.button !== 1) return;
-  drag = { x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
-});
-preview.addEventListener('pointermove', e => {
-  if (!drag) return;
-  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-  if (!drag.moved && Math.hypot(dx, dy) > 4) { drag.moved = true; preview.setPointerCapture(drag.id); preview.classList.add('panning'); }
-  if (drag.moved) { preview.scrollLeft = drag.sl - dx; preview.scrollTop = drag.st - dy; }
-});
-preview.addEventListener('pointerup', e => {
-  if (drag && !drag.moved) { const g = e.target.closest?.('g[data-line]'); if (g) gotoLine(+g.dataset.line); }
-  drag = null; preview.classList.remove('panning');
-});
-preview.addEventListener('pointercancel', () => { drag = null; preview.classList.remove('panning'); });
 
 /* séparateur redimensionnable */
 (() => {
@@ -1514,7 +1606,7 @@ function insertText(text, from = ta.selectionStart, to = ta.selectionEnd) {
   try { ok = document.execCommand('insertText', false, text); } catch { ok = false; }
   if (!ok) { ta.setRangeText(text, from, to, 'end'); ta.dispatchEvent(new Event('input')); }
 }
-function replaceAll(text) { insertText(text, 0, ta.value.length); }
+function replaceAll(text) { suppressAc = true; try { insertText(text, 0, ta.value.length); } finally { suppressAc = false; } }
 
 function shiftLines(dir) {
   const v = ta.value; const s = ta.selectionStart, e = ta.selectionEnd;
@@ -1860,7 +1952,7 @@ $('#s-json').addEventListener('input', () => { try { JSON.parse($('#s-json').val
 $('#btn-settings').onclick = () => { fillSettingsForm(settings); $('#dlg-settings').showModal(); };
 $('#s-apply').onclick = () => {
   const s = readSettingsForm(); if (!s) return;
-  settings = s; store.set('settings', settings); $('#dlg-settings').close(); renderPreview(); toast('Réglages appliqués');
+  settings = s; store.set('settings', settings); $('#dlg-settings').close(); fillLinkTypes(); renderPreview(); toast('Réglages appliqués');
 };
 $('#s-reset').onclick = () => { fillSettingsForm(clone(DEFAULT_SETTINGS)); toast('Valeurs par défaut chargées : cliquez sur Appliquer'); };
 $('#s-export').onclick = () => { const s = readSettingsForm(); if (s) download('bomarkdown-settings.json', JSON.stringify(s, null, 2), 'application/json'); };
@@ -1981,6 +2073,510 @@ $('#ref-body').addEventListener('click', e => {
 });
 $('#btn-ref').onclick = () => { const d = $('#drawer'); if (!d.classList.contains('open')) renderReference(); d.classList.toggle('open'); };
 $('#drawer-close').onclick = () => $('#drawer').classList.remove('open');
+
+/* =====================================================================
+   Édition graphique : actions directes sur le graphe.
+   Le texte reste la seule source : chaque action réécrit les lignes concernées
+   (en une seule opération, donc annulable avec Ctrl+Z).
+   ===================================================================== */
+const stage = $('#stage'), overlay = $('#overlay'), gtb = $('#gtb'), ltb = $('#ltb'), gpop = $('#gpop');
+const handle = $('#link-handle'), tmpLink = $('#tmp-link'), ghost = $('#ghost'), banner = $('#gbanner');
+let toolbarOn = false, linkMode = false, selLink = null, renaming = null;
+
+/* --- structure d'une ligne : préfixe, texte avant les blocs, blocs (et texte qui suit chacun) --- */
+function lineStruct(text) {
+  const m = ITEM_RE.exec(text || ''); if (!m) return null;
+  const s = m[2]; const spans = blockSpans(s);
+  if (!spans.length) return { level: m[1].length, pre: '', blocks: [{ kind: 'i', content: s.trim(), after: '' }] };
+  return {
+    level: m[1].length, pre: s.slice(0, spans[0].start),
+    blocks: spans.map((b, k) => ({ kind: b.kind, content: b.content, after: s.slice(b.end, k + 1 < spans.length ? spans[k + 1].start : s.length) })),
+  };
+}
+const structText = st => ' '.repeat(st.level) + '+ ' + st.pre + st.blocks.map(b => `(${b.kind}:${b.content})${b.after}`).join('');
+function insertBlock(st, idx, blk) {
+  const prev = st.blocks[idx - 1];
+  blk.after = prev ? prev.after : ''; if (prev) prev.after = '';
+  st.blocks.splice(idx, 0, blk);
+}
+function removeBlock(st, idx) {
+  const b = st.blocks[idx];
+  if (idx > 0) st.blocks[idx - 1].after += b.after; else st.pre += b.after;
+  st.blocks.splice(idx, 1);
+}
+const blockIdx = (st, kind) => st.blocks.findIndex(b => b.kind === kind);
+function parseI(c) {
+  const p = c.split(',');
+  if (p.length === 1) return { type: '', label: p[0].trim(), rev: '' };
+  if (p.length === 2) return { type: p[0].trim(), label: p[1].trim(), rev: '' };
+  if (p.length === 3) return { type: p[0].trim(), label: p[1].trim(), rev: p[2].trim() };
+  return { type: '', label: c.trim(), rev: '' };
+}
+function getI(st) { const k = blockIdx(st, 'i'); return k < 0 ? { type: '', label: '', rev: '' } : parseI(st.blocks[k].content); }
+function setI(st, v) {
+  let k = blockIdx(st, 'i');
+  if (k < 0) { insertBlock(st, 0, { kind: 'i', content: '' }); k = 0; }
+  const label = String(v.label).replace(/,/g, ' ').trim();
+  st.blocks[k].content = v.rev ? `${v.type},${label},${v.rev}` : v.type ? `${v.type},${label}` : label;
+}
+const afterI = st => { const k = blockIdx(st, 'i'); return k < 0 ? st.blocks.length : k + 1; };
+const linkEntries = c => { const [t, ...rest] = c.split(':'); return { type: t.trim(), entries: rest.join(':').split(',').map(x => x.trim()).filter(Boolean) }; };
+const entryAlias = e => e.split('!')[0].trim();
+function addLinkEntry(st, type, entry) {
+  const k = st.blocks.findIndex(b => b.kind === 'l' && linkEntries(b.content).type === type);
+  if (k >= 0) {
+    const { entries } = linkEntries(st.blocks[k].content);
+    if (entries.some(e => entryAlias(e) === entryAlias(entry))) return false;
+    st.blocks[k].content = `${type}:${[...entries, entry].join(',')}`;
+  } else insertBlock(st, st.blocks.length, { kind: 'l', content: `${type}:${entry}` });
+  return true;
+}
+function removeLinkEntry(st, type, alias) {
+  let removed = null;
+  for (let k = st.blocks.length - 1; k >= 0; k--) {
+    const b = st.blocks[k]; if (b.kind !== 'l') continue;
+    const le = linkEntries(b.content); if (le.type !== type) continue;
+    const keep = le.entries.filter(e => { const hit = entryAlias(e) === alias; if (hit && removed == null) removed = e; return !hit; });
+    if (keep.length === le.entries.length) continue;
+    if (keep.length) b.content = `${type}:${keep.join(',')}`; else removeBlock(st, k);
+  }
+  return removed;
+}
+
+/* --- navigation dans les lignes du bloc courant --- */
+const blk = () => info.blocks[curBlock];
+const isNewCol = i => (info.lines[i] || '').trim().startsWith('+newcolumn');
+const isItem = i => { const b = blk(); return !!b && i >= b.start && i < b.end && kinds[i] === 'bom' && ITEM_RE.test(info.lines[i]); };
+const levelOf = i => ITEM_RE.exec(info.lines[i])[1].length;
+function bodyStart(b) {
+  let f = b.start; while (f < b.end && info.lines[f].trim() === '') f++;
+  if (f < b.end && info.lines[f].trim() === '${{') for (let i = f; i < b.end; i++) if (info.lines[i].trim() === '}}$') return i + 1;
+  return b.start;
+}
+function colRange(line) {
+  const b = blk(), bs = bodyStart(b);
+  let s = line; while (s > bs && !isNewCol(s - 1)) s--;
+  let e = line; while (e + 1 < b.end && !isNewCol(e + 1)) e++;
+  return [s, e];
+}
+function blockItems() { const b = blk(), r = []; for (let i = bodyStart(b); i < b.end; i++) if (isItem(i)) r.push(i); return r; }
+function lastItemIn(s, e) { for (let i = e; i >= s; i--) if (isItem(i)) return i; return -1; }
+function subtreeEnd(line) {
+  const L = levelOf(line), [, ce] = colRange(line); let last = line;
+  for (let i = line + 1; i <= ce; i++) { if (!isItem(i)) continue; if (levelOf(i) <= L) break; last = i; }
+  return last;
+}
+function childrenOf(line) { const L = levelOf(line), end = subtreeEnd(line), r = []; for (let i = line + 1; i <= end; i++) if (isItem(i) && levelOf(i) === L + 1) r.push(i); return r; }
+function parentOf(line) {
+  const L = levelOf(line), [cs] = colRange(line);
+  for (let i = line - 1; i >= cs; i--) if (isItem(i) && levelOf(i) < L) return levelOf(i) === L - 1 ? i : -1;
+  return -1;
+}
+function prevSibling(line) {
+  const L = levelOf(line), [cs] = colRange(line);
+  for (let i = line - 1; i >= cs; i--) if (isItem(i)) { const l = levelOf(i); if (l === L) return i; if (l < L) return -1; }
+  return -1;
+}
+function nextSibling(line) {
+  const L = levelOf(line), [, ce] = colRange(line);
+  for (let i = subtreeEnd(line) + 1; i <= ce; i++) if (isItem(i)) return levelOf(i) === L ? i : -1;
+  return -1;
+}
+const itemType = i => getI(lineStruct(info.lines[i])).type;
+const CHILD_TYPE = { assembly: 'component', folder: 'file', spec: 'req', plant: 'routing', routing: 'function', chapter: 'chapter', function: 'function', logical: 'logical' };
+const newItem = (level, type, label) => ' '.repeat(level) + '+ ' + (type ? `(i:${type},${label})` : `(i:${label})`);
+const reLevel = (i, lv) => ' '.repeat(Math.max(0, lv)) + '+ ' + ITEM_RE.exec(info.lines[i])[2];
+
+/* --- application d'une modification : remplace les lignes [from, to[ --- */
+function replaceLines(from, to, newLines) {
+  const n = info.lines.length; let a, b, t;
+  if (to < n) { a = posOfLine(from); b = posOfLine(to); t = newLines.length ? newLines.join('\n') + '\n' : ''; }
+  else if (newLines.length) {
+    if (from < n) { a = posOfLine(from); b = ta.value.length; t = newLines.join('\n'); }
+    else { a = b = ta.value.length; t = '\n' + newLines.join('\n'); }
+  } else { a = from > 0 ? posOfLine(from) - 1 : 0; b = ta.value.length; t = ''; }
+  suppressAc = true;
+  try { insertText(t, a, b); } finally { suppressAc = false; }
+}
+function applyEdit(from, to, newLines, selLine, after) {
+  acClose();
+  replaceLines(from, to, newLines);
+  renderPreview();
+  if (selLine != null && selLine >= 0) selectItem(selLine); else { preview.focus({ preventScroll: true }); positionOverlay(); }
+  if (after) after();
+}
+function undoRedo(cmd) {
+  ta.focus();
+  try { document.execCommand(cmd); } catch { /* non supporté */ }
+  renderPreview(); preview.focus({ preventScroll: true }); positionOverlay();
+}
+
+/* --- actions --- */
+const G = {
+  child(line) {
+    const ch = childrenOf(line), end = subtreeEnd(line);
+    const type = ch.length ? itemType(ch.at(-1)) : (CHILD_TYPE[itemType(line)] ?? itemType(line));
+    applyEdit(end + 1, end + 1, [newItem(levelOf(line) + 1, type, 'Nouvel élément')], end + 1, () => startRename(end + 1, line));
+  },
+  sibling(line) {
+    const end = subtreeEnd(line);
+    applyEdit(end + 1, end + 1, [newItem(levelOf(line), itemType(line), 'Nouvel élément')], end + 1, () => startRename(end + 1, line));
+  },
+  indent(line, d = 1) {
+    const L = levelOf(line), end = subtreeEnd(line);
+    if (d < 0 && L === 0) return toast('Déjà au niveau racine');
+    if (d > 0 && prevSibling(line) < 0) return toast('Impossible : aucun élément de même niveau au-dessus pour devenir le parent', true);
+    const out = info.lines.slice(line, end + 1).map((l, k) => isItem(line + k) ? reLevel(line + k, levelOf(line + k) + d) : l);
+    applyEdit(line, end + 1, out, line);
+  },
+  outdent(line) { G.indent(line, -1); },
+  up(line) {
+    const p = prevSibling(line); if (p < 0) return toast('Déjà en première position');
+    const end = subtreeEnd(line);
+    applyEdit(p, end + 1, [...info.lines.slice(line, end + 1), ...info.lines.slice(p, line)], p);
+  },
+  down(line) {
+    const nx = nextSibling(line); if (nx < 0) return toast('Déjà en dernière position');
+    const nEnd = subtreeEnd(nx);
+    applyEdit(line, nEnd + 1, [...info.lines.slice(nx, nEnd + 1), ...info.lines.slice(line, nx)], line + (nEnd - nx + 1));
+  },
+  delete(line) {
+    const end = subtreeEnd(line), n = end - line + 1;
+    const before = blockItems().filter(i => i < line).at(-1);
+    const afterIt = blockItems().find(i => i > end);
+    applyEdit(line, end + 1, [], before ?? (afterIt != null ? afterIt - n : null));
+    toast(n > 1 ? `Élément et ${n - 1} ligne(s) dépendante(s) supprimés · Ctrl+Z pour annuler` : 'Élément supprimé · Ctrl+Z pour annuler');
+  },
+  rename(line) { startRename(line); },
+  link() { setLinkMode(!linkMode); },
+  type(line, btn) { openPop('type', btn, line); },
+  status(line, btn) { openPop('status', btn, line); },
+};
+
+function moveItem(src, target, asSibling) {
+  const end = subtreeEnd(src);
+  if (target >= src && target <= end) return toast('Impossible de déplacer un élément dans sa propre descendance', true);
+  const d = (asSibling ? levelOf(target) : levelOf(target) + 1) - levelOf(src);
+  const moved = info.lines.slice(src, end + 1).map((l, k) => isItem(src + k) ? reLevel(src + k, levelOf(src + k) + d) : l);
+  const tEnd = subtreeEnd(target);
+  if (tEnd >= end) applyEdit(src, tEnd + 1, [...info.lines.slice(end + 1, tEnd + 1), ...moved], src + (tEnd - end));
+  else applyEdit(tEnd + 1, end + 1, [...moved, ...info.lines.slice(tEnd + 1, src)], tEnd + 1);
+}
+
+function genAlias(label, used) {
+  const base = label.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/<[^>]*>|\*/g, '').replace(/[^a-z0-9]+/g, '').slice(0, 14) || 'el';
+  let a = base, k = 2; while (used.has(a)) a = base + k++;
+  return a;
+}
+const linkTypeSel = () => $('#linktype').value || 'i';
+function linkItems(src, tgt, type = linkTypeSel()) {
+  if (src === tgt) return toast('Un élément ne peut pas être lié à lui-même', true);
+  const sSt = lineStruct(info.lines[src]), tSt = lineStruct(info.lines[tgt]);
+  let alias = ''; const ak = blockIdx(tSt, 'a');
+  if (ak >= 0 && tSt.blocks[ak].content.trim()) alias = tSt.blocks[ak].content.trim();
+  else {
+    alias = genAlias(getI(tSt).label, new Set(currentAliases().map(a => a.alias)));
+    if (ak >= 0) tSt.blocks[ak].content = alias; else insertBlock(tSt, afterI(tSt), { kind: 'a', content: alias });
+  }
+  if (!addLinkEntry(sSt, type, alias)) return toast('Ce lien existe déjà');
+  const lo = Math.min(src, tgt), hi = Math.max(src, tgt);
+  const region = info.lines.slice(lo, hi + 1);
+  region[src - lo] = structText(sSt); region[tgt - lo] = structText(tSt);
+  applyEdit(lo, hi + 1, region, src);
+  toast(`Lien « ${settings.links[type]?.label || type} » créé vers « ${alias} »`);
+}
+
+/* --- sélection --- */
+function selectItem(line) {
+  if (!isItem(line)) return;
+  clearLinkSel();
+  const p = posOfLine(line), m = ITEM_RE.exec(info.lines[line]);
+  const c = p + m[1].length + 2;
+  ta.setSelectionRange(c, c);
+  const top = line * 20;
+  if (top < ta.scrollTop || top > ta.scrollTop + ta.clientHeight - 40) ta.scrollTop = Math.max(0, top - ta.clientHeight / 3);
+  updateCursor(true);
+  toolbarOn = true;
+  preview.focus({ preventScroll: true });
+  positionOverlay();
+  sheet.querySelector(`g[data-line="${line}"]`)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+}
+function setLinkMode(on) {
+  linkMode = on && isItem(curLine);
+  preview.classList.toggle('linking', linkMode);
+  banner.hidden = !linkMode;
+  if (linkMode) banner.textContent = `Lien « ${settings.links[linkTypeSel()]?.label || linkTypeSel()} » : cliquez sur l'élément cible · Échap pour annuler`;
+  positionOverlay();
+}
+function clearLinkSel() { selLink = null; ltb.hidden = true; sheet.querySelectorAll('g.lk.sel').forEach(g => g.classList.remove('sel')); }
+function markLinkSel() {
+  sheet.querySelectorAll('g.lk.sel').forEach(g => g.classList.remove('sel'));
+  if (!selLink) return;
+  const els = sheet.querySelectorAll(`g.lk[data-src="${selLink.src}"]`);
+  const hit = [...els].filter(g => g.dataset.type === selLink.type && g.dataset.alias === selLink.alias);
+  if (!hit.length) return clearLinkSel();
+  hit.forEach(g => g.classList.add('sel'));
+}
+function selectLink(g, e) {
+  toolbarOn = false; setLinkMode(false);
+  selLink = { src: +g.dataset.src, type: g.dataset.type, alias: g.dataset.alias };
+  markLinkSel();
+  const sr = stage.getBoundingClientRect();
+  $('#ltb-type').innerHTML = Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => `<option value="${attr(k)}">${escapeHtml(k)} · ${escapeHtml(v.label || '')}</option>`).join('');
+  $('#ltb-type').value = selLink.type;
+  ltb.hidden = false;
+  ltb.style.left = clampX(e.clientX - sr.left - 60, ltb.offsetWidth) + 'px';
+  ltb.style.top = (e.clientY - sr.top + 14) + 'px';
+  preview.focus({ preventScroll: true });
+  positionOverlay();
+}
+function editSelLink(newType) {
+  if (!selLink) return;
+  const { src, type, alias } = selLink;
+  const st = lineStruct(info.lines[src]); const entry = removeLinkEntry(st, type, alias);
+  if (entry == null) return clearLinkSel();
+  if (newType) { addLinkEntry(st, newType, entry); selLink = { src, type: newType, alias }; } else clearLinkSel();
+  const keep = selLink;
+  applyEdit(src, src + 1, [structText(st)], null);
+  if (keep) { selLink = keep; markLinkSel(); ltb.hidden = !selLink; }
+  toast(newType ? 'Type de lien modifié' : 'Lien supprimé · Ctrl+Z pour annuler');
+}
+$('#ltb-type').addEventListener('change', e => editSelLink(e.target.value));
+
+/* --- barre d'outils flottante --- */
+function positionOverlay() {
+  const g = sheet.querySelector(`g[data-line="${curLine}"]`);
+  const focused = preview.contains(document.activeElement);
+  const show = !!g && toolbarOn && !renaming && focused && !sheet.hidden;
+  gtb.hidden = handle.hidden = !show;
+  if (!focused) { ltb.hidden = true; }
+  if (!show) { gpop.hidden = true; return; }
+  const sr = stage.getBoundingClientRect(), r = (g.querySelector('.hit') || g).getBoundingClientRect();
+  const left = r.left - sr.left, top = r.top - sr.top;
+  gtb.style.left = clampX(left, gtb.offsetWidth) + 'px';
+  const th = gtb.offsetHeight || 36;
+  gtb.style.top = (top - th - 6 > 2 ? top - th - 6 : r.bottom - sr.top + 6) + 'px';
+  handle.style.left = (r.right - sr.left - 7) + 'px';
+  handle.style.top = (top + r.height / 2 - 7) + 'px';
+  const st = lineStruct(info.lines[curLine]); const ic = iconMap().get(getI(st).type.toLowerCase());
+  // n'écrire que si ça change : remplacer le nœud sous le pointeur annulerait le clic en cours
+  const setHtml = (el, html) => { if (el.dataset.k !== html) { el.dataset.k = html; el.innerHTML = html; } };
+  setHtml($('#gtb-type'), ic ? `<img alt="" src="${attr(ic.icon)}">` : '<b style="font-size:12px">T</b>');
+  const sk = blockIdx(st, 's'); const s = sk >= 0 ? st.blocks[sk].content.trim() : '';
+  setHtml($('#gtb-status'), s && has(settings.status, s) ? statusSwatch(s) : `<b style="font-size:12px">${s ? escapeHtml(s.slice(0, 2)) : 'S'}</b>`);
+  gtb.querySelector('[data-g="link"]').classList.toggle('on', linkMode);
+}
+/* coordonnées du calque = coordonnées du contenu défilant de l'aperçu */
+function clampX(x, w) { return Math.max(preview.scrollLeft + 4, Math.min(x, preview.scrollLeft + preview.clientWidth - w - 8)); }
+function openPop(kind, btn, line) {
+  if (!gpop.hidden && gpop.dataset.kind === kind) { gpop.hidden = true; return; }
+  const st = lineStruct(info.lines[line]);
+  let html = '';
+  if (kind === 'type') {
+    const cur = getI(st).type.toLowerCase();
+    html = `<button data-v="">— <span>Aucun type</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
+      .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
+  } else {
+    const sk = blockIdx(st, 's'); const cur = sk >= 0 ? st.blocks[sk].content.trim() : '';
+    html = `<button data-v="">— <span>Aucun statut</span></button>` + Object.entries(settings.status)
+      .map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${statusSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml(v.label || '')}</small></button>`).join('');
+  }
+  gpop.innerHTML = html; gpop.dataset.kind = kind; gpop.dataset.line = line; gpop.hidden = false;
+  gpop.style.left = clampX(gtb.offsetLeft + btn.offsetLeft, gpop.offsetWidth) + 'px';
+  gpop.style.top = (gtb.offsetTop + gtb.offsetHeight + 4) + 'px';
+}
+gpop.addEventListener('click', e => {
+  const b = e.target.closest('button[data-v]'); if (!b) return;
+  const line = +gpop.dataset.line, v = b.dataset.v, st = lineStruct(info.lines[line]);
+  if (gpop.dataset.kind === 'type') { const cur = getI(st); setI(st, { ...cur, type: v }); }
+  else {
+    const sk = blockIdx(st, 's');
+    if (!v) { if (sk >= 0) removeBlock(st, sk); }
+    else if (sk >= 0) st.blocks[sk].content = v;
+    else insertBlock(st, afterI(st), { kind: 's', content: v });
+  }
+  gpop.hidden = true;
+  applyEdit(line, line + 1, [structText(st)], line);
+});
+gtb.addEventListener('click', e => {
+  const b = e.target.closest('[data-g]'); if (!b || !isItem(curLine)) return;
+  const act = b.dataset.g;
+  if (act !== 'type' && act !== 'status') gpop.hidden = true;
+  G[act](curLine, b);
+});
+ltb.addEventListener('click', e => { if (e.target.closest('[data-g="unlink"]')) editSelLink(null); });
+
+/* --- renommage en place --- */
+/* origin : ligne sélectionnée avant la création d'un nouvel élément (Échap annule alors la création) */
+function startRename(line, origin = null) {
+  const g = sheet.querySelector(`g[data-line="${line}"]`); if (!g) return;
+  const cur = getI(lineStruct(info.lines[line])).label;
+  const sr = stage.getBoundingClientRect(), hr = g.querySelector('.hit').getBoundingClientRect();
+  const tr = (g.querySelector('text') || g).getBoundingClientRect();
+  const inp = document.createElement('input');
+  inp.className = 'rename-in gctl'; inp.value = cur; inp.spellcheck = false;
+  Object.assign(inp.style, {
+    left: (tr.left - sr.left - 4) + 'px', top: (hr.top - sr.top) + 'px', height: hr.height + 'px',
+    width: Math.max(180, tr.width + 80) + 'px', fontSize: Math.max(11, 13 * zoom) + 'px',
+  });
+  overlay.append(inp); renaming = { line }; positionOverlay();
+  inp.focus(); inp.select();
+  let done = false;
+  const finish = (commit, next) => {
+    if (done) return; done = true; renaming = null; inp.remove();
+    const v = inp.value.trim();
+    if (commit && v && v !== cur) {
+      const st = lineStruct(info.lines[line]); setI(st, { ...getI(st), label: v });
+      applyEdit(line, line + 1, [structText(st)], line);
+    } else if (!commit && origin != null) {
+      undoRedo('undo');
+      if (isItem(origin)) selectItem(origin);
+    }
+    else { preview.focus({ preventScroll: true }); positionOverlay(); }
+    if (next) next();
+  };
+  inp.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    else if (e.key === 'Tab') { e.preventDefault(); finish(true, () => (e.shiftKey ? G.sibling : G.child)(curLine)); }
+  });
+  inp.addEventListener('blur', () => finish(true));
+}
+
+/* --- pointeur : clic = sélection, glisser un élément = déplacer, poignée = lien, fond = défilement --- */
+function itemAt(x, y) { return document.elementFromPoint(x, y)?.closest?.('#sheet g[data-line]') || null; }
+function clearDrop() { sheet.querySelectorAll('g.drop').forEach(g => g.classList.remove('drop')); }
+function markDrop(g, exclude) { clearDrop(); if (g && g !== exclude) g.classList.add('drop'); }
+let drag = null;
+preview.addEventListener('pointerdown', e => {
+  if (e.button !== 0 && e.button !== 1) return;
+  if (e.target.closest('.gctl')) return;
+  if (!e.target.closest('#gpop')) gpop.hidden = true;
+  const g = e.button === 0 ? e.target.closest('#sheet g[data-line]') : null;
+  const lk = e.button === 0 ? e.target.closest('#sheet g.lk') : null;
+  const mode = e.target.closest('#link-handle') ? 'link' : g ? 'item' : 'pan';
+  drag = { mode, g, lk, x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
+  if (mode === 'link') { e.preventDefault(); drag.moved = true; preview.setPointerCapture(e.pointerId); tmpLink.removeAttribute('hidden'); }
+});
+preview.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) > 4) {
+    drag.moved = true; preview.setPointerCapture(drag.id);
+    if (drag.mode === 'pan') preview.classList.add('panning');
+    if (drag.mode === 'item') {
+      if (linkMode) setLinkMode(false);
+      ghost.hidden = false; ghost.textContent = 'Déplacer « ' + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + ' »';
+      gtb.hidden = handle.hidden = true;
+    }
+  }
+  if (!drag.moved) return;
+  const sr = stage.getBoundingClientRect();
+  if (drag.mode === 'pan') { preview.scrollLeft = drag.sl - dx; preview.scrollTop = drag.st - dy; }
+  else if (drag.mode === 'item') {
+    ghost.style.left = (e.clientX - sr.left + 14) + 'px'; ghost.style.top = (e.clientY - sr.top + 10) + 'px';
+    const t = itemAt(e.clientX, e.clientY); markDrop(t, drag.g);
+    ghost.textContent = t && t !== drag.g
+      ? (e.altKey || e.shiftKey ? 'Placer après « ' : 'Devenir enfant de « ') + getI(lineStruct(info.lines[+t.dataset.line])).label + ' »'
+      : 'Déplacer « ' + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + ' »';
+  } else if (drag.mode === 'link') {
+    const hr = handle.getBoundingClientRect();
+    tmpLink.querySelector('path').setAttribute('d', `M ${hr.left - sr.left + 7} ${hr.top - sr.top + 7} L ${e.clientX - sr.left} ${e.clientY - sr.top}`);
+    markDrop(itemAt(e.clientX, e.clientY), sheet.querySelector(`g[data-line="${curLine}"]`));
+  }
+});
+function endDrag() { drag = null; preview.classList.remove('panning'); clearDrop(); ghost.hidden = true; tmpLink.setAttribute('hidden', ''); }
+preview.addEventListener('pointerup', e => {
+  const d = drag; endDrag(); if (!d) return;
+  if (!d.moved) {
+    if (d.g) {
+      const line = +d.g.dataset.line;
+      if (linkMode) { setLinkMode(false); return linkItems(curLine, line); }
+      if (e.ctrlKey || e.metaKey) return gotoLine(line);
+      return selectItem(line);
+    }
+    if (d.lk) return selectLink(d.lk, e);
+    if (d.mode === 'pan') { toolbarOn = false; clearLinkSel(); setLinkMode(false); positionOverlay(); }
+    return;
+  }
+  const t = itemAt(e.clientX, e.clientY);
+  if (d.mode === 'item') { if (t && t !== d.g) moveItem(+d.g.dataset.line, +t.dataset.line, e.altKey || e.shiftKey); else positionOverlay(); }
+  else if (d.mode === 'link') { if (t) linkItems(curLine, +t.dataset.line); else positionOverlay(); }
+});
+preview.addEventListener('pointercancel', () => { endDrag(); positionOverlay(); });
+preview.addEventListener('dblclick', e => {
+  if (e.target.closest('.gctl')) return;
+  const g = e.target.closest('#sheet g[data-line]');
+  if (g) { e.preventDefault(); startRename(+g.dataset.line); }
+  else if (!sheet.hidden && !e.target.closest('#sheet svg g')) addRoot();
+});
+preview.addEventListener('focusin', () => positionOverlay());
+preview.addEventListener('focusout', () => setTimeout(positionOverlay, 0));
+
+/* --- clavier quand le graphe a le focus --- */
+preview.addEventListener('keydown', e => {
+  if (e.target.closest('input, select, textarea')) return;
+  const mod = e.ctrlKey || e.metaKey, k = e.key;
+  if (mod && k.toLowerCase() === 'z') { e.preventDefault(); return undoRedo(e.shiftKey ? 'redo' : 'undo'); }
+  if (mod && k.toLowerCase() === 'y') { e.preventDefault(); return undoRedo('redo'); }
+  if (mod) return;
+  if (k === 'Escape') { e.preventDefault(); if (!gpop.hidden) gpop.hidden = true; else if (linkMode) setLinkMode(false); else if (selLink) clearLinkSel(); else { toolbarOn = false; positionOverlay(); } return; }
+  if (selLink && (k === 'Delete' || k === 'Backspace')) { e.preventDefault(); return editSelLink(null); }
+  const items = [...sheet.querySelectorAll('g[data-line]')].map(g => +g.dataset.line);
+  if (!isItem(curLine) || !items.includes(curLine)) {
+    if (k.startsWith('Arrow') && items.length) { e.preventDefault(); selectItem(items[0]); }
+    return;
+  }
+  const L = curLine; let act = null;
+  if (k === 'Tab') act = () => e.shiftKey ? G.outdent(L) : G.child(L);
+  else if (k === 'Enter') act = () => G.sibling(L);
+  else if (k === 'F2') act = () => G.rename(L);
+  else if (k === 'Delete' || k === 'Backspace') act = () => G.delete(L);
+  else if (e.altKey && k === 'ArrowRight') act = () => G.indent(L);
+  else if (e.altKey && k === 'ArrowLeft') act = () => G.outdent(L);
+  else if (e.altKey && k === 'ArrowUp') act = () => G.up(L);
+  else if (e.altKey && k === 'ArrowDown') act = () => G.down(L);
+  else if (k === 'ArrowUp' || k === 'ArrowDown') { const i = items.indexOf(L) + (k === 'ArrowDown' ? 1 : -1); if (items[i] != null) act = () => selectItem(items[i]); else act = () => {}; }
+  else if (k === 'ArrowLeft') { const p = parentOf(L); act = () => p >= 0 && selectItem(p); }
+  else if (k === 'ArrowRight') { const c = childrenOf(L)[0]; act = () => c != null && selectItem(c); }
+  else if (k === 'l' || k === 'L') act = () => setLinkMode(!linkMode);
+  else if (k === 't' || k === 'T') act = () => G.type(L, gtb.querySelector('[data-g="type"]'));
+  else if (k === 's' || k === 'S') act = () => G.status(L, gtb.querySelector('[data-g="status"]'));
+  if (act) { e.preventDefault(); toolbarOn = true; act(); }
+});
+
+/* --- ajout de racine / colonne --- */
+function addRoot() {
+  const items = blockItems();
+  if (!items.length) {
+    const b = blk(), bs = bodyStart(b); let at = b.end;
+    while (at > bs && (info.lines[at - 1] || '').trim() === '') at--;
+    return applyEdit(at, at, ['+ (i:assembly,Nouvelle racine)'], at, () => startRename(at, -1));
+  }
+  const ref = isItem(curLine) ? curLine : items.at(-1);
+  const [cs, ce] = colRange(ref); const last = lastItemIn(cs, ce); const at = last >= 0 ? last + 1 : cs;
+  const type = itemType(items.find(i => i >= cs) ?? ref);
+  applyEdit(at, at, [newItem(0, type, 'Nouvelle racine')], at, () => startRename(at, -1));
+}
+function addColumn() {
+  const items = blockItems(); if (!items.length) return addRoot();
+  const ref = isItem(curLine) ? curLine : items.at(-1);
+  const [cs, ce] = colRange(ref); const at = lastItemIn(cs, ce) + 1;
+  applyEdit(at, at, ['+newcolumn', newItem(0, itemType(items[0]), 'Nouvelle racine')], at + 1, () => startRename(at + 1, -1));
+  toast('Colonne ajoutée');
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-gact]'); if (!b) return;
+  if (b.dataset.gact === 'root') addRoot(); else if (b.dataset.gact === 'column') addColumn();
+});
+function fillLinkTypes() {
+  const sel = $('#linktype'), cur = sel.value || store.get('linktype', 'i');
+  sel.innerHTML = Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => `<option value="${attr(k)}">${escapeHtml(v.label || k)}</option>`).join('');
+  sel.value = has(settings.links, cur) && cur !== 'h' ? cur : (sel.options[0]?.value || '');
+}
+$('#linktype').addEventListener('change', e => { store.set('linktype', e.target.value); if (linkMode) setLinkMode(true); });
+fillLinkTypes();
 
 /* ---------- Raccourcis globaux ---------- */
 document.addEventListener('keydown', e => {

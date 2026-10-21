@@ -11,7 +11,7 @@ Double-cliquez dessus pour l'ouvrir dans un navigateur récent (Chrome, Edge, Fi
 
 | Extension VS Code | BoMarkdown Studio |
 |---|---|
-| `BOM Preview` : webview statique à relancer | Aperçu **en direct** pendant la frappe, zoom, déplacement, clic sur un élément → ligne source |
+| `BOM Preview` : webview statique à relancer | Aperçu **en direct** pendant la frappe, zoom, déplacement, **édition directe sur le graphe** (voir plus bas) |
 | `BOM Export` : SVG à côté du fichier | Export du bloc courant en **SVG**, **PNG ×2** ou copie dans le presse-papiers |
 | `Insert as SVG` | *Exporter → Insérer les liens image* (ajoute `![…](….svg)` sous chaque bloc) + *Tous les blocs → dossier* (écrit chaque SVG à son chemin) ou *→ ZIP* |
 | `BOM Commands` | Tiroir **Référence** : types, statuts, bulles et liens, avec insertion en un clic |
@@ -40,6 +40,26 @@ Les blocs ` ```bomarkdown chemin ` et `<!--bomarkdown chemin` sont détectés, e
 - `Ctrl+S` / `Ctrl+O` : enregistrer / ouvrir · `Ctrl+Maj+E` : exporter le SVG · `F1` : aide complète
 - Le document, les réglages et les icônes personnelles sont **sauvegardés automatiquement** dans le navigateur
   (`localStorage`).
+
+### Édition directe sur le graphe
+
+Le texte reste la source unique : chaque action graphique réécrit les lignes concernées, en une seule
+opération annulable avec `Ctrl+Z`.
+
+| Je veux… | Sur le graphe |
+|---|---|
+| Ajouter un niveau (un enfant) | Cliquer l'élément puis `Tab` ou le bouton *enfant* ; le nom se saisit sur place (`Tab` enchaîne avec un autre enfant) |
+| Ajouter un élément au même niveau | `Entrée` ou le bouton *frère* |
+| Changer de niveau | `Alt+→` / `Alt+←` (ou `Maj+Tab`) : la branche suit |
+| Réordonner | `Alt+↑` / `Alt+↓`, ou glisser l'élément sur un autre avec `Maj` (placé juste après lui) |
+| Rattacher à un autre parent | Glisser l'élément sur son nouveau parent |
+| Créer un lien | Glisser la **poignée bleue** de l'élément vers la cible, ou `L` puis clic sur la cible. Le type vient du sélecteur en haut de l'aperçu, et l'alias de la cible est créé automatiquement s'il manque |
+| Modifier / supprimer un lien | Cliquer sur le lien : changer son type ou `Suppr` |
+| Ajouter une colonne | Bouton **+ Colonne** (insérée après la colonne de l'élément sélectionné) |
+| Ajouter une racine | Bouton **+ Racine** ou double-clic sur le fond |
+| Renommer, typer, statut, supprimer | Double-clic ou `F2`, `T`, `S`, `Suppr` |
+
+Les flèches déplacent la sélection (← parent, → premier enfant), et `Ctrl+clic` amène à la ligne source.
 
 ### Fichiers
 
