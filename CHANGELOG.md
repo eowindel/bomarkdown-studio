@@ -4,6 +4,13 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Corrigé
+- Réglages → *Avancé (JSON)* : une clé `links` (ou `bomarkdown.Linksdefinition`) collée dans le JSON avancé est
+  désormais prise en compte au lieu d'être ignorée. Le JSON avancé accepte aussi les commentaires, les virgules
+  finales et un extrait de `settings.json` VS Code collé sans ses accolades.
+
 ## [0.1.0] - 2026-10-21
 
 Première version publique, base de départ pour recueillir vos retours.

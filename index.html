@@ -608,11 +608,11 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
     <div class="err-msg" id="s-json-err"></div>
     <p class="hint" data-only="en">Keys: <code>status</code>, <code>bubbles</code> (SVG + label),
       <code>emphasis</code> (label emphasis rules), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (replacements in effectivity).
-      Link types are edited in the “Link types” tab.
+      Link types are edited in the “Link types” tab; a <code>links</code> key pasted here replaces them.
       Import also accepts a VS Code <code>settings.json</code> containing <code>bomarkdown.*</code> keys.</p>
     <p class="hint" data-only="fr">Clés : <code>status</code>, <code>bubbles</code> (SVG + label),
       <code>emphasis</code> (règles d'emphase des libellés), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (remplacements dans l'effectivité).
-      Les types de liens se modifient dans l'onglet « Types de liens ».
+      Les types de liens se modifient dans l'onglet « Types de liens » ; une clé <code>links</code> collée ici les remplace.
       L'import accepte aussi un <code>settings.json</code> de VS Code contenant des clés <code>bomarkdown.*</code>.</p>
     </div>
   </div>
@@ -2184,11 +2184,23 @@ function fillSettingsForm(s) {
   lkDraft = Object.entries(s.links || {}).map(([key, def]) => ({ key, def: { ...def }, style: detectArrow(def) }));
   renderLinkRows();
 }
+/* JSON avancé : tolère les commentaires, les virgules finales et un extrait de settings.json collé sans ses accolades */
+function parseAdvanced(text) {
+  const t = text.trim();
+  try { return parseJsonc(t); } catch (e) {
+    if (t.startsWith('"')) for (const c of ['{' + t, '{' + t + '}']) { try { return parseJsonc(c); } catch { /* essai suivant */ } }
+    throw e;
+  }
+}
+const LINK_KEYS = ['links', 'Linksdefinition', 'bomarkdown.Linksdefinition'];
 function readSettingsForm() {
   let adv;
-  try { adv = JSON.parse($('#s-json').value); } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = T('JSON invalide : ', 'Invalid JSON: ') + e.message; return null; }
-  const links = readLinkRows(); if (!links) { setSettingsTab('links'); return null; }
-  const s = normalizeSettings({ ...settings, ...adv, links });
+  try { adv = parseAdvanced($('#s-json').value); } catch (e) { setSettingsTab('adv'); $('#s-json').classList.add('bad'); $('#s-json-err').textContent = T('JSON invalide : ', 'Invalid JSON: ') + e.message; return null; }
+  if (!isObj(adv)) adv = {};
+  // des types de liens collés dans le JSON avancé remplacent ceux de l'onglet « Types de liens »
+  const advLinks = LINK_KEYS.some(k => isObj(adv[k]));
+  const links = advLinks ? null : readLinkRows(); if (!advLinks && !links) { setSettingsTab('links'); return null; }
+  const s = normalizeSettings(advLinks ? { ...settings, ...adv } : { ...settings, ...adv, links });
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) { const v = parseFloat($('#s-' + k).value); if (Number.isFinite(v)) s[k] = v; }
   s.renderlegend = $('#s-legend').checked; s.transparent = $('#s-transparent').checked;
   s.revision = { background: $('#s-revbg').value || 'dimgrey', font: $('#s-revfont').value || 'white' };
@@ -2196,7 +2208,7 @@ function readSettingsForm() {
   return s;
 }
 $$('#dlg-settings input[type=color][data-for]').forEach(c => c.addEventListener('input', () => { $('#' + c.dataset.for).value = c.value; }));
-$('#s-json').addEventListener('input', () => { try { JSON.parse($('#s-json').value); $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = ''; } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = e.message; } });
+$('#s-json').addEventListener('input', () => { try { parseAdvanced($('#s-json').value); $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = ''; } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = e.message; } });
 $('#btn-settings').onclick = () => openSettings();
 /* ---------- Éditeur graphique des types de liens ---------- */
 const ARROWS = {
