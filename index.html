@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BoMarkdown Studio</title>
+<meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='8' height='6' rx='1.5' fill='%234f6bed'/%3E%3Crect x='13' y='10' width='9' height='5' rx='1.5' fill='%2394a3b8'/%3E%3Crect x='13' y='17' width='9' height='5' rx='1.5' fill='%2394a3b8'/%3E%3Cpath d='M6 8v4.5h7M6 12v7.5h7' stroke='%234f6bed' stroke-width='1.6' fill='none'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --panel-2: #f8f9fb;
+  --fg: #1c2230;
+  --muted: #687284;
+  --border: #e2e6ec;
+  --accent: #4f6bed;
+  --accent-soft: rgba(79, 107, 237, .12);
+  --accent-fg: #ffffff;
+  --hover: #eef1f6;
+  --code-bg: #ffffff;
+  --cur-line: #f2f5ff;
+  --warn: #c2700a;
+  --err: #d92d2d;
+  --ok: #138a52;
+  --preview-bg: #e9ecf1;
+  --preview-dot: #d3d8e0;
+  --shadow: 0 10px 30px rgba(15, 23, 42, .14), 0 2px 6px rgba(15, 23, 42, .06);
+  --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* coloration syntaxique (reprend les couleurs du thème clair de l'extension) */
+  --t-plus: #c2410c;
+  --t-kw: #0550ae;
+  --t-num: #0a7f52;
+  --t-i: #1c2230;
+  --t-a: #7b0599;
+  --t-s: #006cc5;
+  --t-e: #795e26;
+  --t-l: #af00db;
+  --t-b: #267f99;
+  --t-cm: #8b93a1;
+  --t-delim: #8b93a1;
+  --t-path: #0a7f52;
+  --t-param: #6639ba;
+  --t-md: #4b5563;
+  --t-h: #1c2230;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #12151b; --panel: #1a1e26; --panel-2: #161a21; --fg: #e3e7ee; --muted: #949db0; --border: #2b313c;
+    --accent: #7d93ff; --accent-soft: rgba(125, 147, 255, .16); --accent-fg: #0f1220; --hover: #232936;
+    --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
+    --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
+    --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
+    --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+    --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #12151b; --panel: #1a1e26; --panel-2: #161a21; --fg: #e3e7ee; --muted: #949db0; --border: #2b313c;
+  --accent: #7d93ff; --accent-soft: rgba(125, 147, 255, .16); --accent-fg: #0f1220; --hover: #232936;
+  --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
+  --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
+  --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
+  --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+  --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 14px/1.45 var(--sans);
+  display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Barre du haut ---------- */
+.topbar {
+  display: flex; align-items: center; gap: 2px; padding: 6px 10px;
+  background: var(--panel); border-bottom: 1px solid var(--border); min-width: 0;
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: -.01em; margin-right: 10px; white-space: nowrap; }
+.brand svg { width: 24px; height: 24px; }
+.brand small { font-weight: 500; color: var(--muted); }
+.docname {
+  display: flex; align-items: center; gap: 6px; padding: 3px 10px; margin-right: 8px; border-radius: 999px;
+  background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); font-size: 13px;
+  max-width: 260px; min-width: 0;
+}
+.docname span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.docname .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); flex: none; display: none; }
+.docname.dirty .dot { display: block; }
+.sep { width: 1px; height: 22px; background: var(--border); margin: 0 6px; flex: none; }
+.spacer { flex: 1; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px;
+  border: 1px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; white-space: nowrap;
+  color: var(--fg);
+}
+.btn:hover { background: var(--hover); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn.icon { width: 32px; padding: 0; justify-content: center; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.outline { border-color: var(--border); background: var(--panel); }
+.btn.danger { color: var(--err); }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+.btn .lbl { font-size: 13.5px; }
+
+/* menus déroulants */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu-list {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 50; min-width: 250px; padding: 6px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow);
+  max-height: 70vh; overflow: auto;
+}
+.menu.right .menu-list { left: auto; right: 0; }
+.menu-list button {
+  display: flex; width: 100%; align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: 7px;
+  background: transparent; text-align: left; cursor: pointer;
+}
+.menu-list button:hover { background: var(--hover); }
+.menu-list button small { display: block; color: var(--muted); font-size: 12px; }
+.menu-list hr { border: 0; border-top: 1px solid var(--border); margin: 5px 4px; }
+
+/* ---------- Zone principale ---------- */
+main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr); min-height: 0; }
+.pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--panel); }
+.pane-head {
+  display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--border); background: var(--panel); flex: none; min-width: 0;
+}
+.pane-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.splitter { cursor: col-resize; background: var(--border); position: relative; }
+.splitter::after { content: ""; position: absolute; inset: 0 -3px; }
+.splitter:hover, .splitter.drag { background: var(--accent); }
+
+/* ---------- Éditeur ---------- */
+.editor { position: relative; flex: 1; display: flex; min-height: 0; background: var(--code-bg); }
+.gutter {
+  flex: none; width: 52px; overflow: hidden; position: relative; background: var(--code-bg);
+  border-right: 1px solid var(--border); color: var(--muted); font: 12px/20px var(--mono); user-select: none;
+}
+.gutter-inner { padding: 10px 0; will-change: transform; }
+.gutter-inner div { height: 20px; padding-right: 10px; text-align: right; position: relative; opacity: .7; }
+.gutter-inner div.cur { opacity: 1; color: var(--fg); }
+.gutter-inner div.warn::before, .gutter-inner div.error::before {
+  content: ""; position: absolute; left: 6px; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--warn);
+}
+.gutter-inner div.error::before { background: var(--err); }
+.code { position: relative; flex: 1; min-width: 0; }
+.code pre, .code textarea {
+  position: absolute; inset: 0; margin: 0; padding: 10px 14px; border: 0;
+  font: 13.5px/20px var(--mono); tab-size: 2; white-space: pre; letter-spacing: 0; word-spacing: 0;
+  font-variant-ligatures: none;
+}
+.code pre { overflow: hidden; pointer-events: none; color: var(--fg); }
+.code pre code { display: inline-block; min-width: 100%; font: inherit; }
+.code pre .ln { min-height: 20px; padding-right: 14px; margin: 0 -14px; padding-left: 14px; }
+.code pre .ln.cur { background: var(--cur-line); }
+.code textarea {
+  resize: none; background: transparent; color: transparent; caret-color: var(--fg); outline: none; overflow: auto;
+  -webkit-text-fill-color: transparent;
+}
+.code textarea::selection { background: var(--accent-soft); -webkit-text-fill-color: transparent; }
+.t-plus { color: var(--t-plus); font-weight: 700; }
+.t-kw { color: var(--t-kw); font-weight: 600; }
+.t-num { color: var(--t-num); }
+.t-i { color: var(--t-i); font-weight: 650; }
+.t-a { color: var(--t-a); font-weight: 650; }
+.t-s { color: var(--t-s); }
+.t-e { color: var(--t-e); font-style: italic; }
+.t-l { color: var(--t-l); }
+.t-b { color: var(--t-b); }
+.t-cm { color: var(--t-cm); font-style: italic; }
+.t-delim { color: var(--t-delim); }
+.t-path { color: var(--t-path); }
+.t-param { color: var(--t-param); }
+.t-md { color: var(--t-md); }
+.t-h { color: var(--t-h); font-weight: 700; }
+
+/* autocomplétion */
+.ac {
+  position: absolute; z-index: 40; min-width: 220px; max-width: 360px; max-height: 260px; overflow: auto; padding: 4px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 9px; box-shadow: var(--shadow); font-size: 13px;
+}
+.ac-item { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.ac-item.sel { background: var(--accent-soft); }
+.ac-item .ico { width: 20px; height: 20px; flex: none; display: grid; place-items: center; }
+.ac-item .ico img, .ac-item .ico svg { width: 20px; height: 20px; }
+.ac-item b { font-family: var(--mono); font-weight: 600; }
+.ac-item small { color: var(--muted); margin-left: auto; padding-left: 12px; white-space: nowrap; }
+.ac-hint { padding: 4px 8px 2px; color: var(--muted); font-size: 11.5px; border-top: 1px solid var(--border); margin-top: 4px; }
+
+/* ---------- Aperçu ---------- */
+.preview-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.preview {
+  flex: 1; min-height: 0; overflow: auto; position: relative; cursor: grab;
+  background-color: var(--preview-bg);
+  background-image: radial-gradient(var(--preview-dot) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.preview.panning { cursor: grabbing; user-select: none; }
+.stage { display: inline-flex; min-width: 100%; min-height: 100%; padding: 28px; align-items: flex-start; justify-content: center; }
+.sheet { line-height: 0; border-radius: 6px; box-shadow: var(--shadow); background: #fff; overflow: hidden; flex: none; }
+.sheet.transparent { background: repeating-conic-gradient(#e5e7eb 0 25%, #fff 0 50%) 0 0 / 16px 16px; }
+.sheet svg { display: block; }
+.sheet g[data-line] { cursor: pointer; }
+.sheet g[data-line] .hit { fill: transparent; stroke: none; }
+.sheet g[data-line]:hover .hit { fill: rgba(79, 107, 237, .08); }
+.sheet g[data-line].active .hit { fill: rgba(79, 107, 237, .14); stroke: #4f6bed; stroke-width: 1; }
+.empty-state { margin: auto; text-align: center; color: var(--muted); max-width: 360px; line-height: 1.6; }
+.empty-state b { color: var(--fg); }
+.zoom-ctl { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.zoom-ctl .btn { border-radius: 0; height: 30px; }
+.zoom-ctl .pct { min-width: 54px; justify-content: center; font-variant-numeric: tabular-nums; font-size: 12.5px; }
+select.blocksel {
+  height: 30px; max-width: 220px; min-width: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 0 8px;
+}
+
+/* problèmes */
+.problems { flex: none; border-top: 1px solid var(--border); background: var(--panel); max-height: 34%; display: flex; flex-direction: column; }
+.problems-head {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; user-select: none;
+  font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted);
+}
+.problems-head .count { padding: 0 7px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--border); font-weight: 600; letter-spacing: 0; }
+.problems-head .count.has { background: var(--warn); border-color: var(--warn); color: #fff; }
+.problems-head .chev { margin-left: auto; transition: transform .15s; }
+.problems.collapsed .chev { transform: rotate(-90deg); }
+.problems.collapsed .problems-list { display: none; }
+.problems-list { overflow: auto; padding: 0 6px 6px; }
+.prob { display: flex; gap: 8px; align-items: baseline; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.prob:hover { background: var(--hover); }
+.prob .lv { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); flex: none; transform: translateY(-1px); }
+.prob .lv.error { background: var(--err); }
+.prob .lv.info { background: var(--accent); }
+.prob .ln { color: var(--muted); font-family: var(--mono); font-size: 12px; flex: none; }
+.ok-msg { padding: 2px 14px 8px; color: var(--ok); font-size: 13px; }
+
+/* barre d'état */
+.statusbar {
+  display: flex; gap: 16px; align-items: center; padding: 3px 12px; font-size: 12px; color: var(--muted);
+  background: var(--panel); border-top: 1px solid var(--border); white-space: nowrap; overflow: hidden;
+}
+.statusbar .sp { flex: 1; }
+.statusbar a { color: inherit; }
+
+/* ---------- Dialogues ---------- */
+dialog.modal {
+  padding: 0; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); color: var(--fg);
+  box-shadow: var(--shadow); width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 48px);
+}
+dialog.modal[open] { display: flex; flex-direction: column; }
+dialog.modal::backdrop { background: rgba(10, 14, 22, .45); backdrop-filter: blur(2px); }
+.modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.modal-head h2 { margin: 0; font-size: 16px; flex: 1; }
+.modal-body { padding: 16px 18px; overflow: auto; min-height: 0; }
+.modal-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.modal-foot .left { margin-right: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
+.field label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
+.field input[type=number], .field input[type=text] {
+  width: 100%; height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; background: var(--panel-2);
+}
+.field.check { display: flex; align-items: center; gap: 8px; padding-top: 18px; }
+.field.check label { margin: 0; color: var(--fg); font-size: 14px; }
+.color-in { display: flex; gap: 6px; }
+.color-in input[type=color] { width: 38px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel-2); }
+h3.sec { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 10px; }
+h3.sec:first-child { margin-top: 0; }
+textarea.json {
+  width: 100%; min-height: 300px; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  font: 12.5px/1.5 var(--mono); background: var(--code-bg); resize: vertical; white-space: pre; tab-size: 2;
+}
+textarea.json.bad { border-color: var(--err); }
+.hint { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+.hint code, .help code { font-family: var(--mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); padding: 0 4px; border-radius: 4px; }
+.err-msg { color: var(--err); font-size: 12.5px; min-height: 18px; margin-top: 4px; }
+
+/* icônes */
+.dropzone {
+  border: 1.5px dashed var(--border); border-radius: 12px; padding: 18px; text-align: center; color: var(--muted);
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.dropzone:hover, .dropzone.over { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.icon-tools { display: flex; gap: 8px; align-items: center; margin: 14px 0 10px; flex-wrap: wrap; }
+.icon-tools input { flex: 1; min-width: 160px; height: 34px; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; background: var(--panel-2); }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+.icon-card { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.icon-card img { width: 32px; height: 32px; object-fit: contain; background: #fff; border-radius: 6px; padding: 2px; flex: none; }
+.icon-card .meta { flex: 1; min-width: 0; }
+.icon-card .nm { font-family: var(--mono); font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.icon-card input { width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 1px 4px; margin-left: -4px; background: transparent; font-size: 12.5px; color: var(--muted); }
+.icon-card input:hover, .icon-card input:focus { border-color: var(--border); background: var(--panel); color: var(--fg); outline: none; }
+.badge { font-size: 10.5px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.badge.user { border-color: var(--accent); color: var(--accent); }
+
+/* tiroir de référence */
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); z-index: 60; background: var(--panel);
+  border-left: 1px solid var(--border); box-shadow: var(--shadow); transform: translateX(105%); transition: transform .2s ease;
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: none; }
+.drawer .modal-body { flex: 1; }
+.ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ref-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--panel-2); cursor: pointer; text-align: left; min-width: 0;
+}
+.ref-item:hover { border-color: var(--accent); background: var(--accent-soft); }
+.ref-item svg.sw, .ref-item img { width: 22px; height: 22px; flex: none; background: #fff; border-radius: 4px; }
+.ref-item span { min-width: 0; overflow: hidden; }
+.ref-item b { display: block; font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+.ref-item small { display: block; color: var(--muted); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.help table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.help td, .help th { border-bottom: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.help th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.help pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font: 12.5px/1.5 var(--mono); overflow: auto; }
+.help kbd { font: 11.5px var(--mono); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--panel-2); }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+/* toasts */
+.toasts { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.toast { background: #1c2230; color: #fff; padding: 8px 14px; border-radius: 9px; box-shadow: var(--shadow); font-size: 13.5px; animation: tin .18s ease; }
+.toast.err { background: var(--err); }
+@keyframes tin { from { opacity: 0; transform: translateY(6px); } }
+.drop-overlay {
+  position: fixed; inset: 0; z-index: 90; display: none; place-items: center; background: rgba(79, 107, 237, .14);
+  border: 3px dashed var(--accent); font-size: 18px; font-weight: 600; color: var(--accent); pointer-events: none;
+}
+.drop-overlay.show { display: grid; }
+
+@media (max-width: 1100px) {
+  .btn .lbl.opt { display: none; }
+  .brand small { display: none; }
+}
+@media (max-width: 820px) {
+  body { overflow: auto; }
+  main { grid-template-columns: 1fr; grid-template-rows: minmax(280px, 45vh) minmax(320px, 1fr); }
+  .splitter { display: none; }
+  .btn .lbl { display: none; }
+  .docname { display: none; }
+  .brand { font-size: 0; margin-right: 2px; }
+  .brand small { display: none; }
+  .pane-head { overflow-x: auto; }
+  .pane-head .hint, #zoom-pct { display: none; }
+  select.blocksel { max-width: 140px; }
+  .topbar { overflow-x: auto; }
+  .cols2 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand" title="BoMarkdown Studio">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
+    BoMarkdown <small>Studio</small>
+  </div>
+  <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
+
+  <button class="btn" id="btn-new" title="Nouveau document"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg><span class="lbl opt">Nouveau</span></button>
+  <button class="btn" id="btn-open" title="Ouvrir un fichier .md / .bmd (Ctrl+O)"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="lbl opt">Ouvrir</span></button>
+  <button class="btn" id="btn-save" title="Enregistrer (Ctrl+S)"><svg class="i" viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3M7 21v-7h10v7"/></svg><span class="lbl opt">Enregistrer</span></button>
+
+  <details class="menu" id="menu-examples">
+    <summary class="btn" title="Charger un exemple"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Exemples</span><svg class="i" viewBox="0 0 24 24" style="width:14px"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="menu-list" id="examples-list"></div>
+  </details>
+
+  <details class="menu" id="menu-export">
+    <summary class="btn" title="Exporter"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span class="lbl">Exporter</span><svg class="i" viewBox="0 0 24 24" style="width:14px"><path d="M6 9l6 6 6-6"/></svg></summary>
+    <div class="menu-list">
+      <button data-act="export-svg"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 15l3-3 2 2 3-4"/></svg><span>Bloc courant en SVG<small>Ctrl+Maj+E</small></span></button>
+      <button data-act="export-png"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg><span>Bloc courant en PNG<small>Résolution ×2</small></span></button>
+      <button data-act="copy-svg"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Copier le SVG</span></button>
+      <hr>
+      <button data-act="export-folder"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg><span>Tous les blocs → dossier<small>Écrit chaque SVG à son chemin</small></span></button>
+      <button data-act="export-zip"><svg class="i" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M11 3v2h2v2h-2v2h2v2h-2v3h2"/></svg><span>Tous les blocs → ZIP</span></button>
+      <button data-act="insert-links"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg><span>Insérer les liens image<small>Ajoute ![…](….svg) sous chaque bloc</small></span></button>
+    </div>
+  </details>
+
+  <div class="spacer"></div>
+
+  <button class="btn" id="btn-ref" title="Référence : types, statuts, bulles, liens (équivalent « BOM Commands »)"><svg class="i" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><span class="lbl opt">Référence</span></button>
+  <button class="btn" id="btn-icons" title="Bibliothèque d'icônes"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><circle cx="17.5" cy="17.5" r="3.5"/></svg><span class="lbl opt">Icônes</span></button>
+  <button class="btn" id="btn-settings" title="Réglages"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="lbl opt">Réglages</span></button>
+  <button class="btn icon" id="btn-help" title="Aide et syntaxe (F1)"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></button>
+  <button class="btn icon" id="btn-theme" title="Thème : automatique"><svg class="i" viewBox="0 0 24 24" id="theme-ico"></svg></button>
+</header>
+
+<main id="main">
+  <section class="pane" aria-label="Éditeur">
+    <div class="pane-head">
+      <span class="pane-title">Source</span>
+      <span class="hint" style="margin:0" id="mode-hint"></span>
+    </div>
+    <div class="editor" id="editor">
+      <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
+      <div class="code">
+        <pre id="hl" aria-hidden="true"><code id="hl-code"></code></pre>
+        <textarea id="src" spellcheck="false" wrap="off" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Source BoMarkdown"></textarea>
+      </div>
+      <div class="ac" id="ac" hidden role="listbox"></div>
+    </div>
+  </section>
+
+  <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" title="Glisser pour redimensionner"></div>
+
+  <section class="pane" aria-label="Aperçu">
+    <div class="pane-head">
+      <span class="pane-title">Aperçu</span>
+      <select class="blocksel" id="blocksel" title="Bloc affiché"></select>
+      <div class="spacer"></div>
+      <div class="zoom-ctl">
+        <button class="btn icon" id="zoom-out" title="Zoom arrière"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg></button>
+        <button class="btn pct" id="zoom-pct" title="Taille réelle (100 %)">100 %</button>
+        <button class="btn icon" id="zoom-in" title="Zoom avant"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/></svg></button>
+        <button class="btn icon" id="zoom-fit" title="Ajuster à la fenêtre"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+      <button class="btn icon" data-act="export-svg" title="Télécharger le SVG"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></button>
+      <button class="btn icon" data-act="copy-svg" title="Copier le SVG"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg></button>
+    </div>
+    <div class="preview-wrap">
+      <div class="preview" id="preview"><div class="stage" id="stage"><div class="sheet" id="sheet"></div></div></div>
+      <div class="problems" id="problems">
+        <div class="problems-head" id="problems-head">Problèmes <span class="count" id="prob-count">0</span>
+          <svg class="i chev" viewBox="0 0 24 24" style="width:14px"><path d="M6 9l6 6 6-6"/></svg></div>
+        <div class="problems-list" id="problems-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="statusbar">
+  <span id="st-pos">Ln 1, Col 1</span>
+  <span id="st-block"></span>
+  <span id="st-items"></span>
+  <span class="sp"></span>
+  <span id="st-save"></span>
+  <span>D'après <a href="https://github.com/Roeperni/bomarkdown" target="_blank" rel="noopener">BoMarkdown</a> · MIT</span>
+</footer>
+
+<!-- Réglages -->
+<dialog class="modal" id="dlg-settings">
+  <div class="modal-head"><h2>Réglages</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="modal-body">
+    <h3 class="sec">Mise en page</h3>
+    <div class="field-grid">
+      <div class="field"><label for="s-h">Hauteur d'un élément (h)</label><input type="number" id="s-h" min="10" max="80" step="1"></div>
+      <div class="field"><label for="s-gap">Espace entre éléments d'une ligne (gap)</label><input type="number" id="s-gap" min="0" max="40" step="1"></div>
+      <div class="field"><label for="s-panh">Décalage horizontal (panh)</label><input type="number" id="s-panh" min="0" max="200" step="1"></div>
+      <div class="field"><label for="s-panv">Espacement vertical (panv)</label><input type="number" id="s-panv" min="0" max="200" step="1"></div>
+      <div class="field"><label for="s-bend">Courbure des liens (bend)</label><input type="number" id="s-bend" min="0" max="5" step="0.1"></div>
+      <div class="field"><label for="s-legendscale">Échelle de la légende</label><input type="number" id="s-legendscale" min="0.2" max="2" step="0.05"></div>
+      <div class="field"><label for="s-revbg">Révision : fond</label><div class="color-in"><input type="color" data-for="s-revbg"><input type="text" id="s-revbg"></div></div>
+      <div class="field"><label for="s-revfont">Révision : texte</label><div class="color-in"><input type="color" data-for="s-revfont"><input type="text" id="s-revfont"></div></div>
+      <div class="field"><label for="s-bg">Fond du SVG</label><div class="color-in"><input type="color" data-for="s-bg"><input type="text" id="s-bg"></div></div>
+      <div class="field check"><input type="checkbox" id="s-legend"><label for="s-legend">Afficher la légende</label></div>
+      <div class="field check"><input type="checkbox" id="s-transparent"><label for="s-transparent">Fond transparent</label></div>
+    </div>
+    <h3 class="sec">Définitions avancées (JSON)</h3>
+    <textarea class="json" id="s-json" spellcheck="false"></textarea>
+    <div class="err-msg" id="s-json-err"></div>
+    <p class="hint">Clés : <code>links</code> (types de liens : label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
+      <code>emphasis</code> (règles d'emphase des libellés), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (remplacements dans l'effectivité).
+      L'import accepte aussi un <code>settings.json</code> de VS Code contenant des clés <code>bomarkdown.*</code>.</p>
+  </div>
+  <div class="modal-foot">
+    <div class="left">
+      <button class="btn outline" id="s-import"><svg class="i" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Importer…</button>
+      <button class="btn outline" id="s-export"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Exporter</button>
+      <button class="btn danger" id="s-reset">Réinitialiser</button>
+    </div>
+    <button class="btn outline" data-close>Annuler</button>
+    <button class="btn primary" id="s-apply">Appliquer</button>
+  </div>
+</dialog>
+
+<!-- Icônes -->
+<dialog class="modal" id="dlg-icons">
+  <div class="modal-head"><h2>Bibliothèque d'icônes</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="modal-body">
+    <div class="dropzone" id="icon-drop" tabindex="0" role="button">
+      <b>Déposez des images ici</b> ou cliquez pour en choisir (PNG, JPG, SVG, WebP).<br>
+      <span class="hint">Le nom du type = nom du fichier en minuscules, sans espaces. Un fichier de même nom met l'icône à jour. Les images sont réduites à 64 px et intégrées en base64.</span>
+    </div>
+    <div class="icon-tools">
+      <input type="search" id="icon-filter" placeholder="Filtrer les icônes…">
+      <button class="btn outline" id="icon-import" title="Importer un fichier *_Icons.json / UserIcons.json"><svg class="i" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Importer JSON</button>
+      <button class="btn outline" id="icon-export" title="Exporter les icônes personnalisées (format compatible avec l'extension)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Exporter JSON</button>
+    </div>
+    <div class="icon-grid" id="icon-grid"></div>
+  </div>
+</dialog>
+
+<!-- Aide -->
+<dialog class="modal" id="dlg-help">
+  <div class="modal-head"><h2>Aide : syntaxe BoMarkdown</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="modal-body help">
+    <div class="cols2">
+      <div>
+        <h3 class="sec">Hiérarchie</h3>
+        <p>Chaque ligne <code>+ </code> est un élément ; le nombre de caractères avant le <code>+</code> donne le niveau. Les autres lignes sont ignorées (commentaires).</p>
+<pre>+ Racine
+ + Enfant
+  + Petit-enfant
++newcolumn 40      ← nouvelle colonne (+ écart)
++ Autre racine</pre>
+        <h3 class="sec">Blocs d'un élément</h3>
+        <table>
+          <tr><th>Bloc</th><th>Rôle</th></tr>
+          <tr><td><code>(i:type,libellé,rév)</code></td><td>Type (icône), libellé, révision. 1 valeur = libellé seul.</td></tr>
+          <tr><td><code>(s:IW)</code></td><td>Statut (D, IW, F, R, O…)</td></tr>
+          <tr><td><code>(a:alias)</code></td><td>Alias, cible des liens transverses</td></tr>
+          <tr><td><code>(l:i:a1,a2)</code></td><td>Liens de type <i>i</i> vers les alias a1, a2. <code>a1!texte</code> ajoute une étiquette (<code>!&lt;</code> au début, <code>!&gt;</code> à la fin).</td></tr>
+          <tr><td><code>(b:lock,matrice)</code></td><td>Bulles dessinées sur l'icône</td></tr>
+          <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivité à gauche ; <code>(e:o)</code> = pastille</td></tr>
+        </table>
+        <p class="hint">Emphase dans les libellés : <code>*italique*</code>, <code>**gras**</code>, <code>***les deux***</code>. Le texte après le dernier bloc est ignoré.</p>
+      </div>
+      <div>
+        <h3 class="sec">Paramètres par bloc</h3>
+        <p>En tête de bloc, un JSON entre <code>${{</code> et <code>}}$</code> surcharge les réglages (ex. <code>"haslegend": false</code>, <code>"bend": 0.5</code>, <code>"h": 24</code>, <code>"emphasis": […]</code>).</p>
+        <h3 class="sec">Dans un document Markdown</h3>
+<pre>```bomarkdown images/mon-bom
++ (i:assembly,Produit)
+```
+&lt;!--bomarkdown images/bom-cache
++ (i:assembly,Bloc non affiché)
+--&gt;</pre>
+        <p>Le chemin après <code>bomarkdown</code> nomme le SVG exporté. Placez le curseur dans un bloc pour l'afficher ; <b>Exporter → Insérer les liens image</b> ajoute <code>![nom](nom.svg)</code> sous chaque bloc.</p>
+        <h3 class="sec">Raccourcis</h3>
+        <table>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Espace</kbd></td><td>Autocomplétion (types, statuts, bulles, liens, alias)</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Maj</kbd>+<kbd>Tab</kbd></td><td>Descendre / remonter d'un niveau</td></tr>
+          <tr><td><kbd>Entrée</kbd></td><td>Nouvel élément au même niveau</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Enregistrer / ouvrir</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>E</kbd></td><td>Exporter le bloc en SVG</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+molette</td><td>Zoom de l'aperçu (glisser pour déplacer)</td></tr>
+        </table>
+        <p class="hint">Cliquez sur un élément de l'aperçu pour aller à sa ligne. Tout est enregistré automatiquement dans le navigateur.</p>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Référence (équivalent de « BOM Commands ») -->
+<aside class="drawer" id="drawer" aria-label="Référence">
+  <div class="modal-head"><h2>Référence</h2><button class="btn icon" id="drawer-close" title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="modal-body" id="ref-body"></div>
+</aside>
+
+<div class="toasts" id="toasts"></div>
+<div class="drop-overlay" id="drop-overlay">Déposez un fichier .md / .bmd pour l'ouvrir</div>
+<input type="file" id="file-open" accept=".md,.markdown,.bmd,.bom,.txt" hidden>
+<input type="file" id="file-icons" accept="image/png,image/jpeg,image/svg+xml,image/webp,image/gif" multiple hidden>
+<input type="file" id="file-json" accept=".json,application/json" hidden>
+
+<!-- ===================== Exemples (repris du README de l'extension) ===================== -->
+<script type="text/x-bomarkdown" data-name="Démo complète (Markdown)" data-file="demo.md">
+# Démo BoMarkdown Studio
+
+Ce document Markdown contient plusieurs blocs `bomarkdown`.
+Placez le curseur dans un bloc (ou choisissez-le en haut de l'aperçu) pour l'afficher.
+
+## Produit
+
+```bomarkdown images/produit
++ (i:assembly,Vélo urbain,B)(s:IW)(a:velo)
+ + (i:assembly,Cadre,A)(s:R)(a:cadre)
+  + (b:matrice)(i:component,Tube supérieur,A)(s:R)
+  + (b:matrice)(i:component,Tube diagonal,A)(s:F)
+ + (i:assembly,Roue avant,C)(s:IW)(a:roue)
+  + (e:[A -> B[)(i:component,Jante **aluminium**,A)(s:R)
+  + (e:[B -> #oo[)(i:component,Jante *carbone*,A)(s:D)(a:carbone)
+ + (b:lock)(i:component,Selle,A)(s:R)
+
++newcolumn 40
++ (i:spec,Spécification cadre)(l:i:cadre!implémente)
+ + (i:req,Masse < 2 kg)
+ + (i:req,Rigidité latérale)
++ (i:spec,Spécification roues)(l:i:roue)
+ + (i:req,Diamètre 700C)(l:c:carbone)
+```
+
+## Fabrication (bloc masqué dans le rendu Markdown)
+
+<!--bomarkdown images/fabrication
++ (i:plant,Usine de Lyon)
+ + (i:routing,Gamme d'assemblage)
+  + (i:function,Soudure du cadre)
+   + (i:worker,Soudeur)
+   + (i:resource,Poste TIG)
+  + (i:function,Montage des roues)
+   + (i:mitem,Roue montée,A)(s:R)
+-->
+</script>
+<script type="text/x-bomarkdown" data-name="Arborescence de dossiers" data-file="dossiers.bmd">
++ (i:folder,rootfolder)
+ + (i:folder, subfolder1)
+  + (i:file, Fil>e)
+  + (i:file, Another File)
+ + (i:file, Root File)
+</script>
+<script type="text/x-bomarkdown" data-name="Hiérarchie et colonnes" data-file="hierarchie.bmd">
++ first root first column
+-+ Child
+++ It works as long as there is a plus followed by a space
+ + but space is more convinient
+  + new sub level
+
+line with no plus are ignored
+to add a new column juste type
++newcolumn
++ second root new ncolumn
+ +  A child
++ several root on the same column
+ + another child
+</script>
+<script type="text/x-bomarkdown" data-name="Types d'éléments et légende" data-file="types.bmd">
++ (i:folder,A folder item) As long as there is a block text after blocks is ignored
+ + (i:file, A file item) so it can be use as a comment
+ + (i:file, A file item with revision (label supports parenthesis),A)
+ + (i:an item block with no type)
+ + (i:foo,an unkown type)
+ + (z:Block with wrong identifier)
+ + (z:Block with wrong identifier)(i:but with a valid block afterwards)
+ + no bloc but (parenthesis)
+</script>
+<script type="text/x-bomarkdown" data-name="Emphase dans les libellés" data-file="emphase.bmd">
+${{
+  "haslegend":false
+}}$
++ (i:folder,A folder item)
+ + (i:file, ***Emphase all the label***)
+ + (i:file, A file item with revision (*Emphase just a part of it*))
+ + (i:file,*it also can be **nested***)
+</script>
+<script type="text/x-bomarkdown" data-name="Emphase personnalisée" data-file="emphase-perso.bmd">
+${{
+  "haslegend":false,
+  "emphasis":
+    [
+      {"regex":"\\*\\*\\*(.*?)\\*\\*\\*", "expression":"***", "svgparam":"fill=\"green\"", "weight":"bold", "style": "italic"},
+      {"regex":"\\*\\*(.*?)\\*\\*", "expression":"**", "svgparam":"", "weight":"bold", "style": "normal"},
+      {"regex":"\\*(.*?)\\*", "expression":"*", "svgparam":"", "weight":"normal", "style": "italic"},
+      {"regex":"#(.*?)#", "expression":"#", "svgparam":"stroke=\"blue\" stroke-width=\"1\" fill=\"white\"", "weight":"normal", "style": "normal"}
+    ]
+}}$
++ (i:folder,A folder item)
+ + (i:file, ***Emphase all the label***)
+ + (i:file, A file item with revision (*Emphase just a part of it*))
+ + (i:file,*it also can be **nested***)
+  + (i:file,#use of custom marker#)
+</script>
+<script type="text/x-bomarkdown" data-name="Statuts" data-file="statuts.bmd">
++ (i:assembly,In Work Assembly,1)(s:IW)
+ + (i:component, A released component,1)(s:R)
+ + (i:component, A frozen component,A)(s:F)
+</script>
+<script type="text/x-bomarkdown" data-name="Plusieurs colonnes" data-file="multicolonnes.bmd">
++ (i:assembly,Assembly,1)(s:IW)
+ + (i:component, First component,1)(s:R)
+ + (i:component, Second component,A)(s:F)
+
++newcolumn
++ (i:spec,First Component Spec)
+ + (i:req, req1)
+ + (i:req, req2)
++ (i:spec,Second Component Spec)
+ + (i:req, req3)
+ + (i:req, req4)
+ + (i:comment,Label,Revision)
+
+you can define an additional gap between column
+
++newcolumn 100
++(i:logical,Logical)
+</script>
+<script type="text/x-bomarkdown" data-name="Alias et liens transverses" data-file="liens.bmd">
++ (i:assembly,Assembly (avec parenthèse),1)(s:IW)
+ + (i:component, First component,A)(s:R)(a:c1)
+ + (i:component, Second component,A)(s:F)(a:c2)
++ (i:component,Alternate 1 of c1,A)(a:a1)(l:a:c1)
++ (i:component,Alternate 2 of c1,A)(a:a2)(l:a:c1)
++ (i:component,provided component,A)(s:R)(a:c3)
++ (i:component,Provided component 2,A)(s:IW)(a:c4)
+
++newcolumn
++ (i:spec,First Component Spec)(a:s1)(l:i:c1)
+ + (i:req, req1)(a:specreq1)
+ + (i:req, req2)(a:specreq2)
++ (i:spec,Second Component Spec)(a:s2)(l:i:c2)
+ + (i:req, req3)
+ + (i:req, req4)(a:dum)
++ (i:spec,Procurement Spec)(a:s3)(l:i:a2,a1)
+ + (i:req, req5)(a:procreq1)(l:c:specreq1,specreq2)(l:i:c4)
+ + (i:req, req6)
+ + (i:req, req7)
+</script>
+<script type="text/x-bomarkdown" data-name="Étiquettes de liens (nouveau)" data-file="etiquettes.bmd">
++ (i:function,Freiner)(a:f1)
+ + (i:function,Détecter l'appui)(a:f2)
+ + (i:function,Appliquer l'effort)(a:f3)
+
++newcolumn 60
++ (i:logical,Levier)(l:i:f2!<réalise)
++ (i:logical,Étrier)(l:i:f3!assure,f1!>contribue)
+</script>
+<script type="text/x-bomarkdown" data-name="Bulles" data-file="bulles.bmd">
++ (b:lock)(i:component, Locked item)
+ + (b:matrice)(i:component, Item with a position matrix)
+ + (b:matrice,unlock)(i:component, Item with 2 Bubbles)
+ + (b:context)(i:component, In a configuration context)
+ + (b:noway)(i:component, Forbidden item)
+</script>
+<script type="text/x-bomarkdown" data-name="Effectivité" data-file="effectivite.bmd">
++ (b:context)(i:component,Unvariable Component)
+ + (e:o)(i:component,Use o to display an effetivity bubble)
+ + (e:[A -> B[)(i:component,effectivity can be a range)
+ + (e:[B -> #oo[)(i:component,effectivity special char can be defined)
+ + (b:eff)(e:[C -> #oo[)(i:component,A trick to have bubble and text)
+</script>
+
+<!-- ===================== Icônes par défaut de l'extension (base64) ===================== -->
+<script type="application/json" id="default-icons">[{"name":"assembly","label":"Assembly","type":"png","icon":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAEDmlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPpu5syskzoPUpqaSDv41lLRsUtGE2uj+ZbNt3CyTbLRBkMns3Z1pJjPj/KRpKT4UQRDBqOCT4P9bwSchaqvtiy2itFCiBIMo+ND6R6HSFwnruTOzu5O4a73L3PnmnO9+595z7t4LkLgsW5beJQIsGq4t5dPis8fmxMQ6dMF90A190C0rjpUqlSYBG+PCv9rt7yDG3tf2t/f/Z+uuUEcBiN2F2Kw4yiLiZQD+FcWyXYAEQfvICddi+AnEO2ycIOISw7UAVxieD/Cyz5mRMohfRSwoqoz+xNuIB+cj9loEB3Pw2448NaitKSLLRck2q5pOI9O9g/t/tkXda8Tbg0+PszB9FN8DuPaXKnKW4YcQn1Xk3HSIry5ps8UQ/2W5aQnxIwBdu7yFcgrxPsRjVXu8HOh0qao30cArp9SZZxDfg3h1wTzKxu5E/LUxX5wKdX5SnAzmDx4A4OIqLbB69yMesE1pKojLjVdoNsfyiPi45hZmAn3uLWdpOtfQOaVmikEs7ovj8hFWpz7EV6mel0L9Xy23FMYlPYZenAx0yDB1/PX6dledmQjikjkXCxqMJS9WtfFCyH9XtSekEF+2dH+P4tzITduTygGfv58a5VCTH5PtXD7EFZiNyUDBhHnsFTBgE0SQIA9pfFtgo6cKGuhooeilaKH41eDs38Ip+f4At1Rq/sjr6NEwQqb/I/DQqsLvaFUjvAx+eWirddAJZnAj1DFJL0mSg/gcIpPkMBkhoyCSJ8lTZIxk0TpKDjXHliJzZPO50dR5ASNSnzeLvIvod0HG/mdkmOC0z8VKnzcQ2M/Yz2vKldduXjp9bleLu0ZWn7vWc+l0JGcaai10yNrUnXLP/8Jf59ewX+c3Wgz+B34Df+vbVrc16zTMVgp9um9bxEfzPU5kPqUtVWxhs6OiWTVW+gIfywB9uXi7CGcGW/zk98k/kmvJ95IfJn/j3uQ+4c5zn3Kfcd+AyF3gLnJfcl9xH3OfR2rUee80a+6vo7EK5mmXUdyfQlrYLTwoZIU9wsPCZEtP6BWGhAlhL3p2N6sTjRdduwbHsG9kq32sgBepc+xurLPW4T9URpYGJ3ym4+8zA05u44QjST8ZIoVtu3qE7fWmdn5LPdqvgcZz8Ww8BWJ8X3w0PhQ/wnCDGd+LvlHs8dRy6bLLDuKMaZ20tZrqisPJ5ONiCq8yKhYM5cCgKOu66Lsc0aYOtZdo5QCwezI4wm9J/v0X23mlZXOfBjj8Jzv3WrY5D+CsA9D7aMs2gGfjve8ArD6mePZSeCfEYt8CONWDw8FXTxrPqx/r9Vt4biXeANh8vV7/+/16ffMD1N8AuKD/A/8leAvFY9bLAAAAOGVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAACoAIABAAAAAEAAAAwoAMABAAAAAEAAAAwAAAAAPj/TjYAAAkDSURBVGgF7ZlrbBxXFcfnzszGrsFpXNOURAhE0ocqHqpUCalpa4xICfFjbUtY2FacxAG1NASlogjxhfISqkT5EqktaqrGju26rtxie23HNQjJDZCISqGiEFWBJmqr0nxoU6OkceLuzFx+52bvZr32PmM+4SuNZ+bOuf/z/5977mvtOKtlNQL/3xFQKy2/ubn5EypSccd1OsBem8I/70TOsHZ1YmJi4v2V9LliAtoaG28PPa8riqIuz/U2KaUcuaRorc0VRuEZ13WHvDAcGp2aen0lhFyTgPr6er+muqYuVGGPE+lG1/NqhKwQD8MQ5s6fDUnl3O15nhEh36IwnHNcNeVpr3fuwtzR2dnZoFwxZQlIp4nSPbC9i6h6GcTPQ2baUc6hysrKWSF2+fLlesTs4XE7QtZaW3orRNVxR6vectOrZAEtTS07tdKPEMnNQs4WyJwhaZ4PdTgwlSM9GkkzT3ndJNQ3Eb3JtpU7ok4rrX4+Pjnen1lf6LkkAU1NTfWucmcgv0aiyKUhfRwnfckwOTY9Pf1eIYfyffv27TfGvFgrj7tBuQs8KYL3UaSjbZOTk7NiV0zxizGyNpDdRgqsMfntOKeZbfYljiRest+LvaeEPo390/GG+Ncdz3kc8psFWwd6G/WzxWKVJEBH+jocSaQEf71y1cP0yvpYLDY1Ojp6rlinYtfW1labTCYbeewGb73UGWx8yHOxpSQBdLNhngKvRsBWz/G2hkF4moE9xDh4Llf+W0IyDsj/TtrIdGvGET3r0NaYZPmwzXLeSxKQjZLhdDNkfgyR7zU3NU8oHfVWVFUdHRkZYS51nPb2dm9hfr5OK7cHgs0IWCfR5hniYcTjWzx/BlM320eh92sSYMGFjIwLSKwjj7sJZtfCpYVj8cbGZ8SG5285rrsFkWa6lTrafEgAZujFp3hTvJc8lgRnRQQIkBQrhEfPddW9wHPZYmYZsXmTsTQC5cMTkxMn5Svpdw+3kmZEi7qiAiyo3G16peoi6P2F58NcL0J80X6InnNFfDnlfybAkiHfHSL+i2SQfJTpc8HWr9S9pEFDpJLlOCZd3sxHHty0sFJ9FC0gHo/fBpE7yuxqL5fw1tbWdaTbVvku2OJDfOWyz67Pm0JXpr+FOvJ3N2nQSnTWZuV2Nl7R7yyAt7ja7WD26mb6vQXqZtzg4z58vRJvio9R1VdRVZGejpcDX3bks9jUkLtNNNjDde/V6c/M25eoq2C6dEVMoR6RMcA5YA/7m14TkIsLdxPlHmb8VjZ264Q4pGUalpVsgY0tK3Gqjn03dX/kOoSvSRbJOZ4XlUUC2hrabg1U0AF4N5u2mzMtAXgL3BHf8Q+z4/yU40b3s5X7mud7H8snhHleRH4frLdxtpcsqUO8L8IN8SC8yAL/OydyDyLoncAJdtHj7QiXhS1d2OS9waluwNf+8OiR0X/aD0ZAQ0PDHb7nPwRoG+CZ+3Wiol/BUz/fRrKPgy0tLV/Qod7tKP0NZsJPC6iIWaZ8CNmPC2FbtI7eJuFfUJ7qGx8f/7utl7s5byjVjvKdLA9fQoyZZlM9dZ77qKOSBxKJ6VdVvDH+FSL+PDY3WueQvUDXJsDq3Xj27NGDJ07knX3EIR6aHdfrIX+3EMH0imuJiXNwQ/wc40jWGylFPBavB9bW3u+/887Yuxs21PHewziJg1Et38CQQL1PanYqBsspHN4KuOlSiA9i+LNEIvGGBSrlzvjZhoNf4fCLginFkHf0azj9IXk8UwqetWVmuhm8n4C7I81V63+peHOc96urIM7e5f2Iq6P+NVVVx+yGzALlunNIWcu2Os446aL9l7GryrKdB/tlgjXENjrBuiBHz4JFBv5H8/NbIuXupH0D2BttIwmMYvd4lT1fpFK6iFkhwNlRDi29ySi3Q4hvZtww6FUH4+A2aW8DYlPSOhRcKeT/Kbagw/gYQMhp+z3zbgLixuKclXsISnrgi00m7hIBmSDiUMhwvY6YYRoOkgJnJCoc1O/hDLuHr00IuEHshLzMfETkOLF5jzbSvZmQ5jkjSB9gN8m0Kj8A/El6mxTchN8dgBAQJWcHw0HaBEHwDvazgDQzu11vfGb3wBJvVEhjmQ7Zup/jeZoIbqC2HuLpXyMgPo/hSxgdOn/x4kx1dXUnU3F/ZrSysQVXCNITzPd6lh48Cyn55aI2HZAra81fYdAbRMEL1PsxP3YCrPVik3cltg7FkOlShNRKdOQof6WY1fPf8Bh2wuBZEvtV24aZaY19znUXXMPdbL+9r4ogK5j7PEGboRefqa2t/UNfX99lwZEeoh2mVzgUJcASyHAoVX9jm3kwFgSjv52ZOWttyr0LcUNK63NBGBwmUIPMhOmA5MItScAiEOXsn5icenlR3TW+pNLpWbYdDxcLVfRuNBsQZ8suudl2Jb+TlaW0KVuA5GE+R3zPu3rna5vvGwPcjAVrIwJkd7miRX7BYxr8toyZlSxMDJ/l9P8jxsr1KdxLPqP8Maa7R8TZtToU4oA/BHl+qXbNjlPy2s4s5YoxxJX+Dpu/Xcp1b9KpAQ/jx3wWkF/ys0fEy366p0acFSMEounwyoaQFXO/EOfsYIgLWXBOChYiPifvpQoR4q7jPgC33a7ybuIuMII7x+OByusqH03nsTkyRnov33cg5IYCQviNStUDJAPuB4Z4ao8vDmh7klX6ifmF+SF5r6qo6mK1/W4hIfhlOQl/HYtiB5J+ch+L1y7afFKCIFMsa8YHwA3i+0mm2FOCnRYgL1JS59EH2RZ35xEiPfYaDm7HpkIcSDHEXfUETp8bGxv7j6lM/UmdfTvBzSlESIIlu+AqcDdmEof0APW/scQt9hIB9oMREjkPQnRZIZC0pvxzxkT8cdd3h7OJp41SD0ZIEHXQI/sYe0tSS0TYSyLO2wDnlSXELW5OAdbACqGvdkDa7FHsNyL+D1LlSTe2NOLWJtfdCElGnQjZC+7nrZ2QB/ccaTmYj3ja3j4UupsxEuoHEHIf1wW6t9/3/YIRL4QrQthlys5zJ6SruX7PMfOp7FQphFP0d/bpFT8t41fkQg4EU7AL2a1+X43AagQWR+C/CbnFk3vJ4ZMAAAAASUVORK5CYII="},{"name":"chapter","label":"Chapter","type":"png","icon":"data:image/png;base64,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"},{"name":"comment","label":"Comment","type":"png","icon":"data:image/png;base64,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"},{"name":"component","label":"Component","type":"png","icon":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAEDmlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPpu5syskzoPUpqaSDv41lLRsUtGE2uj+ZbNt3CyTbLRBkMns3Z1pJjPj/KRpKT4UQRDBqOCT4P9bwSchaqvtiy2itFCiBIMo+ND6R6HSFwnruTOzu5O4a73L3PnmnO9+595z7t4LkLgsW5beJQIsGq4t5dPis8fmxMQ6dMF90A190C0rjpUqlSYBG+PCv9rt7yDG3tf2t/f/Z+uuUEcBiN2F2Kw4yiLiZQD+FcWyXYAEQfvICddi+AnEO2ycIOISw7UAVxieD/Cyz5mRMohfRSwoqoz+xNuIB+cj9loEB3Pw2448NaitKSLLRck2q5pOI9O9g/t/tkXda8Tbg0+PszB9FN8DuPaXKnKW4YcQn1Xk3HSIry5ps8UQ/2W5aQnxIwBdu7yFcgrxPsRjVXu8HOh0qao30cArp9SZZxDfg3h1wTzKxu5E/LUxX5wKdX5SnAzmDx4A4OIqLbB69yMesE1pKojLjVdoNsfyiPi45hZmAn3uLWdpOtfQOaVmikEs7ovj8hFWpz7EV6mel0L9Xy23FMYlPYZenAx0yDB1/PX6dledmQjikjkXCxqMJS9WtfFCyH9XtSekEF+2dH+P4tzITduTygGfv58a5VCTH5PtXD7EFZiNyUDBhHnsFTBgE0SQIA9pfFtgo6cKGuhooeilaKH41eDs38Ip+f4At1Rq/sjr6NEwQqb/I/DQqsLvaFUjvAx+eWirddAJZnAj1DFJL0mSg/gcIpPkMBkhoyCSJ8lTZIxk0TpKDjXHliJzZPO50dR5ASNSnzeLvIvod0HG/mdkmOC0z8VKnzcQ2M/Yz2vKldduXjp9bleLu0ZWn7vWc+l0JGcaai10yNrUnXLP/8Jf59ewX+c3Wgz+B34Df+vbVrc16zTMVgp9um9bxEfzPU5kPqUtVWxhs6OiWTVW+gIfywB9uXi7CGcGW/zk98k/kmvJ95IfJn/j3uQ+4c5zn3Kfcd+AyF3gLnJfcl9xH3OfR2rUee80a+6vo7EK5mmXUdyfQlrYLTwoZIU9wsPCZEtP6BWGhAlhL3p2N6sTjRdduwbHsG9kq32sgBepc+xurLPW4T9URpYGJ3ym4+8zA05u44QjST8ZIoVtu3qE7fWmdn5LPdqvgcZz8Ww8BWJ8X3w0PhQ/wnCDGd+LvlHs8dRy6bLLDuKMaZ20tZrqisPJ5ONiCq8yKhYM5cCgKOu66Lsc0aYOtZdo5QCwezI4wm9J/v0X23mlZXOfBjj8Jzv3WrY5D+CsA9D7aMs2gGfjve8ArD6mePZSeCfEYt8CONWDw8FXTxrPqx/r9Vt4biXeANh8vV7/+/16ffMD1N8AuKD/A/8leAvFY9bLAAAAOGVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAACoAIABAAAAAEAAAAwoAMABAAAAAEAAAAwAAAAAPj/TjYAAAfuSURBVGgF7VlbbBRVGJ4zs9ttaa1AKZESpeIDiVgUEQTlUoKk3W23W7QFDdGYGHhQIQYJEh588MkQL4moDyQaXnzoRdvttrttlVAKBUQxQA2RRBFRMHJP5dLSnRm/b3ZO2YUt3d3uAiacZPbMnMv/f99//v/cVigZShUVFVMheo4tfn9bW9uxTKgS6RTqdrsLNU1bpCrqCkUoC4UQEynfNM3Tiql0G4pRp+v6zlAodCZdekdNoLa2NmdgYGAuQNYAZLmqqlMBXDEMg8AtnPxGufWN8mMg146yRpfLta+hoeHqaMikSkBUVVU9AcU+0zCrkc+A5UU0aAKOTqxjkmQwEmR3WKiiGbm/paXlIPIIY7wkmpIi4K52P6KFtXIIr1GFmKOq2hha+To4OI8qFIAzYOUDANtEIGizDNBmgaRqGCa+I2RIkoQMQ79imOZ+NG3UHXp7qDn0G/slkkYkQL92Op2liqEsV1RloSrUiQQtH8uiBBFxl6OAG1LCorHvat+Brq6ufoIoLS3Nzs/Jn6U44GaKcKNoGgxg9aEcypCPYRqnoasbuuoHBwe7RoqXuATo1/39/fOgCAoVN0AXRywV8WupDHUk8jeeHYqh1zsGBnY3bd9+juXDpWVLlhSEXa75iqoth5zFeCaxbYxBMDL8BpnjqArhaczOzt4bL15iCHi93ichsAp+vQydSobza7jMJYxBD9o2wg06/H7/n2ifdPL5fA9CVhnA1mAMnoWsPAq57pKR4LfjpRfx0oS2LYFA4CepzCIA4LMh4D0ULoCQXIv9zUFHx/0Rvu0Ph8PNGNojUkg6crjqow6Hoxqx4oO8pyLxcn0mux4vxmXU74IB3wWRHwTATwf4DjSYTOYED8ta055tiaMQ2g6fbBjf13dgm+3X6QAdT8ariJfz+YgXQ6mFsThhTCP4ONhOgkSZ8FZ4Q6qmlsthQ4cwCJwGkS4IqL927dqujo6O8/GUZbqsrKxsfFZW1gIYkPFSCkxcGB3Ua5MKCW+lN4xvjYW0PFgFVV3d6A/6e1l2tySfx1diaMb78BYPvcROOgkMfbEQJAbR4DgaBrH0NyOA9sLfB2SP25kjLlyIhXlYXaphWA+wFQObMxrDTQRYyZHgEAF8GGPysym0RtPUW5EORXfO1HtlZeXjQmiVwtRrEJGPgYRDxsCNOuMSiG5EIiQEAZfgX/sUU28Im2ZHMBj8I7rdaN89Hs8UhxBlitAYvHOhN4+uImPTMqqAUQ09RtWIBGRrCuDDBKFn8f4tFpoGKOnCVvmCbJdMji33OMgpxUJZCzlLAXoC+xM4H+qjAW0Sv0JfN1CUo7yI9UwJE7Ba2z/RgrHoHce3P9F4ifFr0/RhcSqWICUofjPRUBj1HSBYLxziu7EXL/afy71vP2bNkqGRuTGIbYwJZ5KMFS9C9MJ2iBezDfFyGELkBCHg1zPQtgIWrEE9V/kYvyZoyoIcbq/3wI2+wTY90NnZObTK19Y+d3//1ZwetJ0uCVhzasJo4zSk1aCUNXBhMRPWmonvTVXeqj0YnTpWwMor0O4ZTdWsVV72IWAQsXav2KEexEa1FT7emJubewT7nlhnp6A4adQEomVKqwBYLp6lQhNLo+tJVIK22/6OvF2YosGVk9rhJq0EJFhamE90ki4CwOcM3diBea0Rs1lnqhOAlJ0RAlJ4VA6sZjciogkBiM1rarvXKHlDrxknQMubhn5oSnGxZ8uWLWlf0WMPrkO80vyC7UlBQUFCQZms5ttDABPRqVOnIqtgsghHaH+7CIwAI/XqewRSt116et4bgfTYMXUp90Ygddulp+f/agT6+y8MYjsSuVi1+ZNA7K4rPYbJkJSi2TgnWHeztgKTeyEeEObLrXCGNI9KbHl5+TSnw7kepn6JW3XudLnHAuYeBxitQ0EQBRPuNhI46D/g1Jxr4DWrcJVfSHwSPPKzxK7yftEYNF6EiQ6SFQ8cdzrh3JyPK8+3HJpjD05zm7CVKrRPfZbliZWYid0K4tb21u1ouNjUzfU4ipzgMe9OEOGBH8BfxiXvbhxNPwbQhyVwYiI2YiRWYqahh84Dzc3NF/H9IYTU4SL3TQzPanQaJ4eNjTOYeOjn/xDvwHALqYd6aUT7zHxBD+tbw0b4U9wS/hWNY4iALLQbbIQltuHotw5EVkLIGGkJ2S5dOfTMxZl4A/RUAbAm45DA8X4FGL5C3UeB1sAv8XTeREA2gn+xw2qv2/ul4TQ2QHiMAtku1Rx/Ek7DjP42+q+ES4yRI804RIDquMRqMcPm5kAosO9WOoYlIDvZAp7HEHtwyboB/20twthaQyzbJJIXFRVZJzJcmU9yOV1r4NCrcD62Zj6CJ3AgJ/idAL+5NdAaTERuUlMOgyxL01aYQl2PESnhEghlt9RDYHCDHuXyv9UiL+8VXBiuxf3QFPazpkTcd8JF+N4rTOODa7pel8xteFIEJNLq6uqx+AfxNQTdWvjqQ3L4ZX10zkDEpdU/QHkWZKYTNB+Wkxxi6wTIfIJ/Qr+wJ5Lo7iO+p0RASoVbTcb7GyCyGmAKhiNCsHxYL4Hj/RyAb0X/z3ANeVLKTDYfFQGpzApIU1mH75UgkjvcjGXPLPyTzppZ8O/8USkj1TwtBKRyn8fztKk5OGN54SZOugqTPQL85ycg9PBmfzD4vewz2jytBGwwXJRegNN8DuCFLAPwM/D81+EqX/PTbpeW7D/mAhKvomllqQAAAABJRU5ErkJggg=="},{"name":"file","label":"File","type":"png","icon":"data:image/png;base64,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"},{"name":"folder","label":"Folder","type":"png","icon":"data:image/png;base64,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"},{"name":"function","label":"Function","type":"png","icon":"data:image/png;base64,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"},{"name":"logical","label":"Logical","type":"png","icon":"data:image/png;base64,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"},{"name":"mitem","label":"Manufactured Item","type":"png","icon":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAEDmlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPpu5syskzoPUpqaSDv41lLRsUtGE2uj+ZbNt3CyTbLRBkMns3Z1pJjPj/KRpKT4UQRDBqOCT4P9bwSchaqvtiy2itFCiBIMo+ND6R6HSFwnruTOzu5O4a73L3PnmnO9+595z7t4LkLgsW5beJQIsGq4t5dPis8fmxMQ6dMF90A190C0rjpUqlSYBG+PCv9rt7yDG3tf2t/f/Z+uuUEcBiN2F2Kw4yiLiZQD+FcWyXYAEQfvICddi+AnEO2ycIOISw7UAVxieD/Cyz5mRMohfRSwoqoz+xNuIB+cj9loEB3Pw2448NaitKSLLRck2q5pOI9O9g/t/tkXda8Tbg0+PszB9FN8DuPaXKnKW4YcQn1Xk3HSIry5ps8UQ/2W5aQnxIwBdu7yFcgrxPsRjVXu8HOh0qao30cArp9SZZxDfg3h1wTzKxu5E/LUxX5wKdX5SnAzmDx4A4OIqLbB69yMesE1pKojLjVdoNsfyiPi45hZmAn3uLWdpOtfQOaVmikEs7ovj8hFWpz7EV6mel0L9Xy23FMYlPYZenAx0yDB1/PX6dledmQjikjkXCxqMJS9WtfFCyH9XtSekEF+2dH+P4tzITduTygGfv58a5VCTH5PtXD7EFZiNyUDBhHnsFTBgE0SQIA9pfFtgo6cKGuhooeilaKH41eDs38Ip+f4At1Rq/sjr6NEwQqb/I/DQqsLvaFUjvAx+eWirddAJZnAj1DFJL0mSg/gcIpPkMBkhoyCSJ8lTZIxk0TpKDjXHliJzZPO50dR5ASNSnzeLvIvod0HG/mdkmOC0z8VKnzcQ2M/Yz2vKldduXjp9bleLu0ZWn7vWc+l0JGcaai10yNrUnXLP/8Jf59ewX+c3Wgz+B34Df+vbVrc16zTMVgp9um9bxEfzPU5kPqUtVWxhs6OiWTVW+gIfywB9uXi7CGcGW/zk98k/kmvJ95IfJn/j3uQ+4c5zn3Kfcd+AyF3gLnJfcl9xH3OfR2rUee80a+6vo7EK5mmXUdyfQlrYLTwoZIU9wsPCZEtP6BWGhAlhL3p2N6sTjRdduwbHsG9kq32sgBepc+xurLPW4T9URpYGJ3ym4+8zA05u44QjST8ZIoVtu3qE7fWmdn5LPdqvgcZz8Ww8BWJ8X3w0PhQ/wnCDGd+LvlHs8dRy6bLLDuKMaZ20tZrqisPJ5ONiCq8yKhYM5cCgKOu66Lsc0aYOtZdo5QCwezI4wm9J/v0X23mlZXOfBjj8Jzv3WrY5D+CsA9D7aMs2gGfjve8ArD6mePZSeCfEYt8CONWDw8FXTxrPqx/r9Vt4biXeANh8vV7/+/16ffMD1N8AuKD/A/8leAvFY9bLAAAAOGVYSWZNTQAqAAAACAABh2kABAAAAAEAAAAaAAAAAAACoAIABAAAAAEAAAAwoAMABAAAAAEAAAAwAAAAAPj/TjYAAAd6SURBVGgF7VlrbFRFFJ6Ze3fXFowoCf7AtzHEV6IYNSqGgsa+od3tbgElqKjgGxT+81MFQQNG0fpAEdve7hbpm/iKTx6KJkYMUcSgRMUgGLGwu3dm/M6WKXf72La7WyWmk2zm3jsz53zfzDlnzswyNlbGZiCnGeA5jR5kcOOt4TMsPyvnnNdQF611k0ywtsg7zp+DDMn6c14JREuD5zBh13Kt77a5dZkQPeKV0szVcjfj/FWt3PpQR+znrBH3GZgXAk3Foctty16gmJ7nF9Zk1MxVKk2VLQQTjLOEkgdQb3Klu6GmK/pNWqcsXnIhwJ3immk+y7oHuGYB4AQJ0FLrjDAszpkFMiB4BDy3JKWsC3c1fYxBmQcOInXEBFoqKwuTqrBEMHYfZM4AcD/NthoCeF/9AkRoVTA2AezvK8Zf/F10dy5qaenu2zfT+7AJxG6rnqR9/hrB9ELO+FSLp5Rj2rKauF5MkJUiIjUmgeldeK/TyUQ0uLX5YG+nDA9DEmipmHdJQrvzuWbzYS4XIKIwMpXcYPdHREDItBC5mCvlPry+Lmy9cfYW5/v+vU9+GZRAtKT2WstiCzHDNXDMiWQmQ9n3SbG5PZGfkHnFXfcQGDUpJupq2us/H0hqPwLNRVUT9Dj/WggJ2VwUJLOw74EUZfON/MQHIjCvblfphjPH6UdmOM5Rryz4Ynqxx/vGcc2nB4RdkJAjd850abm9UWAgDH5hF8Jkiw67bmFfif0IVLY6BzRnZcdcdxOiQxzmAzf79wvpJN2EgbDAN2YFm/s7dkZssZLwNGbx5YzxCh8XIqnkv8LEB+BJDdtluhX2szLY6dA+MWBJI9AYDhcE4uy8L6de/t2KFSvMVspjZeFikFiOWZhpwy7JL0ajkL27MBtEuvcAfmWw3emCnlTAAx5x9a5vLokH2P6I4xwz+tNMyPc3X+XTvu1X7dy9JVY5d/qJThqCOs/sPlislAojhG4zUcIIybWmiEMySTbpIF2kE3JT4Jsr5hQRJsJGGL360laguSyy3W9Z12ESaJaTmuu3Gderg63OZ2ZQe+nDgePWwVqh2VIovQp5GkUJ0zyimjZDyvcQnr9SnK05TU5qKOtYGzdCYhXhG4TmjwFPFcyKFh9OLXdUtzdeb/r0IVD7iS34jWQi1NBjizIOjE2c6TXVbc4XZmBjUXi8XWgtsIR+GDCmKJAY7j5Bsy0AHjFuj1R8rdstN0Q+OBkem8vD12gmlkJnjY9bAfI9WoqUiSn9aXV7w00Gx6AETnboicUQghyFv8WZeraq3fnatMduqZ7IAva9gluLQf78THmRJ//ZD8LPY6d6Kfhu8yEja3PZ7Vcij30UKz/Pz63UHuRNVbIiYITTFo9IxBJa/gWhG2zJ1s3udPaY9saZ4cn+Av4ASC6ETZ/tJeIB/hsc9JXkcf1c5D3ngBn7dkl4irLEQ5C7AMBPRwQiRzbNvXVOBIwUAwa2+AeWry7p6hciW519pr25tPZiJP5L4H93II5PoO84AxwBsY2wmWeqOxr2mr7RW0MXcb9YTKThe2d5SZs+3jovBIxAQwRKf9War1c6Uec9aW0uDV8GYFU9/fXmqg5ntxlLJzfB/ThH6MUAlbZaps9AdV4JGAUpIj2p9U9c6HUykXxtsFQ4Vj1/kkjE72KaP2hb4tyhZtzoMPVABNL2AdNxJHUqX0GUgIucazHrScvv3xYri8As0ktTafh+kUhux1n5CeoLExzxIShdYs9bzgSMUAqhsHVYBb8QIfK5aPmcctNGz7aw1kHZBdRnuOHWjM9U542AUeIigvhxMkG4vdl8o2f6Rm35LnknYAAiJaBUMlW8z+ZbvupRIwDn7g3k3ud8ATdyRo2AUTDa9RiB0Z7hoeT/v1YAofzUJ4S8xbsqaYCRxh6gQ8apWixuMS1YbxZLONPRKv4kDjM/BHCjRTnOqVIIC2HCmWSvlvwpL640AqHOhp1xIWdgu38a5nT4vyZigBOWuJKr4nE5kzB6CdjeF3qOtDj7US2Llde+nFBqCY5185Crj0/igsl7Ouo7Lp/vqcMT3VAoeTQu1Zs43z4bbGv8diAd/QiYTsG2BhqwKFoZXI/093FsrCGckQO4z++5KjAd81iT0eICmYDHcVHQxGEJwY7ol5lUDErADAq1xHbh+fZoGYhIvgzLWoZs04KSvBEh4MhW6XZD4g60jTG1anZr00cGQ6Z6SAJmcKg99iGeP9pcESlFVrkcJIroSiTXSy46pFB6DfDvC8VWzuqo770PMroz1WlOnKnjiTZd1drYnixUxVLquViFz+lSin4jLWYcTmU7cbUyJ1GoSmZ1NHRATm8SOByZw14BrzBc7eFvIVaPu6FWXaDm4ji2FI5+aWomB7h2xKmNrCRV6E8MuheCL+2Wmj1zugxsKt76xt+mfaR1VgSMkhOXUS81Foej+HYnfo+AyPlkFsdNJ9TwG03fFBwU1+U/wnvWulK/Fuly/vB0y+oxJwJG4wkgq6PFwbeSzF6Ee53rMMkNpt1nifqjieQVsI4dWrrrQ12xX0zbWD02A//xDPwDXq+NlAV7ca0AAAAASUVORK5CYII="},{"name":"plant","label":"Plant","type":"png","icon":"data:image/png;base64,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"},{"name":"req","label":"Requirement","type":"png","icon":"data:image/png;base64,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"},{"name":"resource","label":"Resource","type":"png","icon":"data:image/png;base64,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"},{"name":"routing","label":"Routing","type":"png","icon":"data:image/png;base64,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"},{"name":"spec","label":"Specification","type":"png","icon":"data:image/png;base64,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"},{"name":"worker","label":"Worker","type":"png","icon":"data:image/png;base64,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"}]</script>
+
+<script>
+'use strict';
+/* =====================================================================
+   BoMarkdown Studio : revamping web autonome de l'extension VS Code
+   « BoMarkdown » (https://github.com/Roeperni/bomarkdown, licence MIT).
+   Un seul fichier, aucune dépendance, fonctionne hors ligne.
+   ===================================================================== */
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('bomd.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('bomd.' + k, JSON.stringify(v)); } catch { /* stockage indisponible */ } },
+};
+
+/* ---------- Réglages par défaut (identiques à ceux de l'extension) ---------- */
+const DEFAULT_SETTINGS = {
+  h: 20, gap: 2, panh: 20, panv: 5, bend: 1, legendscale: 0.8, renderlegend: true,
+  background: '#ffffff', transparent: false,
+  revision: { font: 'white', background: 'dimgrey' },
+  links: {
+    h: { label: 'Child', arrow: '', Color: 'black', thickness: 1, dashpattern: '' },
+    i: { label: 'implement', arrow: '<marker id="arrow_i" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="steelblue"/></marker>', Color: 'steelblue', thickness: 1, dashpattern: '' },
+    c: { label: 'coverage', arrow: '<marker id="arrow_c" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="hotpink"/></marker>', Color: 'hotpink', thickness: 1, dashpattern: '' },
+    a: { label: 'alternate', arrow: '<marker id="arrow_a" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="green"/></marker>', Color: 'green', thickness: 1, dashpattern: '2 2' },
+  },
+  emphasis: [
+    { regex: '\\*\\*\\*(.*?)\\*\\*\\*', expression: '***', svgparam: '', weight: 'bold', style: 'italic' },
+    { regex: '\\*\\*(.*?)\\*\\*', expression: '**', svgparam: '', weight: 'bold', style: 'normal' },
+    { regex: '\\*(.*?)\\*', expression: '*', svgparam: '', weight: 'normal', style: 'italic' },
+  ],
+  bubbles: {
+    matrice: { label: 'Position Matrix', svg: '<g id="matrice"><polyline fill="none" stroke="white" points="-5,17 -7.5,19.5" stroke-width="2.5" stroke-linecap="round"/><polyline fill="none" stroke="white" points="-5,17 -5,12" stroke-width="2.5" stroke-linecap="round"/><polyline fill="none" stroke="white" points="-5,17 0,17" stroke-width="2.5" stroke-linecap="round"/><polyline fill="none" stroke="steelblue" points="-5,17 -5,12" stroke-width="2" stroke-linecap="round"/><polyline fill="none" stroke="steelblue" points="-5,17 0,17" stroke-width="2" stroke-linecap="round"/><polyline fill="none" stroke="steelblue" points="-5,17 -7.5,19.5" stroke-width="2" stroke-linecap="round"/></g>' },
+    context: { label: 'Configuration Context', svg: '<g id="context"><circle r="4" cx="17" cy="17" fill="royalblue" stroke="white" stroke-width="0.25"/></g>' },
+    lock: { label: 'Locked', svg: '<g id="lock"><rect x="13" y="-2" width="8" height="8" fill="indigo" stroke="white" stroke-width="0.25"/><path d="M 14 -2 A 3 3, 0,1,1,20 -2" stroke-width="2" fill="none" stroke="indigo"/></g>' },
+    unlock: { label: 'Unlocked', svg: '<g id="unlock"><rect x="13" y="-2" width="8" height="8" fill="indigo" stroke="white" stroke-width="0.25"/><path d="M 14 -2 A 3 3, 0,1,0,8 -2" stroke-width="2" fill="none" stroke="indigo"/></g>' },
+    noway: { label: 'Forbidden', svg: '<g id="noway"><circle r="7" cx="20" cy="0" fill="red" stroke="white" stroke-width="0.25"/><line x1="16" y1="0" x2="24" y2="0" stroke="white" stroke-width="2.5"/></g>' },
+  },
+  status: Object.fromEntries([['D', 'Draft', 'lightgray'], ['IW', 'In Work', 'blue'], ['F', 'Frozen', 'orange'], ['R', 'Released', 'green'], ['O', 'Obsolete', 'black']]
+    .map(([k, label, c]) => [k, { label, svg: `<g id="${k}"><rect x="0" y="1" width="18" height="18" fill="${c}" rx="4"/><text font-family="system-ui" dominant-baseline="middle" text-anchor="middle" font-weight="bold" font-style="normal" font-size="10" x="10" y="11" fill="white">${k}</text></g>` }])),
+  mandatoryDefs: {
+    undef: '<g id="undef"><rect x="0" y="0" width="18" height="18" fill="red" rx="4"/><text font-family="system-ui" dominant-baseline="middle" text-anchor="middle" font-weight="bolder" font-style="normal" font-size="16" x="10" y="11" fill="white">?</text></g>',
+    placeholder: '<g id="placeholder"><rect x="0" y="0" width="18" height="18" fill="LightCyan" rx="4"/></g>',
+    eff: '<g id="eff"><circle r="4" cx="-10" cy="10" fill="darkorange" stroke="white" stroke-width="0.25"/></g>',
+    grad: '<linearGradient id="grad" x1="0%" x2="0%" y1="0%" y2="100%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="25%" stop-color="white" stop-opacity="1.0"/><stop offset="50%" stop-color="white" stop-opacity="1.0"/><stop offset="75%" stop-color="white" stop-opacity="1.0"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>',
+  },
+  utf8replacement: { '#oo': '&#x221E;', '->': '&#x2192;', '<-': '&#x2190;' },
+};
+const ADVANCED_KEYS = ['links', 'status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement'];
+/* Correspondance des clés de l'extension VS Code (settings.json et blocs ${{ }}$) */
+const LEGACY_KEYS = {
+  haslegend: 'renderlegend', Linksdefinition: 'links', satus: 'status', MandatoryDefs: 'mandatoryDefs', UTF8replacement: 'utf8replacement',
+};
+
+const clone = o => JSON.parse(JSON.stringify(o));
+const has = (o, k) => !!o && Object.prototype.hasOwnProperty.call(o, k);
+const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+
+function normalizeSettings(raw) {
+  const s = clone(DEFAULT_SETTINGS);
+  if (!isObj(raw)) return s;
+  for (const [k0, v] of Object.entries(raw)) {
+    let k = k0.replace(/^bomarkdown\./, '');
+    k = LEGACY_KEYS[k] || k;
+    if (k === 'revision.background' && typeof v === 'string') { s.revision.background = v; continue; }
+    if (k === 'revision.font' && typeof v === 'string') { s.revision.font = v; continue; }
+    if (!(k in DEFAULT_SETTINGS)) continue;
+    s[k] = v;
+  }
+  return s;
+}
+
+let settings = normalizeSettings(store.get('settings', null));
+const DEFAULT_ICONS = (() => { try { return JSON.parse($('#default-icons').textContent); } catch { return []; } })();
+let userIcons = store.get('icons', []);
+let iconMapCache = null;
+function iconMap() {
+  if (!iconMapCache) {
+    iconMapCache = new Map();
+    for (const i of DEFAULT_ICONS) iconMapCache.set(i.name.toLowerCase(), { ...i, source: 'default' });
+    for (const i of userIcons) iconMapCache.set(i.name.toLowerCase(), { ...i, source: 'user' });
+  }
+  return iconMapCache;
+}
+function saveIcons() { store.set('icons', userIcons); iconMapCache = null; }
+
+/* ---------- Utilitaires ---------- */
+const escapeXml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const escapeHtml = escapeXml;
+const attr = escapeXml;
+const n2 = v => Math.round(v * 100) / 100;
+const sid = s => String(s).replace(/[^\w-]/g, '_');
+const ref = id => `href="#${id}" xlink:href="#${id}"`;
+const decodeEntities = (() => { const t = document.createElement('textarea'); return s => { t.innerHTML = s; return t.value; }; })();
+function stripRootId(svg) { return String(svg || '').replace(/^(\s*<[^>\s]+[^>]*?)\s+id\s*=\s*(["'])[^"']*\2/, '$1'); }
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function safeSvgParams(p) {
+  // n'accepte que des paires attribut="valeur" inoffensives (pas d'événements on*, pas de href)
+  let out = '';
+  String(p || '').replace(/([\w:-]+)\s*=\s*"([^"]*)"/g, (m, a, v) => { if (!/^on/i.test(a) && !/href/i.test(a)) out += ` ${a}="${escapeXml(v)}"`; return m; });
+  return out;
+}
+
+/* ---------- Mesure du texte (remplace la table Fontsize.json de l'extension) ---------- */
+const measure = (() => {
+  let text = null; const cache = new Map();
+  function init() {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;left:-10000px;top:-10000px;width:10px;height:10px;overflow:hidden;visibility:hidden';
+    text = document.createElementNS(NS, 'text');
+    text.setAttribute('font-family', FONT);
+    svg.append(text); document.body.append(svg);
+  }
+  return (markup, size = 13) => {
+    if (!markup) return 0;
+    const key = size + '|' + markup;
+    if (cache.has(key)) return cache.get(key);
+    if (!text) init();
+    text.setAttribute('font-size', size);
+    text.innerHTML = markup;
+    const w = text.getComputedTextLength();
+    if (cache.size > 8000) cache.clear();
+    cache.set(key, w);
+    return w;
+  };
+})();
+
+/* =====================================================================
+   Analyse du texte BoMarkdown (portage de parseEditor.ts)
+   ===================================================================== */
+const ITEM_RE = /^([ \t\-+]*?)\+ (.*)$/;
+
+/* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
+   ce qui autorise les parenthèses dans les libellés (comme l'extension). */
+function blockSpans(s) {
+  const re = /\(([ialbse]):/g; const starts = []; let m;
+  while ((m = re.exec(s))) starts.push(m.index);
+  return starts.map((st, k) => {
+    const end = k + 1 < starts.length ? starts[k + 1] : s.length;
+    const seg = s.slice(st + 3, end);
+    const close = seg.lastIndexOf(')');
+    return { kind: s[st + 1], start: st, content: close >= 0 ? seg.slice(0, close) : seg, end: close >= 0 ? st + 3 + close + 1 : end, closed: close >= 0 };
+  });
+}
+
+function parseBomText(text, baseLine = 0) {
+  const lines = text.split('\n');
+  const diags = [];
+  let params = {}; let start = 0;
+  const first = lines.findIndex(l => l.trim() !== '');
+  if (first >= 0 && lines[first].trim() === '${{') {
+    const end = lines.findIndex((l, i) => i > first && l.trim() === '}}$');
+    if (end > 0) {
+      try {
+        const p = JSON.parse('{' + lines.slice(first + 1, end).join('\n') + '}');
+        if (isObj(p)) params = p;
+      } catch (e) { diags.push({ line: baseLine + first, level: 'error', msg: 'Bloc de paramètres ${{ }}$ : JSON invalide (' + e.message + ')' }); }
+      start = end + 1;
+    } else {
+      diags.push({ line: baseLine + first, level: 'error', msg: 'Bloc de paramètres non fermé : « }}$ » manquant' });
+    }
+  }
+  const boms = []; let bom = { items: [], extraGap: 0 };
+  const parents = [-1];
+  for (let i = start; i < lines.length; i++) {
+    const raw = lines[i]; const line = baseLine + i; const t = raw.trim();
+    if (t.startsWith('+newcolumn')) {
+      boms.push(bom);
+      bom = { items: [], extraGap: Number(t.slice(10).trim()) || 0 };
+      continue;
+    }
+    const m = ITEM_RE.exec(raw);
+    if (!m) continue;
+    const level = m[1].length;
+    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
+    parents[level + 1] = line;
+    parseArgs(m[2], it, diags);
+    bom.items.push(it);
+  }
+  boms.push(bom);
+  return { boms, params, diags };
+}
+
+function parseArgs(s, it, diags) {
+  const spans = blockSpans(s);
+  if (!spans.length) {
+    it.label = s.trim();
+    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: `Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e)` });
+    return;
+  }
+  for (const b of spans) {
+    if (!b.closed) diags.push({ line: it.line, level: 'warn', msg: `Bloc « (${b.kind}: » sans parenthèse fermante` });
+    const c = b.content;
+    switch (b.kind) {
+      case 'i': {
+        const p = c.split(',');
+        if (p.length === 1) it.label = p[0].trim();
+        else if (p.length === 2) { it.type = p[0].trim(); it.label = p[1].trim(); }
+        else if (p.length === 3) { it.type = p[0].trim(); it.label = p[1].trim(); it.revision = p[2].trim(); }
+        else it.label = c.trim();
+        break;
+      }
+      case 'a': it.alias = c.trim(); break;
+      case 's': it.status = c.trim(); break;
+      case 'e': it.effectivity = c.trim(); break;
+      case 'b': it.bubbles.push(...c.split(',').map(x => x.trim()).filter(Boolean)); break;
+      case 'l': {
+        const parts = c.split(':');
+        const linktype = parts[0].trim();
+        if (parts.length < 2) { diags.push({ line: it.line, level: 'warn', msg: `Lien « (l:${c}) » incomplet : syntaxe (l:type:alias1,alias2)` }); break; }
+        for (const a of parts.slice(1).join(':').split(',').map(x => x.trim()).filter(Boolean)) {
+          const k = a.indexOf('!');
+          if (k > 0) {
+            const mark = a[k + 1];
+            const pos = mark === '<' ? 'b' : mark === '>' ? 'e' : 'm';
+            it.relatives.push({ relative: a.slice(0, k).trim(), linktype, label: a.slice(pos === 'm' ? k + 1 : k + 2).trim(), pos });
+          } else it.relatives.push({ relative: a, linktype, label: '', pos: 'm' });
+        }
+        break;
+      }
+    }
+  }
+}
+
+/* ---------- Réglages effectifs d'un bloc (réglages + paramètres ${{ }}$) ---------- */
+function effectiveSettings(params) {
+  const S = clone(settings);
+  for (const [k0, v] of Object.entries(params || {})) {
+    const k = LEGACY_KEYS[k0] || k0;
+    if (!(k in DEFAULT_SETTINGS)) continue;
+    S[k] = isObj(S[k]) && isObj(v) ? { ...S[k], ...v } : v;
+  }
+  for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) {
+    const v = Number(S[k]); S[k] = Number.isFinite(v) ? v : DEFAULT_SETTINGS[k];
+  }
+  return S;
+}
+
+function validate(parsed, S) {
+  const d = []; const icons = iconMap(); const aliases = new Map();
+  for (const bom of parsed.boms) for (const it of bom.items) {
+    if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: `Type « ${it.type} » inconnu (icône « ? » affichée)` });
+    if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: `Statut « ${it.status} » inconnu` });
+    for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: `Bulle « ${b} » inconnue` });
+    if (it.alias) {
+      if (aliases.has(it.alias)) d.push({ line: it.line, level: 'warn', msg: `Alias « ${it.alias} » déjà défini ligne ${aliases.get(it.alias) + 1}` });
+      else aliases.set(it.alias, it.line);
+    }
+  }
+  for (const bom of parsed.boms) for (const it of bom.items) for (const r of it.relatives) {
+    if (!has(S.links, r.linktype)) d.push({ line: it.line, level: 'warn', msg: `Type de lien « ${r.linktype} » inconnu` });
+    else if (!aliases.has(r.relative)) d.push({ line: it.line, level: 'warn', msg: `Alias cible « ${r.relative} » introuvable` });
+  }
+  return d;
+}
+
+/* =====================================================================
+   Mise en page + génération SVG (portage de Computelayout.ts / HTMLgeneration.ts)
+   ===================================================================== */
+function emphasize(escaped, rules) {
+  let out = escaped;
+  for (const r of Array.isArray(rules) ? rules : []) {
+    let re; try { re = new RegExp(r.regex, 'g'); } catch { continue; }
+    const params = safeSvgParams(r.svgparam);
+    out = out.replace(re, (m, g1) => {
+      const inner = typeof g1 === 'string' ? g1 : m.split(r.expression || '\u0000').join('');
+      return `<tspan font-weight="${attr(r.weight || 'normal')}" font-style="${attr(r.style || 'normal')}"${params}>${inner}</tspan>`;
+    });
+  }
+  return out;
+}
+
+function lineProps(def, key) {
+  def = def || {};
+  let s = `stroke="${attr(def.Color ?? def.color ?? 'black')}" stroke-width="${attr(def.thickness ?? 1)}"`;
+  if (def.dashpattern) s += ` stroke-dasharray="${attr(def.dashpattern)}"`;
+  if (def.arrow) s += ` marker-end="url(#arrow_${sid(key)})"`;
+  return s;
+}
+
+function bezierPoint(p, t) {
+  const u = 1 - t;
+  return [0, 1].map(k => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k]);
+}
+
+function buildSvg(parsed, S, { meta = false } = {}) {
+  const { h, gap, panh, panv } = S; const iconw = h; const bend = S.bend; const ty = n2(h / 2 + 5);
+  const icons = iconMap(); const boms = parsed.boms; const links = S.links || {};
+  const repl = Object.entries(S.utf8replacement || {}).map(([k, v]) => [k, decodeEntities(String(v))]);
+
+  // 1) mise en page
+  boms.forEach((bom, ci) => {
+    bom.maxw = 0; bom.maxnegw = 0;
+    bom.items.forEach((it, k) => {
+      it.lblMarkup = emphasize(escapeXml(it.label), S.emphasis);
+      it.lblw = measure(it.lblMarkup, 13);
+      it.x = it.level * panh; it.y = k * (h + panv);
+      it.w = it.x + it.lblw + (it.type ? iconw + gap : 0) + (it.revision ? iconw + gap : 0) + (it.status ? iconw + gap : 0);
+      it.effText = '';
+      if (it.effectivity) {
+        let e = it.effectivity; for (const [a, b] of repl) e = e.split(a).join(b);
+        it.effText = e;
+        if (e !== 'o') { it.effw = measure(escapeXml(e), 13); bom.maxnegw = Math.max(bom.maxnegw, it.effw); }
+      }
+      bom.maxw = Math.max(bom.maxw, it.w);
+    });
+    bom.y = 2 * panv;
+    bom.x = ci === 0 ? panh + bom.maxnegw
+      : bom.extraGap + panh + boms[ci - 1].x + boms[ci - 1].maxw + (bom.maxnegw ? bom.maxnegw + panh : 0);
+  });
+
+  // 2) légende
+  let legend = null;
+  if (S.renderlegend !== false) {
+    const entries = []; const seen = new Set();
+    const add = (kind, name, label) => { const k = kind + ':' + name; if (seen.has(k)) return; seen.add(k); entries.push({ kind, name, label: String(label ?? name), w: measure(escapeXml(label ?? name), 12) + iconw + gap }); };
+    for (const bom of boms) for (const it of bom.items) { const ic = it.type && icons.get(it.type.toLowerCase()); if (ic) add('type', ic.name, ic.label || ic.name); }
+    for (const bom of boms) for (const it of bom.items) for (const r of it.relatives) if (has(links, r.linktype)) add('link', r.linktype, links[r.linktype].label || r.linktype);
+    for (const bom of boms) for (const it of bom.items) if (it.status && has(S.status, it.status)) add('status', it.status, S.status[it.status].label || it.status);
+    for (const bom of boms) for (const it of bom.items) for (const b of it.bubbles) if (has(S.bubbles, b)) add('bubble', b, S.bubbles[b].label || b);
+    if (entries.length) {
+      const per = Math.ceil(entries.length / Math.max(1, boms.length));
+      const columns = [];
+      for (let k = 0; k * per < entries.length; k++) {
+        const items = entries.slice(k * per, (k + 1) * per);
+        const x = k ? columns[k - 1].x + columns[k - 1].w : 0;
+        columns.push({ x, w: Math.max(...items.map(e => e.w)) + panh, items });
+      }
+      const last = columns[columns.length - 1];
+      legend = { w: last.x + last.w, h: per * (h + panv), columns };
+    }
+  }
+
+  // 3) dimensions
+  const maxitem = Math.max(0, ...boms.map(b => b.items.length));
+  const top = maxitem * (h + panv) + 2 * panv;
+  const ls = S.legendscale || 0.8;
+  let W = Math.max(0, ...boms.map(b => b.x + b.maxw)) + panh + gap;
+  let H = top;
+  if (legend) { W = Math.max(W, gap + (legend.w + gap) * ls + gap); H = top + (12 + legend.h + panv + 8) * ls + panv; }
+  W = Math.ceil(Math.max(W, 40)); H = Math.ceil(Math.max(H, 20));
+
+  // 4) SVG
+  const o = [];
+  o.push(`<svg xmlns="${NS}" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
+  if (!S.transparent) o.push(`<rect width="100%" height="100%" fill="${attr(S.background || 'white')}"/>`);
+  o.push('<defs>');
+  for (const def of Object.values(links)) if (def && def.arrow) o.push(String(def.arrow));
+  for (const v of Object.values(S.mandatoryDefs || {})) o.push(String(v));
+  for (const [k, v] of Object.entries(S.status || {})) o.push(`<g id="s-${sid(k)}">${stripRootId(v.svg)}</g>`);
+  for (const [k, v] of Object.entries(S.bubbles || {})) o.push(`<g id="b-${sid(k)}">${stripRootId(v.svg)}</g>`);
+  const usedTypes = new Set();
+  for (const bom of boms) for (const it of bom.items) { const ic = it.type && icons.get(it.type.toLowerCase()); if (ic) usedTypes.add(ic); }
+  for (const ic of usedTypes) o.push(`<image id="t-${sid(ic.name.toLowerCase())}" width="${h}" height="${h}" x="0" y="0" preserveAspectRatio="xMinYMid meet" href="${attr(ic.icon)}" xlink:href="${attr(ic.icon)}"/>`);
+  o.push('</defs>');
+
+  if (legend) {
+    o.push(`<g id="legend" transform="translate(${gap},${n2(top)}) scale(${ls})">`);
+    o.push(`<rect width="${n2(legend.w + gap)}" height="${n2(legend.h + panv + 8)}" x="0" y="12" fill="none" stroke="gray" stroke-width="1"/>`);
+    o.push(`<g transform="translate(5,${panv + h})">`);
+    for (const c of legend.columns) c.items.forEach((e, i) => {
+      const y = i * (h + panv);
+      if (e.kind === 'type') o.push(`<use ${ref('t-' + sid(e.name.toLowerCase()))} x="${n2(c.x)}" y="${y}"/>`);
+      else if (e.kind === 'status') o.push(`<use ${ref('s-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
+      else if (e.kind === 'link') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(links[e.name], e.name)} stroke-linecap="round"/>`);
+      else if (e.kind === 'bubble') o.push(`<use ${ref('placeholder')} x="${n2(c.x)}" y="${y}"/><use ${ref('b-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
+      o.push(`<text font-family="${FONT}" font-size="12" x="${n2(c.x + iconw + gap)}" y="${y + 15}" fill="black">${escapeXml(e.label)}</text>`);
+    });
+    o.push('</g>');
+    o.push(`<rect x="18" y="10" width="45" height="5" fill="${S.transparent ? 'none' : attr(S.background || 'white')}"/>`);
+    o.push(`<text font-family="${FONT}" font-size="12" x="20" y="16" fill="grey">Légende</text></g>`);
+  }
+
+  // liens hiérarchiques (dessinés en premier pour que les éléments passent au-dessus)
+  o.push('<g id="links">');
+  for (const bom of boms) for (const it of bom.items) {
+    if (it.parentId < 0) continue;
+    const p = bom.items.find(b => b.id === it.parentId);
+    if (!p) continue;
+    const px = n2(p.x + bom.x + h / 2);
+    o.push(`<polyline fill="none" ${lineProps(links.h, 'h')} points="${px},${n2(p.y + bom.y + h)} ${px},${n2(it.y + bom.y + h / 2)} ${n2(it.x + bom.x)},${n2(it.y + bom.y + h / 2)}"/>`);
+  }
+  // liens transverses (implémentation, couverture, alternative…)
+  const labels = [];
+  for (const bom of boms) for (const it of bom.items) for (const r of it.relatives) {
+    if (!has(links, r.linktype)) continue;
+    boms.forEach((tb, tci) => {
+      const t = tb.items.find(x => x.alias === r.relative);
+      if (!t) return;
+      const ci = boms.indexOf(bom);
+      let sx, sy, fx, fy, cs, cf;
+      sy = bom.y + it.y + h / 2; fy = tb.y + t.y + h / 2;
+      if (tci === ci) {
+        sx = bom.x + it.w + gap; fx = tb.x + t.w + gap;
+        cs = (bom.maxw - it.w) * bend + panh; cf = (bom.maxw - t.w) * bend + panh;
+      } else if (tci < ci) {
+        sx = bom.x + it.x - panh / 2; fx = tb.x + t.w + gap;
+        cs = -(sx - fx) / 2; cf = -cs;
+      } else {
+        sx = bom.x + it.w + gap; fx = tb.x + t.x - panh / 2;
+        cs = (fx - sx) / 2; cf = -cs;
+      }
+      const pts = [[sx, sy], [sx + cs, sy], [fx + cf, fy], [fx, fy]];
+      o.push(`<path fill="none" ${lineProps(links[r.linktype], r.linktype)} d="M ${n2(sx)} ${n2(sy)} C ${n2(sx + cs)} ${n2(sy)} ${n2(fx + cf)} ${n2(fy)} ${n2(fx)} ${n2(fy)}"/>`);
+      if (r.label) {
+        const [lx, ly] = bezierPoint(pts, r.pos === 'b' ? 0.18 : r.pos === 'e' ? 0.82 : 0.5);
+        const col = links[r.linktype].Color ?? links[r.linktype].color ?? 'black';
+        labels.push(`<text x="${n2(lx)}" y="${n2(ly - 3)}" text-anchor="middle" font-family="${FONT}" font-size="11" font-style="italic" fill="${attr(col)}" stroke="${S.transparent ? 'white' : attr(S.background || 'white')}" stroke-width="3" stroke-linejoin="round" paint-order="stroke">${escapeXml(r.label)}</text>`);
+      }
+    });
+  }
+  o.push(...labels, '</g>');
+
+  // éléments
+  for (const bom of boms) for (const it of bom.items) {
+    const X = n2(it.x + bom.x), Y = n2(it.y + bom.y);
+    const parts = [];
+    const tx = it.type ? iconw + gap : gap;
+    parts.push(`<rect width="${n2(it.lblw)}" height="${h}" x="${tx}" fill="url(#grad)"/>`);
+    parts.push(`<text font-family="${FONT}" font-size="13" x="${tx}" y="${ty}" fill="black" stroke="white" stroke-width="${it.type ? 0.25 : 1}" paint-order="stroke">${it.lblMarkup}</text>`);
+    let fin;
+    if (it.type) {
+      const ic = icons.get(it.type.toLowerCase());
+      parts.push(`<use ${ref(ic ? 't-' + sid(ic.name.toLowerCase()) : 'undef')} x="0" y="0"/>`);
+      fin = it.lblw + iconw + 2 * gap;
+    } else fin = it.lblw + gap;
+    if (it.effText) {
+      if (it.effText === 'o') parts.push(`<use ${ref('eff')} x="0" y="0"/>`);
+      else parts.push(`<rect width="${n2(it.effw)}" height="${h}" x="${n2(-panh - it.effw)}" fill="url(#grad)"/><text font-family="${FONT}" text-anchor="end" font-size="13" x="${-panh}" y="${ty}" fill="black">${escapeXml(it.effText)}</text>`);
+    }
+    // une bulle peut aussi viser une définition obligatoire, ex. (b:eff), comme dans l'extension
+    for (const b of it.bubbles) {
+      if (has(S.bubbles, b)) parts.push(`<use ${ref('b-' + sid(b))} x="0" y="0"/>`);
+      else if (has(S.mandatoryDefs, b)) parts.push(`<use ${ref(sid(b))} x="0" y="0"/>`);
+    }
+    if (it.revision) {
+      const rv = `<tspan font-weight="bold">${escapeXml(it.revision)}</tspan>`;
+      const fit = measure(rv, 10) > h - 5 ? ` textLength="${h - 5}" lengthAdjust="spacingAndGlyphs"` : '';
+      parts.push(`<rect x="${n2(fin)}" y="1" width="${iconw - 2}" height="${h - 2}" fill="${attr(S.revision?.background || 'dimgrey')}" rx="${n2(h / 5)}"/>`);
+      parts.push(`<text font-family="${FONT}"${fit} dominant-baseline="middle" text-anchor="middle" font-weight="bold" font-size="10" x="${n2(fin + iconw / 2 - 1)}" y="${n2(h / 2 + 1)}" fill="${attr(S.revision?.font || 'white')}">${escapeXml(it.revision)}</text>`);
+      fin += iconw + gap;
+    }
+    if (it.status) {
+      if (has(S.status, it.status)) parts.push(`<use ${ref('s-' + sid(it.status))} x="${n2(fin)}" y="0"/>`);
+      fin += iconw + gap;
+    }
+    const hit = meta ? `<rect class="hit" x="-3" y="-2" width="${n2(fin + 4)}" height="${h + 4}" rx="4"/>` : '';
+    o.push(`<g id="item-${it.line + 1}" transform="translate(${X},${Y})"${meta ? ` data-line="${it.line}"` : ''}>${hit}${parts.join('')}</g>`);
+  }
+  o.push('</svg>');
+  return { svg: o.join('\n'), width: W, height: H };
+}
+
+function renderBlockText(text, baseLine, opts) {
+  const parsed = parseBomText(text, baseLine);
+  const S = effectiveSettings(parsed.params);
+  const out = buildSvg(parsed, S, opts);
+  const count = parsed.boms.reduce((a, b) => a + b.items.length, 0);
+  return { ...out, parsed, S, count, diags: [...parsed.diags, ...validate(parsed, S)] };
+}
+
+/* Nettoyage de sécurité : un document partagé peut injecter du SVG via ${{ }}$ */
+function sanitizeSvg(str) {
+  const d = new DOMParser().parseFromString(str, 'image/svg+xml');
+  if (d.getElementsByTagName('parsererror').length) return null;
+  const root = d.documentElement;
+  root.querySelectorAll('script, foreignObject, iframe, object, embed').forEach(el => el.remove());
+  for (const el of [root, ...root.querySelectorAll('*')]) for (const a of [...el.attributes]) {
+    if (/^on/i.test(a.name) || (/href$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) el.removeAttribute(a.name);
+  }
+  return root;
+}
+function exportableSvg(svgStr) {
+  const root = sanitizeSvg(svgStr);
+  if (!root) throw new Error('SVG invalide : vérifiez les définitions SVG des réglages');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(root);
+}
+
+/* =====================================================================
+   Document : blocs bomarkdown dans un Markdown
+   ===================================================================== */
+const BEGIN_RE = /^\s*(<!--+|`{3,}|~{3,})\s*bomarkdown\b[ \t]*(\S*)/i;
+function findBlocks(text) {
+  const lines = text.split('\n');
+  const blocks = []; let cur = null;
+  lines.forEach((l, i) => {
+    if (!cur) {
+      const m = BEGIN_RE.exec(l);
+      if (m) cur = { kind: m[1][0] === '<' ? 'comment' : 'fence', fence: m[1], header: i, start: i + 1, path: m[2].replace(/-->$/, '') };
+    } else {
+      const end = cur.kind === 'comment' ? /^\s*--+>?\s*$/.test(l) || /^\s*-->/.test(l)
+        : new RegExp('^\\s*' + (cur.fence[0] === '`' ? '`' : '~') + '{' + cur.fence.length + ',}\\s*$').test(l);
+      if (end) { cur.end = i; cur.footer = i; blocks.push(cur); cur = null; }
+    }
+  });
+  if (cur) { cur.end = lines.length; cur.footer = -1; blocks.push(cur); }
+  if (!blocks.length) return { markdown: false, lines, blocks: [{ kind: 'whole', header: -1, start: 0, end: lines.length, footer: -1, path: '' }] };
+  return { markdown: true, lines, blocks };
+}
+function baseName(name) { return (name || 'bom').replace(/^.*[\\/]/, '').replace(/\.[^.]+$/, '') || 'bom'; }
+function blockName(b, i) {
+  if (b.path) return b.path;
+  const base = baseName(docState.name);
+  return info.blocks.length > 1 ? `${base}-${i + 1}` : base;
+}
+function blockText(b) { return info.lines.slice(b.start, b.end).join('\n'); }
+
+/* =====================================================================
+   Interface
+   ===================================================================== */
+const ta = $('#src'), hlCode = $('#hl-code'), hlPre = $('#hl'), gutter = $('#gutter');
+const docState = { name: store.get('docName', 'demo.md'), handle: null, dirty: store.get('docDirty', false) };
+let info = findBlocks('');
+let curLine = 0, curBlock = 0, lastRender = null, lineEls = [], diagByLine = new Map();
+let zoom = store.get('zoom', 1), fitMode = store.get('fit', true);
+
+function toast(msg, err = false) {
+  const t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg;
+  $('#toasts').append(t); setTimeout(() => t.remove(), err ? 4500 : 2600);
+}
+
+/* ---------- Coloration syntaxique ---------- */
+function hlItemArgs(s) {
+  const spans = blockSpans(s);
+  if (!spans.length) return escapeHtml(s);
+  let out = `<span class="t-cm">${escapeHtml(s.slice(0, spans[0].start))}</span>`;
+  spans.forEach((b, k) => {
+    out += `<span class="t-${b.kind}">${escapeHtml(s.slice(b.start, b.end))}</span>`;
+    const next = k + 1 < spans.length ? spans[k + 1].start : s.length;
+    if (next > b.end) out += `<span class="t-cm">${escapeHtml(s.slice(b.end, next))}</span>`;
+  });
+  return out;
+}
+function hlLine(l, kind) {
+  if (kind === 'delim') {
+    const m = /^(\s*(?:<!--+|`{3,}|~{3,})\s*)(bomarkdown)([ \t]*)(\S*)(.*)$/i.exec(l);
+    if (m) return `<span class="t-delim">${escapeHtml(m[1])}</span><span class="t-kw">${m[2]}</span>${m[3]}<span class="t-path">${escapeHtml(m[4])}</span><span class="t-delim">${escapeHtml(m[5])}</span>`;
+    return `<span class="t-delim">${escapeHtml(l)}</span>`;
+  }
+  if (kind === 'param') return `<span class="t-param">${escapeHtml(l)}</span>`;
+  if (kind === 'bom') {
+    const t = l.trim();
+    if (t.startsWith('+newcolumn')) return l.replace(/^(\s*)(\+newcolumn)(\s*)(\d*)(.*)$/, (m, a, b, c, d, e) => `${escapeHtml(a)}<span class="t-kw">${b}</span>${c}<span class="t-num">${d}</span><span class="t-cm">${escapeHtml(e)}</span>`);
+    const m = ITEM_RE.exec(l);
+    if (!m) return l ? `<span class="t-cm">${escapeHtml(l)}</span>` : '';
+    return `<span class="t-plus">${escapeHtml(m[1])}+</span> ${hlItemArgs(m[2])}`;
+  }
+  if (/^#{1,6}\s/.test(l)) return `<span class="t-h">${escapeHtml(l)}</span>`;
+  return `<span class="t-md">${escapeHtml(l)}</span>`;
+}
+function lineKinds() {
+  const k = new Array(info.lines.length).fill(info.markdown ? 'md' : 'bom');
+  for (const b of info.blocks) {
+    if (b.header >= 0) k[b.header] = 'delim';
+    if (b.footer >= 0) k[b.footer] = 'delim';
+    for (let i = b.start; i < b.end; i++) k[i] = 'bom';
+    let f = b.start; while (f < b.end && info.lines[f].trim() === '') f++;
+    if (f < b.end && info.lines[f].trim() === '${{') {
+      for (let i = f; i < b.end; i++) { k[i] = 'param'; if (info.lines[i].trim() === '}}$') break; }
+    }
+  }
+  return k;
+}
+let kinds = [];
+function renderHighlight() {
+  kinds = lineKinds();
+  hlCode.innerHTML = info.lines.map((l, i) => `<div class="ln">${hlLine(l, kinds[i])}</div>`).join('') + '<div class="ln"></div>';
+  lineEls = [...hlCode.children];
+  const nLines = info.lines.length;
+  if (gutter.childElementCount !== nLines) {
+    gutter.innerHTML = Array.from({ length: nLines }, (_, i) => `<div>${i + 1}</div>`).join('');
+    $('.gutter').style.width = Math.max(44, 22 + String(nLines).length * 8) + 'px';
+  }
+  markLines();
+  syncScroll();
+}
+function markLines() {
+  const g = gutter.children;
+  for (let i = 0; i < g.length; i++) {
+    const d = diagByLine.get(i);
+    g[i].className = (i === curLine ? 'cur ' : '') + (d ? d : '');
+    if (lineEls[i]) lineEls[i].classList.toggle('cur', i === curLine);
+  }
+}
+function syncScroll() {
+  hlPre.scrollTop = ta.scrollTop; hlPre.scrollLeft = ta.scrollLeft;
+  gutter.style.transform = `translateY(${-ta.scrollTop}px)`;
+}
+ta.addEventListener('scroll', () => { syncScroll(); acClose(); });
+
+/* ---------- Mise à jour générale ---------- */
+const persistDoc = debounce(() => { store.set('doc', ta.value); store.set('docName', docState.name); store.set('docDirty', docState.dirty); }, 300);
+const schedulePreview = debounce(() => renderPreview(), 140);
+function onTextChange() {
+  info = findBlocks(ta.value);
+  renderHighlight();
+  updateCursor(true);
+  setDirty(true);
+  persistDoc();
+  schedulePreview();
+}
+function setDirty(v) {
+  docState.dirty = v;
+  $('#docname').classList.toggle('dirty', v);
+  $('#st-save').textContent = docState.handle ? (v ? 'Modifié · non enregistré sur le disque' : 'Enregistré sur le disque') : 'Sauvegarde automatique dans le navigateur';
+}
+function setDocName(name) {
+  docState.name = name;
+  $('#docname-text').textContent = name;
+  document.title = name + ' · BoMarkdown Studio';
+}
+ta.addEventListener('input', e => {
+  onTextChange();
+  if (e.inputType && e.inputType.startsWith('insert')) acUpdate(false);
+  else if (ac.open) acUpdate(false);
+});
+
+function lineOfPos(pos) { let n = 0; const v = ta.value; for (let i = v.indexOf('\n'); i !== -1 && i < pos; i = v.indexOf('\n', i + 1)) n++; return n; }
+function posOfLine(line) { let p = 0; for (let i = 0; i < line; i++) { const k = ta.value.indexOf('\n', p); if (k < 0) return ta.value.length; p = k + 1; } return p; }
+function blockIndexOfLine(line) {
+  let best = 0;
+  info.blocks.forEach((b, i) => { if (line >= (b.header >= 0 ? b.header : b.start)) best = i; });
+  return best;
+}
+function updateCursor(force = false) {
+  const pos = ta.selectionStart;
+  const line = lineOfPos(pos);
+  const col = pos - posOfLine(line);
+  $('#st-pos').textContent = `Ln ${line + 1}, Col ${col + 1}`;
+  if (line !== curLine || force) { curLine = line; markLines(); highlightActiveItem(); }
+  const bi = blockIndexOfLine(line);
+  if (bi !== curBlock) { curBlock = bi; updateBlockSelect(); renderPreview(); }
+}
+document.addEventListener('selectionchange', () => { if (document.activeElement === ta) updateCursor(); });
+ta.addEventListener('click', () => { updateCursor(); acClose(); });
+
+function updateBlockSelect() {
+  const sel = $('#blocksel');
+  sel.innerHTML = info.blocks.map((b, i) => `<option value="${i}">${escapeHtml(blockName(b, i))}${info.markdown ? ` · l.${b.start + 1}` : ''}</option>`).join('');
+  sel.value = String(Math.min(curBlock, info.blocks.length - 1));
+  sel.hidden = !info.markdown;
+  $('#mode-hint').textContent = info.markdown ? `Markdown · ${info.blocks.length} bloc${info.blocks.length > 1 ? 's' : ''} bomarkdown` : 'BoMarkdown seul';
+  $('#st-block').textContent = info.markdown ? `Bloc : ${blockName(info.blocks[curBlock] || info.blocks[0], curBlock)}` : '';
+}
+$('#blocksel').addEventListener('change', e => {
+  const b = info.blocks[+e.target.value];
+  gotoLine(b.start, false);
+});
+
+function gotoLine(line, toArgs = true) {
+  const p = posOfLine(line);
+  let caret = p;
+  if (toArgs) { const m = ITEM_RE.exec(info.lines[line] || ''); if (m) caret = p + m[1].length + 2; }
+  ta.focus();
+  ta.setSelectionRange(caret, caret);
+  const top = line * 20, vis = ta.clientHeight;
+  if (top < ta.scrollTop + 20 || top > ta.scrollTop + vis - 60) ta.scrollTop = Math.max(0, top - vis / 3);
+  updateCursor(true);
+}
+
+/* ---------- Aperçu ---------- */
+const sheet = $('#sheet'), preview = $('#preview');
+function renderPreview() {
+  if (!info.blocks.length) return;
+  curBlock = Math.min(curBlock, info.blocks.length - 1);
+  const b = info.blocks[curBlock];
+  let r;
+  try { r = renderBlockText(blockText(b), b.start, { meta: true }); }
+  catch (e) { console.error(e); showEmpty('Erreur de rendu : ' + e.message); return; }
+  lastRender = r;
+  diagByLine = new Map();
+  for (const d of r.diags) { const lv = d.level === 'error' ? 'error' : 'warn'; if (diagByLine.get(d.line) !== 'error') diagByLine.set(d.line, lv); }
+  markLines();
+  renderProblems(r.diags);
+  $('#st-items').textContent = `${r.count} élément${r.count > 1 ? 's' : ''}`;
+  if (!r.count) {
+    showEmpty(info.markdown
+      ? 'Ce bloc ne contient aucun élément. Ajoutez une ligne <b>+ (i:assembly,Mon produit)</b>.'
+      : 'Commencez à écrire, par exemple :<br><b>+ (i:assembly,Mon produit,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Pièce 1)</b>');
+    return;
+  }
+  const root = sanitizeSvg(r.svg);
+  if (!root) { showEmpty('SVG invalide : une définition SVG des réglages ou du bloc ${{ }}$ est mal formée.'); return; }
+  sheet.replaceChildren(document.importNode(root, true));
+  sheet.classList.toggle('transparent', !!r.S.transparent);
+  sheet.hidden = false; $('#stage .empty-state')?.remove();
+  applyZoom();
+  highlightActiveItem();
+}
+function showEmpty(html) {
+  sheet.hidden = true; sheet.replaceChildren();
+  let e = $('#stage .empty-state');
+  if (!e) { e = document.createElement('div'); e.className = 'empty-state'; $('#stage').append(e); }
+  e.innerHTML = html;
+}
+function highlightActiveItem() {
+  sheet.querySelectorAll('g.active').forEach(g => g.classList.remove('active'));
+  const g = sheet.querySelector(`g[data-line="${curLine}"]`);
+  if (g) g.classList.add('active');
+}
+function renderProblems(diags) {
+  const list = $('#problems-list'); const cnt = $('#prob-count');
+  cnt.textContent = diags.length; cnt.classList.toggle('has', diags.length > 0);
+  if (!diags.length) { list.innerHTML = '<div class="ok-msg">Aucun problème détecté.</div>'; return; }
+  list.innerHTML = diags.sort((a, b) => a.line - b.line).map(d =>
+    `<div class="prob" data-line="${d.line}"><i class="lv ${d.level}"></i><span class="ln">l.${d.line + 1}</span><span>${escapeHtml(d.msg)}</span></div>`).join('');
+}
+$('#problems-list').addEventListener('click', e => { const p = e.target.closest('.prob'); if (p) gotoLine(+p.dataset.line); });
+$('#problems-head').addEventListener('click', () => { const p = $('#problems'); p.classList.toggle('collapsed'); store.set('probCollapsed', p.classList.contains('collapsed')); });
+if (store.get('probCollapsed', false)) $('#problems').classList.add('collapsed');
+
+/* zoom & déplacement */
+function applyZoom() {
+  const svg = sheet.querySelector('svg'); if (!svg || !lastRender) return;
+  if (fitMode) {
+    const aw = preview.clientWidth - 56, ah = preview.clientHeight - 56;
+    zoom = Math.max(0.1, Math.min(1.5, aw / lastRender.width, ah / lastRender.height));
+  }
+  svg.style.width = n2(lastRender.width * zoom) + 'px';
+  svg.style.height = n2(lastRender.height * zoom) + 'px';
+  $('#zoom-pct').textContent = Math.round(zoom * 100) + ' %';
+  $('#zoom-fit').classList.toggle('primary', fitMode);
+}
+function setZoom(z, fit = false) { fitMode = fit; zoom = Math.max(0.1, Math.min(8, z)); store.set('zoom', zoom); store.set('fit', fitMode); applyZoom(); }
+$('#zoom-in').onclick = () => setZoom(zoom * 1.2);
+$('#zoom-out').onclick = () => setZoom(zoom / 1.2);
+$('#zoom-pct').onclick = () => setZoom(1);
+$('#zoom-fit').onclick = () => setZoom(zoom, !fitMode);
+new ResizeObserver(() => { if (fitMode) applyZoom(); }).observe(preview);
+preview.addEventListener('wheel', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault(); setZoom(zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+}, { passive: false });
+let drag = null;
+preview.addEventListener('pointerdown', e => {
+  if (e.button !== 0 && e.button !== 1) return;
+  drag = { x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
+});
+preview.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) > 4) { drag.moved = true; preview.setPointerCapture(drag.id); preview.classList.add('panning'); }
+  if (drag.moved) { preview.scrollLeft = drag.sl - dx; preview.scrollTop = drag.st - dy; }
+});
+preview.addEventListener('pointerup', e => {
+  if (drag && !drag.moved) { const g = e.target.closest?.('g[data-line]'); if (g) gotoLine(+g.dataset.line); }
+  drag = null; preview.classList.remove('panning');
+});
+preview.addEventListener('pointercancel', () => { drag = null; preview.classList.remove('panning'); });
+
+/* séparateur redimensionnable */
+(() => {
+  const sp = $('#splitter'), main = $('#main');
+  const saved = store.get('split', null); if (saved) main.style.setProperty('--split', saved + '%');
+  sp.addEventListener('pointerdown', e => {
+    sp.setPointerCapture(e.pointerId); sp.classList.add('drag');
+    const move = ev => {
+      const r = main.getBoundingClientRect();
+      const pct = Math.min(80, Math.max(20, (ev.clientX - r.left) / r.width * 100));
+      main.style.setProperty('--split', pct + '%'); store.set('split', n2(pct));
+    };
+    const up = () => { sp.classList.remove('drag'); sp.removeEventListener('pointermove', move); sp.removeEventListener('pointerup', up); };
+    sp.addEventListener('pointermove', move); sp.addEventListener('pointerup', up);
+  });
+})();
+
+/* ---------- Édition : insertion compatible annuler/rétablir ---------- */
+function insertText(text, from = ta.selectionStart, to = ta.selectionEnd) {
+  ta.focus();
+  ta.setSelectionRange(from, to);
+  let ok = false;
+  try { ok = document.execCommand('insertText', false, text); } catch { ok = false; }
+  if (!ok) { ta.setRangeText(text, from, to, 'end'); ta.dispatchEvent(new Event('input')); }
+}
+function replaceAll(text) { insertText(text, 0, ta.value.length); }
+
+function shiftLines(dir) {
+  const v = ta.value; const s = ta.selectionStart, e = ta.selectionEnd;
+  const ls = v.lastIndexOf('\n', s - 1) + 1;
+  let le = v.indexOf('\n', e === s ? e : e - 1); if (le < 0) le = v.length;
+  const lines = v.slice(ls, le).split('\n');
+  let d0 = 0, dAll = 0;
+  const out = lines.map((l, i) => {
+    if (dir > 0) { if (i === 0) d0 = 1; dAll += 1; return ' ' + l; }
+    const r = l.match(/^[ \t]/) ? 1 : 0; if (i === 0) d0 = -r; dAll -= r; return l.slice(r);
+  }).join('\n');
+  insertText(out, ls, le);
+  ta.setSelectionRange(Math.max(ls, s + d0), Math.max(ls, e + dAll));
+}
+
+/* ---------- Autocomplétion (remplace les snippets de l'extension) ---------- */
+const ac = { el: $('#ac'), items: [], idx: 0, from: 0, open: false };
+/* les pastilles viennent des réglages (SVG libre) : on les nettoie avant de les injecter */
+function safeSvgHtml(str) { const r = sanitizeSvg(str); return r ? new XMLSerializer().serializeToString(r) : ''; }
+function swatchSvg(inner, vb = '0 0 20 20', cls = '') { return safeSvgHtml(`<svg xmlns="${NS}" viewBox="${vb}"${cls ? ` class="${cls}"` : ''}>${inner}</svg>`); }
+function iconImg(ic) { return `<img alt="" src="${attr(ic.icon)}">`; }
+function statusSwatch(k) { return swatchSvg(stripRootId(settings.status[k]?.svg || '')); }
+function bubbleSwatch(k) { return swatchSvg(stripRootId(settings.mandatoryDefs.placeholder || '') + stripRootId(settings.bubbles[k]?.svg || ''), '-8 -8 36 36'); }
+function linkSwatch(k) {
+  const d = settings.links[k] || {};
+  return swatchSvg(`<defs>${d.arrow || ''}</defs><line x1="1" y1="10" x2="17" y2="10" ${lineProps(d, k)} stroke-linecap="round"/>`);
+}
+function currentAliases() {
+  const b = info.blocks[curBlock]; if (!b) return [];
+  const p = parseBomText(blockText(b), b.start);
+  return p.boms.flatMap(bm => bm.items).filter(i => i.alias).map(i => ({ alias: i.alias, label: i.label }));
+}
+function acContext() {
+  if (ta.selectionStart !== ta.selectionEnd) return null;
+  const pos = ta.selectionStart, v = ta.value;
+  const ls = v.lastIndexOf('\n', pos - 1) + 1; const before = v.slice(ls, pos);
+  const line = lineOfPos(pos);
+  if (kinds[line] !== 'bom') return null;
+  let m; const q = s => s.toLowerCase();
+  if ((m = /^\s*(\+n[a-z]*)$/.exec(before))) return { from: pos - m[1].length, q: '', items: [{ label: '+newcolumn', detail: 'nouvelle colonne', insert: '+newcolumn ' }] };
+  if ((m = /\(i:([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: [...iconMap().values()].map(ic => ({ label: ic.name, detail: ic.label || '', icon: iconImg(ic), insert: ic.name + ',' })) };
+  if ((m = /\(s:([^()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.status).map(([k, v]) => ({ label: k, detail: v.label, icon: statusSwatch(k), insert: k + ')' })) };
+  if ((m = /\(b:(?:[^,()]*,)*([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.bubbles).map(([k, v]) => ({ label: k, detail: v.label, icon: bubbleSwatch(k), insert: k })) };
+  if ((m = /\(l:[^:()]*:(?:[^,()]*,)*([^,()!]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: currentAliases().map(a => ({ label: a.alias, detail: a.label, insert: a.alias })) };
+  if ((m = /\(l:([^:()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => ({ label: k, detail: v.label, icon: linkSwatch(k), insert: k + ':' })) };
+  if ((m = /\(e:$/.exec(before))) return { from: pos, q: '', items: [{ label: 'o', detail: 'pastille d\'effectivité', insert: 'o)' }, { label: '[A -> B[', detail: 'plage', insert: '[A -> B[)' }, { label: '[A -> #oo[', detail: 'plage ouverte (∞)', insert: '[A -> #oo[)' }] };
+  if ((m = /^[ \t\-+]*?\+ .*\(([a-z]?)$/.exec(before))) return {
+    from: pos - m[1].length, q: q(m[1]), items: [
+      ['i', 'type, libellé, révision'], ['s', 'statut'], ['a', 'alias'], ['l', 'lien transverse'], ['b', 'bulles'], ['e', 'effectivité']].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
+  };
+  return null;
+}
+function acUpdate(force) {
+  const c = acContext();
+  if (!c) return acClose();
+  let items = c.items;
+  if (c.q) items = items.filter(i => (i.key || i.label).toLowerCase().includes(c.q)).sort((a, b) => ((b.key || b.label).toLowerCase().startsWith(c.q)) - ((a.key || a.label).toLowerCase().startsWith(c.q)));
+  // on ferme si la seule proposition n'ajouterait rien à ce qui est déjà tapé
+  if (!items.length || (!force && items.length === 1 && c.q && items[0].insert.toLowerCase() === c.q)) return acClose();
+  ac.items = items.slice(0, 60); ac.idx = 0; ac.from = c.from; ac.open = true;
+  ac.el.innerHTML = ac.items.map((it, i) => `<div class="ac-item${i ? '' : ' sel'}" data-i="${i}" role="option"><span class="ico">${it.icon || ''}</span><b>${escapeHtml(it.label)}</b><small>${escapeHtml(it.detail || '')}</small></div>`).join('')
+    + '<div class="ac-hint">↑↓ choisir · Entrée/Tab valider · Échap fermer</div>';
+  ac.el.hidden = false;
+  // position du curseur (police à chasse fixe, pas de retour à la ligne automatique)
+  const line = lineOfPos(ta.selectionStart); const col = ta.selectionStart - posOfLine(line);
+  const cw = charWidth(); const er = $('#editor').getBoundingClientRect(); const cr = ta.getBoundingClientRect();
+  let left = cr.left - er.left + 14 + col * cw - ta.scrollLeft;
+  let top = cr.top - er.top + 10 + (line + 1) * 20 - ta.scrollTop + 2;
+  left = Math.min(left, er.width - 240);
+  if (top + 200 > er.height) top = top - 20 - Math.min(260, ac.el.offsetHeight || 200) - 4;
+  ac.el.style.left = Math.max(4, left) + 'px'; ac.el.style.top = Math.max(4, top) + 'px';
+}
+let _cw = 0;
+function charWidth() {
+  if (_cw) return _cw;
+  const s = document.createElement('span'); s.textContent = 'M'.repeat(100); s.style.cssText = 'position:absolute;visibility:hidden;white-space:pre';
+  hlCode.append(s); _cw = s.getBoundingClientRect().width / 100; s.remove(); return _cw || 8;
+}
+function acClose() { ac.open = false; ac.el.hidden = true; }
+function acSelect(i) {
+  ac.idx = (i + ac.items.length) % ac.items.length;
+  $$('.ac-item', ac.el).forEach((el, k) => el.classList.toggle('sel', k === ac.idx));
+  ac.el.querySelector('.ac-item.sel')?.scrollIntoView({ block: 'nearest' });
+}
+function acAccept() {
+  const it = ac.items[ac.idx]; if (!it) return;
+  acClose();
+  insertText(it.insert, ac.from, ta.selectionStart);
+  if (/[:(,]$/.test(it.insert) || it.insert.endsWith('+newcolumn ')) setTimeout(() => acUpdate(false), 0);
+}
+ac.el.addEventListener('mousedown', e => { const d = e.target.closest('.ac-item'); if (d) { e.preventDefault(); ac.idx = +d.dataset.i; acAccept(); } });
+
+ta.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (ac.open) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); return acSelect(ac.idx + 1); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); return acSelect(ac.idx - 1); }
+    if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); return acAccept(); }
+    if (e.key === 'Escape') { e.preventDefault(); return acClose(); }
+  }
+  if (mod && e.key === ' ') { e.preventDefault(); return acUpdate(true); }
+  if (e.key === 'Tab' && !mod && !e.altKey) { e.preventDefault(); return shiftLines(e.shiftKey ? -1 : 1); }
+  if (e.key === 'Enter' && !mod && !e.shiftKey && !e.altKey && ta.selectionStart === ta.selectionEnd) {
+    const pos = ta.selectionStart; const line = lineOfPos(pos);
+    if (kinds[line] !== 'bom') return;
+    const ls = posOfLine(line); const text = info.lines[line];
+    const m = ITEM_RE.exec(text);
+    if (!m || pos - ls < m[1].length + 2) return;
+    e.preventDefault();
+    if (!m[2].trim()) return insertText('', ls, ls + text.length); // ligne vide : on sort de la liste
+    insertText('\n' + m[1].replace(/[^ \t]/g, ' ') + '+ ');
+  }
+});
+
+/* ---------- Fichiers ---------- */
+function download(name, data, type) {
+  const blob = data instanceof Blob ? data : new Blob([data], { type });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function loadText(text, name, handle = null) {
+  text = text.replace(/\r\n?/g, '\n');
+  ta.value = text; ta.scrollTop = 0; ta.scrollLeft = 0;
+  docState.handle = handle; setDocName(name);
+  info = findBlocks(text); curBlock = 0; curLine = -1;
+  ta.setSelectionRange(0, 0);
+  renderHighlight(); updateBlockSelect(); updateCursor(true);
+  if (info.markdown) { const b = info.blocks[0]; curBlock = 0; ta.setSelectionRange(posOfLine(b.start), posOfLine(b.start)); updateCursor(true); }
+  setDirty(false); persistDoc(); renderPreview();
+}
+async function openFile() {
+  if (window.showOpenFilePicker) {
+    try {
+      const [h] = await showOpenFilePicker({ types: [{ description: 'Markdown / BoMarkdown', accept: { 'text/markdown': ['.md', '.markdown', '.bmd', '.bom', '.txt'] } }] });
+      const f = await h.getFile(); loadText(await f.text(), f.name, h); toast('Ouvert : ' + f.name);
+    } catch (e) { if (e.name !== 'AbortError') toast(e.message, true); }
+  } else $('#file-open').click();
+}
+$('#file-open').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { loadText(await f.text(), f.name); toast('Ouvert : ' + f.name); } e.target.value = ''; });
+async function saveFile(saveAs = false) {
+  try {
+    if (!saveAs && docState.handle) {
+      const w = await docState.handle.createWritable(); await w.write(ta.value); await w.close();
+      setDirty(false); toast('Enregistré : ' + docState.name); return;
+    }
+    if (window.showSaveFilePicker) {
+      const h = await showSaveFilePicker({ suggestedName: docState.name, types: [{ description: 'Markdown / BoMarkdown', accept: { 'text/markdown': ['.md', '.bmd', '.txt'] } }] });
+      const w = await h.createWritable(); await w.write(ta.value); await w.close();
+      docState.handle = h; setDocName(h.name); setDirty(false); persistDoc(); toast('Enregistré : ' + h.name); return;
+    }
+    download(docState.name, ta.value, 'text/markdown;charset=utf-8'); setDirty(false); persistDoc();
+  } catch (e) { if (e.name !== 'AbortError') toast(e.message, true); }
+}
+$('#btn-open').onclick = openFile;
+$('#btn-save').onclick = () => saveFile(false);
+$('#btn-new').onclick = () => {
+  loadText('+ (i:assembly,Mon produit,A)(s:IW)\n + (i:component,Composant 1,A)(s:R)\n + (i:component,Composant 2,B)(s:F)\n', 'nouveau.bmd');
+  gotoLine(0);
+};
+
+/* glisser-déposer d'un fichier texte */
+(() => {
+  let depth = 0; const ov = $('#drop-overlay');
+  const isFile = e => [...(e.dataTransfer?.types || [])].includes('Files');
+  window.addEventListener('dragenter', e => { if (!isFile(e) || $('#dlg-icons').open) return; depth++; ov.classList.add('show'); });
+  window.addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; ov.classList.remove('show'); } });
+  window.addEventListener('dragover', e => { if (isFile(e)) e.preventDefault(); });
+  window.addEventListener('drop', async e => {
+    if (!isFile(e)) return; e.preventDefault(); depth = 0; ov.classList.remove('show');
+    if ($('#dlg-icons').open) return;
+    const f = e.dataTransfer.files[0]; if (!f) return;
+    if (f.type.startsWith('image/')) { $('#btn-icons').click(); addIconFiles([...e.dataTransfer.files]); return; }
+    loadText(await f.text(), f.name); toast('Ouvert : ' + f.name);
+  });
+})();
+
+/* ---------- Exports ---------- */
+function currentSvg() {
+  const b = info.blocks[curBlock];
+  const r = renderBlockText(blockText(b), b.start, { meta: false });
+  if (!r.count) throw new Error('Le bloc courant est vide');
+  return { name: blockName(b, curBlock), svg: exportableSvg(r.svg), w: r.width, h: r.height };
+}
+function svgToPng(svg, w, h, scale = 2) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = Math.ceil(w * scale); c.height = Math.ceil(h * scale);
+      const ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, w, h);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('Conversion PNG impossible')), 'image/png');
+    };
+    img.onerror = () => reject(new Error('Conversion PNG impossible'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+function cleanPath(p) { return p.replace(/\\/g, '/').split('/').filter(s => s && s !== '.' && s !== '..').join('/') || 'bom'; }
+function allSvgs() {
+  return info.blocks.map((b, i) => {
+    const r = renderBlockText(blockText(b), b.start, { meta: false });
+    return r.count ? { name: cleanPath(blockName(b, i)) + '.svg', data: exportableSvg(r.svg) } : null;
+  }).filter(Boolean);
+}
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(files) {
+  const enc = new TextEncoder(); const parts = [], central = []; let offset = 0;
+  const d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for (const f of files) {
+    const name = enc.encode(f.name); const data = typeof f.data === 'string' ? enc.encode(f.data) : f.data; const crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    [[0, 0x04034b50, 4], [4, 20, 2], [6, 0x0800, 2], [8, 0, 2], [10, time, 2], [12, date, 2], [14, crc, 4], [18, data.length, 4], [22, data.length, 4], [26, name.length, 2], [28, 0, 2]]
+      .forEach(([o, v, s]) => s === 4 ? lh.setUint32(o, v, true) : lh.setUint16(o, v, true));
+    parts.push(lh.buffer, name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    [[0, 0x02014b50, 4], [4, 20, 2], [6, 20, 2], [8, 0x0800, 2], [10, 0, 2], [12, time, 2], [14, date, 2], [16, crc, 4], [20, data.length, 4], [24, data.length, 4], [28, name.length, 2], [30, 0, 2], [32, 0, 2], [34, 0, 2], [36, 0, 2], [38, 0, 4], [42, offset, 4]]
+      .forEach(([o, v, s]) => s === 4 ? ch.setUint32(o, v, true) : ch.setUint16(o, v, true));
+    central.push(ch.buffer, name);
+    offset += 30 + name.length + data.length;
+  }
+  const size = central.reduce((a, c) => a + c.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, size, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+}
+function insertImageLinks() {
+  if (!info.markdown) { toast('Fonction réservée aux documents Markdown contenant des blocs bomarkdown', true); return 0; }
+  const lines = [...info.lines]; let added = 0;
+  for (let i = info.blocks.length - 1; i >= 0; i--) {
+    const b = info.blocks[i]; if (b.footer < 0) continue;
+    const name = blockName(b, i);
+    const md = `![${name}](${name}.svg "${name}")`;
+    if (ta.value.includes(md)) continue;
+    lines.splice(b.footer + 1, 0, md); added++;
+  }
+  if (added) { const pos = ta.selectionStart; replaceAll(lines.join('\n')); ta.setSelectionRange(pos, pos); updateCursor(true); }
+  return added;
+}
+const actions = {
+  'export-svg': () => { const s = currentSvg(); download(baseName(s.name) + '.svg', s.svg, 'image/svg+xml'); toast(`SVG exporté : ${baseName(s.name)}.svg`); },
+  'export-png': async () => { const s = currentSvg(); download(baseName(s.name) + '.png', await svgToPng(s.svg, s.w, s.h), 'image/png'); toast(`PNG exporté : ${baseName(s.name)}.png`); },
+  'copy-svg': async () => { const s = currentSvg(); await navigator.clipboard.writeText(s.svg); toast('SVG copié dans le presse-papiers'); },
+  'export-zip': () => { const f = allSvgs(); if (!f.length) throw new Error('Aucun bloc à exporter'); download(baseName(docState.name) + '-svg.zip', makeZip(f)); toast(`${f.length} SVG exporté(s) en ZIP`); },
+  'export-folder': async () => {
+    const f = allSvgs(); if (!f.length) throw new Error('Aucun bloc à exporter');
+    if (!window.showDirectoryPicker) { actions['export-zip'](); toast('Navigateur sans accès aux dossiers : export ZIP à la place'); return; }
+    let dir; try { dir = await showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { if (e.name === 'AbortError') return; throw e; }
+    for (const file of f) {
+      const segs = file.name.split('/'); let d = dir;
+      for (const s of segs.slice(0, -1)) d = await d.getDirectoryHandle(s, { create: true });
+      const w = await (await d.getFileHandle(segs.at(-1), { create: true })).createWritable(); await w.write(file.data); await w.close();
+    }
+    toast(`${f.length} SVG écrit(s) dans « ${dir.name} »`);
+  },
+  'insert-links': () => { const n = insertImageLinks(); if (info.markdown) toast(n ? `${n} lien(s) image inséré(s)` : 'Tous les liens image sont déjà présents'); },
+};
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  b.closest('details')?.removeAttribute('open');
+  try { await actions[b.dataset.act](); } catch (err) { toast(err.message, true); }
+});
+
+/* ---------- Menus ---------- */
+document.addEventListener('click', e => { $$('details.menu[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); }); });
+const EXAMPLES = $$('script[type="text/x-bomarkdown"]').map(s => ({ name: s.dataset.name, file: s.dataset.file, text: s.textContent.replace(/^\n/, '') }));
+$('#examples-list').innerHTML = EXAMPLES.map((x, i) => `<button data-ex="${i}">${escapeHtml(x.name)}<small style="margin-left:auto">${escapeHtml(x.file)}</small></button>${i === 0 ? '<hr>' : ''}`).join('');
+$('#examples-list').addEventListener('click', e => {
+  const b = e.target.closest('[data-ex]'); if (!b) return;
+  const x = EXAMPLES[+b.dataset.ex]; $('#menu-examples').removeAttribute('open');
+  loadText(x.text, x.file); setZoom(zoom, true);
+});
+
+/* ---------- Thème ---------- */
+const THEMES = ['auto', 'light', 'dark'];
+const THEME_ICO = {
+  auto: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>',
+  light: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  dark: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+};
+function applyTheme(t) {
+  if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  $('#theme-ico').innerHTML = THEME_ICO[t];
+  $('#btn-theme').title = 'Thème : ' + { auto: 'automatique', light: 'clair', dark: 'sombre' }[t];
+  store.set('theme', t);
+}
+let theme = store.get('theme', 'auto'); applyTheme(theme);
+$('#btn-theme').onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; applyTheme(theme); };
+
+/* ---------- Dialogues ---------- */
+$$('dialog [data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+$$('dialog.modal').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+$('#btn-help').onclick = () => $('#dlg-help').showModal();
+
+/* JSON avec commentaires (settings.json de VS Code) */
+function parseJsonc(src) {
+  let out = '', i = 0, str = false;
+  while (i < src.length) {
+    const c = src[i], c2 = src[i + 1];
+    if (str) { out += c; if (c === '\\') { out += c2 ?? ''; i += 2; continue; } if (c === '"') str = false; i++; continue; }
+    if (c === '"') { str = true; out += c; i++; continue; }
+    if (c === '/' && c2 === '/') { while (i < src.length && src[i] !== '\n') i++; continue; }
+    if (c === '/' && c2 === '*') { i = src.indexOf('*/', i + 2); i = i < 0 ? src.length : i + 2; continue; }
+    out += c; i++;
+  }
+  return JSON.parse(out.replace(/,(\s*[}\]])/g, '$1'));
+}
+function readJsonFile() {
+  return new Promise(resolve => {
+    const inp = $('#file-json');
+    inp.onchange = async () => { const f = inp.files[0]; inp.value = ''; if (!f) return resolve(null); try { resolve({ name: f.name, data: parseJsonc(await f.text()) }); } catch (e) { toast('JSON invalide : ' + e.message, true); resolve(null); } };
+    inp.click();
+  });
+}
+
+/* Réglages */
+function cssColorToHex(c) {
+  const cv = document.createElement('canvas').getContext('2d'); cv.fillStyle = '#000'; cv.fillStyle = c; const v = cv.fillStyle;
+  return /^#[0-9a-f]{6}$/i.test(v) ? v : '#000000';
+}
+function fillSettingsForm(s) {
+  for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) $('#s-' + k).value = s[k];
+  $('#s-legend').checked = s.renderlegend !== false;
+  $('#s-transparent').checked = !!s.transparent;
+  $('#s-revbg').value = s.revision.background; $('#s-revfont').value = s.revision.font; $('#s-bg').value = s.background;
+  $$('#dlg-settings input[type=color]').forEach(c => { c.value = cssColorToHex($('#' + c.dataset.for).value); });
+  $('#s-json').value = JSON.stringify(Object.fromEntries(ADVANCED_KEYS.map(k => [k, s[k]])), null, 2);
+  $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = '';
+}
+function readSettingsForm() {
+  let adv;
+  try { adv = JSON.parse($('#s-json').value); } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = 'JSON invalide : ' + e.message; return null; }
+  const s = normalizeSettings({ ...settings, ...adv });
+  for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) { const v = parseFloat($('#s-' + k).value); if (Number.isFinite(v)) s[k] = v; }
+  s.renderlegend = $('#s-legend').checked; s.transparent = $('#s-transparent').checked;
+  s.revision = { background: $('#s-revbg').value || 'dimgrey', font: $('#s-revfont').value || 'white' };
+  s.background = $('#s-bg').value || '#ffffff';
+  return s;
+}
+$$('#dlg-settings input[type=color]').forEach(c => c.addEventListener('input', () => { $('#' + c.dataset.for).value = c.value; }));
+$('#s-json').addEventListener('input', () => { try { JSON.parse($('#s-json').value); $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = ''; } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = e.message; } });
+$('#btn-settings').onclick = () => { fillSettingsForm(settings); $('#dlg-settings').showModal(); };
+$('#s-apply').onclick = () => {
+  const s = readSettingsForm(); if (!s) return;
+  settings = s; store.set('settings', settings); $('#dlg-settings').close(); renderPreview(); toast('Réglages appliqués');
+};
+$('#s-reset').onclick = () => { fillSettingsForm(clone(DEFAULT_SETTINGS)); toast('Valeurs par défaut chargées : cliquez sur Appliquer'); };
+$('#s-export').onclick = () => { const s = readSettingsForm(); if (s) download('bomarkdown-settings.json', JSON.stringify(s, null, 2), 'application/json'); };
+$('#s-import').onclick = async () => { const r = await readJsonFile(); if (!r) return; fillSettingsForm(normalizeSettings({ ...settings, ...r.data })); toast('Réglages importés depuis ' + r.name + ' : cliquez sur Appliquer'); };
+
+/* Icônes */
+function renderIconGrid() {
+  const f = $('#icon-filter').value.trim().toLowerCase();
+  const all = [...iconMap().values()].filter(i => !f || i.name.toLowerCase().includes(f) || (i.label || '').toLowerCase().includes(f)).sort((a, b) => a.name.localeCompare(b.name));
+  $('#icon-grid').innerHTML = all.map(i => `
+    <div class="icon-card" data-name="${attr(i.name)}">
+      <img alt="" src="${attr(i.icon)}">
+      <div class="meta"><div class="nm" title="${attr(i.name)}">${escapeHtml(i.name)}</div>
+        <input value="${attr(i.label || '')}" placeholder="Libellé de légende" data-label title="Libellé affiché dans la légende"></div>
+      <span class="badge ${i.source === 'user' ? 'user' : ''}">${i.source === 'user' ? 'perso' : 'défaut'}</span>
+      ${i.source === 'user' ? '<button class="btn icon danger" data-del title="Supprimer"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>' : ''}
+    </div>`).join('') || '<p class="hint">Aucune icône.</p>';
+}
+/* comme la commande AddIcons : un fichier de même nom ne met à jour que l'image (le libellé est conservé) */
+function upsertUserIcon(icon, keepLabel = true) {
+  const { source, ...clean } = icon;
+  const k = userIcons.findIndex(u => u.name.toLowerCase() === clean.name.toLowerCase());
+  if (k >= 0) userIcons[k] = { ...userIcons[k], ...clean, label: keepLabel ? (userIcons[k].label || clean.label) : clean.label };
+  else userIcons.push(clean);
+}
+$('#icon-grid').addEventListener('change', e => {
+  if (!e.target.matches('[data-label]')) return;
+  const name = e.target.closest('.icon-card').dataset.name; const label = e.target.value.trim();
+  const ex = iconMap().get(name.toLowerCase());
+  upsertUserIcon({ ...ex, label }, false);
+  saveIcons(); renderIconGrid(); renderPreview();
+});
+$('#icon-grid').addEventListener('click', e => {
+  if (!e.target.closest('[data-del]')) return;
+  const name = e.target.closest('.icon-card').dataset.name;
+  userIcons = userIcons.filter(u => u.name !== name); saveIcons(); renderIconGrid(); renderPreview(); toast(`Icône « ${name} » supprimée`);
+});
+$('#icon-filter').addEventListener('input', renderIconGrid);
+$('#btn-icons').onclick = () => { renderIconGrid(); if (!$('#dlg-icons').open) $('#dlg-icons').showModal(); };
+function fileToIcon(file) {
+  return new Promise((resolve, reject) => {
+    const base = file.name.replace(/\.[^.]+$/, '');
+    const name = base.toLowerCase().replace(/\s+/g, '');
+    const label = base.charAt(0).toUpperCase() + base.slice(1);
+    const rd = new FileReader();
+    rd.onerror = () => reject(rd.error);
+    rd.onload = () => {
+      const url = rd.result;
+      if (file.type === 'image/svg+xml') return resolve({ name, label, type: 'svg', filename: file.name, icon: url });
+      const img = new Image();
+      img.onload = () => {
+        const max = 64, s = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
+        const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, c.width, c.height);
+        resolve({ name, label, type: 'png', filename: file.name, icon: c.toDataURL('image/png') });
+      };
+      img.onerror = () => reject(new Error('Image illisible : ' + file.name));
+      img.src = url;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+async function addIconFiles(files) {
+  let n = 0;
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    try { upsertUserIcon(await fileToIcon(f)); n++; } catch (e) { toast(e.message, true); }
+  }
+  if (n) { saveIcons(); renderIconGrid(); renderPreview(); toast(`${n} icône(s) ajoutée(s) ou mise(s) à jour`); }
+}
+const drop = $('#icon-drop');
+drop.onclick = () => $('#file-icons').click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#file-icons').click(); } };
+$('#file-icons').addEventListener('change', e => { addIconFiles([...e.target.files]); e.target.value = ''; });
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); drop.classList.remove('over'); addIconFiles([...e.dataTransfer.files]); });
+$('#dlg-icons').addEventListener('drop', e => e.preventDefault());
+$('#icon-import').onclick = async () => {
+  const r = await readJsonFile(); if (!r) return;
+  const arr = Array.isArray(r.data) ? r.data : [];
+  let n = 0;
+  for (const i of arr) if (i && i.name && typeof i.icon === 'string' && /^data:image\//.test(i.icon)) { upsertUserIcon({ name: String(i.name), label: i.label || '', type: i.type || 'png', filename: i.filename || '', icon: i.icon }); n++; }
+  saveIcons(); renderIconGrid(); renderPreview(); toast(`${n} icône(s) importée(s) depuis ${r.name}`);
+};
+$('#icon-export').onclick = () => {
+  if (!userIcons.length) { toast('Aucune icône personnalisée à exporter', true); return; }
+  download('UserIcons.json', JSON.stringify(userIcons.map(({ source, ...i }) => i), null, 2), 'application/json');
+};
+
+/* Référence (équivalent de la commande « BOM Commands ») */
+function renderReference() {
+  const icons = [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name));
+  const sec = (title, html) => `<h3 class="sec">${title}</h3>${html}`;
+  const grid = items => `<div class="ref-grid">${items.join('')}</div>`;
+  const item = (ins, sw, name, label) => `<button class="ref-item" data-ins="${attr(ins)}" title="Insérer ${attr(ins)}">${sw}<span><b>${escapeHtml(name)}</b><small>${escapeHtml(label || '')}</small></span></button>`;
+  const sw = (inner, vb) => swatchSvg(inner, vb, 'sw');
+  $('#ref-body').innerHTML =
+    `<p class="hint" style="margin-top:0">Cliquez pour insérer à la position du curseur. Tapez aussi <code>(i:</code>, <code>(s:</code>, <code>(b:</code>, <code>(l:</code> dans l'éditeur pour l'autocomplétion.</p>`
+    + sec(`Types d'éléments (${icons.length})`, grid(icons.map(i => item(`(i:${i.name},`, `<img alt="" src="${attr(i.icon)}">`, i.name, i.label))))
+    + sec('Statuts', grid(Object.entries(settings.status).map(([k, v]) => item(`(s:${k})`, sw(stripRootId(v.svg)), k, v.label))))
+    + sec('Bulles', grid(Object.entries(settings.bubbles).map(([k, v]) => item(`(b:${k})`, sw(stripRootId(settings.mandatoryDefs.placeholder) + stripRootId(v.svg), '-8 -8 36 36'), k, v.label))))
+    + sec('Liens', grid(Object.entries(settings.links).map(([k, v]) => item(k === 'h' ? '+ ' : `(l:${k}:`, sw(`<defs>${v.arrow || ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? ' (hiérarchie)' : '')))))
+    + sec('Autres', grid([
+      item('(a:', sw('<text x="10" y="15" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b0599">a</text>'), '(a:alias)', 'Alias'),
+      item('(e:o)', sw(`<g transform="translate(16,0)">${stripRootId(settings.mandatoryDefs.eff)}</g>`), '(e:o)', 'Pastille d\'effectivité'),
+      item('(e:[A -> B[)', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#795e26">A→B</text>'), '(e:[A -> B[)', 'Plage d\'effectivité'),
+      item('+newcolumn ', sw('<path d="M4 4v12M10 4v12M16 4v12" stroke="#0550ae" stroke-width="1.6"/>'), '+newcolumn', 'Nouvelle colonne'),
+      item('${{\n"haslegend": false\n}}$\n', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#6639ba">{ }</text>'), '${{ }}$', 'Paramètres du bloc'),
+    ]))
+    + sec('Remplacements d\'effectivité', `<table class="help" style="width:100%">${Object.entries(settings.utf8replacement).map(([k, v]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${escapeHtml(decodeEntities(String(v)))}</td></tr>`).join('')}</table>`);
+}
+$('#ref-body').addEventListener('click', e => {
+  const b = e.target.closest('[data-ins]'); if (!b) return;
+  const ins = b.dataset.ins;
+  if (ins === '+ ') { const ls = posOfLine(curLine); insertText(ins, ls, ls); } else insertText(ins);
+  toast('Inséré : ' + ins.split('\n')[0]);
+});
+$('#btn-ref').onclick = () => { const d = $('#drawer'); if (!d.classList.contains('open')) renderReference(); d.classList.toggle('open'); };
+$('#drawer-close').onclick = () => $('#drawer').classList.remove('open');
+
+/* ---------- Raccourcis globaux ---------- */
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); saveFile(e.shiftKey); }
+  else if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); openFile(); }
+  else if (mod && e.shiftKey && e.key.toLowerCase() === 'e') { e.preventDefault(); try { actions['export-svg'](); } catch (err) { toast(err.message, true); } }
+  else if (e.key === 'F1') { e.preventDefault(); $('#dlg-help').showModal(); }
+  else if (e.key === 'Escape' && $('#drawer').classList.contains('open') && !document.querySelector('dialog[open]')) $('#drawer').classList.remove('open');
+});
+
+/* ---------- Démarrage ---------- */
+(function init() {
+  const saved = store.get('doc', null);
+  const demo = EXAMPLES[0];
+  if (saved != null) {
+    loadText(saved, docState.name || 'document.md');
+    setDirty(store.get('docDirty', false));
+  } else loadText(demo.text, demo.file);
+  applyZoom();
+  if (!info.markdown) ta.focus();
+})();
+</script>
+</body>
+</html>
