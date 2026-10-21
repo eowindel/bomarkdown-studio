@@ -1,0 +1,52 @@
+name: "🐞 Bug / Bogue"
+description: "Quelque chose ne fonctionne pas comme prévu · Something doesn't work as expected"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce problème ! · Thanks for taking the time to report this!
+        Vous pouvez écrire en français ou en anglais. · You can write in French or English.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Que se passe-t-il ? · What happens?"
+      description: "Décrivez le problème et ce que vous attendiez. · Describe the problem and what you expected."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Étapes pour reproduire · Steps to reproduce"
+      placeholder: |
+        1. Ouvrir l'exemple « … » · Open the “…” example
+        2. Cliquer sur … · Click on …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: "Texte BoMarkdown concerné · BoMarkdown text involved"
+      description: "Le plus petit extrait qui montre le problème, si possible. · The smallest snippet that shows the problem, if possible."
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: "Captures d'écran · Screenshots"
+      description: "Glissez des images ici. · Drag images here."
+  - type: input
+    id: version
+    attributes:
+      label: "Version"
+      description: "Affichée à côté du logo, en haut à gauche. · Shown next to the logo, top left."
+      placeholder: "v0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: "Navigateur et système · Browser and OS"
+      placeholder: "Chrome 140 / Windows 11"
+    validations:
+      required: true

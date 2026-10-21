@@ -1,0 +1,26 @@
+name: "💡 Idée / Feature request"
+description: "Proposer une amélioration ou une nouvelle fonctionnalité · Suggest an improvement or a new feature"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Toutes les idées sont bienvenues ! · All ideas are welcome!
+        Vous pouvez écrire en français ou en anglais. · You can write in French or English.
+  - type: textarea
+    id: need
+    attributes:
+      label: "Votre besoin · Your need"
+      description: "Que cherchez-vous à faire, et qu'est-ce qui est difficile aujourd'hui ? · What are you trying to do, and what is hard today?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Ce que vous proposez · Your proposal"
+      description: "Comment l'imaginez-vous dans l'application ? Croquis bienvenus. · How do you picture it in the app? Sketches welcome."
+  - type: textarea
+    id: example
+    attributes:
+      label: "Exemple · Example"
+      description: "Un extrait BoMarkdown ou une image qui illustre l'idée. · A BoMarkdown snippet or an image illustrating the idea."

@@ -31,7 +31,8 @@ statuts, effectivités, liens entre éléments et légende automatique, et s'exp
 
 ## Démarrer
 
-1. Téléchargez ou clonez ce dépôt.
+1. Téléchargez `index.html` depuis la [dernière version](https://github.com/eowindel/bomarkdown-studio/releases/latest),
+   ou clonez ce dépôt.
 2. Ouvrez `index.html` dans un navigateur récent : Chrome, Edge, Firefox ou Safari.
 3. Partez du document de démonstration, d'un exemple du menu **Exemples**, ou cliquez sur **Nouveau**.
 
@@ -195,6 +196,15 @@ navigateur ; rien n'est envoyé sur Internet.
 
 Sous Chrome et Edge, **Enregistrer** réécrit directement le fichier ouvert, et l'export vers un dossier écrit les
 images à leur place. Sous Firefox et Safari, l'enregistrement et les exports passent par des téléchargements.
+
+## Signaler un problème, proposer une idée
+
+BoMarkdown Studio en est à sa première version : vos retours sont précieux.
+[Ouvrez une issue](https://github.com/eowindel/bomarkdown-studio/issues/new/choose) pour signaler un bug ou proposer
+une amélioration, en français ou en anglais. Le bouton **Signaler un problème** de l'aide (`F1`) y mène aussi.
+Indiquez la version affichée à côté du logo et, si possible, le texte BoMarkdown qui pose problème.
+
+L'historique des versions est dans le [CHANGELOG](CHANGELOG.md).
 
 ## Licence et crédits
 

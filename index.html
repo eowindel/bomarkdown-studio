@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio
+  BoMarkdown Studio v0.1.0
   Copyright 2026 Arnaud Rousseau
   SPDX-License-Identifier: Apache-2.0
   Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
@@ -96,6 +96,8 @@ svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor;
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: -.01em; margin-right: 10px; white-space: nowrap; }
 .brand svg { width: 24px; height: 24px; }
 .brand small { font-weight: 500; color: var(--muted); }
+.brand .ver { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0 6px; }
+a.btn { text-decoration: none; }
 .docname {
   display: flex; align-items: center; gap: 6px; padding: 3px 10px; margin-right: 8px; border-radius: 999px;
   background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); font-size: 13px;
@@ -433,6 +435,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
   .btn .lbl { display: none; }
   .docname { display: none; }
   .brand { font-size: 0; margin-right: 2px; }
+  .brand .ver { display: none; }
   .brand small { display: none; }
   .pane-head { overflow-x: auto; }
   .pane-head .hint, #zoom-pct, .gtools select { display: none; }
@@ -447,7 +450,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <header class="topbar">
   <div class="brand" title="BoMarkdown Studio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
-    BoMarkdown <small>Studio</small>
+    BoMarkdown <small>Studio</small> <span class="ver" id="app-ver">v0.1.0</span>
   </div>
   <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
 
@@ -645,7 +648,8 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 
 <!-- Aide -->
 <dialog class="modal" id="dlg-help">
-  <div class="modal-head"><h2>Aide : syntaxe BoMarkdown</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="modal-head"><h2>Aide : syntaxe BoMarkdown</h2>
+    <a class="btn outline" href="https://github.com/eowindel/bomarkdown-studio/issues/new/choose" target="_blank" rel="noopener" title="Signaler un bug ou proposer une idée sur GitHub"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5h.01"/></svg>Signaler un problème</a><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="modal-body help">
   <div data-only="fr">
     <div class="cols2">
@@ -1013,6 +1017,7 @@ you can define an additional gap between column
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
+const VERSION = '0.1.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const store = {
@@ -1064,6 +1069,7 @@ const EN = {
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
   'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
   'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
+  'Signaler un bug ou proposer une idée sur GitHub': 'Report a bug or suggest an idea on GitHub', 'Signaler un problème': 'Report an issue',
   "Déposez un fichier .md / .bmd pour l'ouvrir": 'Drop a .md / .bmd file to open it',
 };
 const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
@@ -2970,6 +2976,7 @@ document.addEventListener('keydown', e => {
 
 /* ---------- Démarrage ---------- */
 (function init() {
+  $('#app-ver').textContent = 'v' + VERSION;
   document.documentElement.lang = lang;
   $$('#lang-sw button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
   translateStatic();

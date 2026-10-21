@@ -1,0 +1,49 @@
+# Publie une release GitHub à chaque tag vX.Y.Z, avec index.html en téléchargement
+# et les notes de la section correspondante du CHANGELOG.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier que la version de l'application correspond au tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          grep -q "const VERSION = '${version}';" index.html \
+            || { echo "::error::index.html ne déclare pas VERSION = '${version}'"; exit 1; }
+
+      - name: Extraire les notes du CHANGELOG
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on && /^\[[^]]+\]: / { next }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "::error::Aucune section ${version} dans CHANGELOG.md"; exit 1; }
+          {
+            echo
+            echo "---"
+            echo "**Utilisation** : téléchargez \`index.html\` ci-dessous et ouvrez-le dans votre navigateur."
+            echo "Un problème, une idée ? [Ouvrez une issue](https://github.com/${GITHUB_REPOSITORY}/issues/new/choose)."
+          } >> notes.md
+
+      - name: Créer la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp index.html "bomarkdown-studio-${GITHUB_REF_NAME}.html"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "BoMarkdown Studio ${GITHUB_REF_NAME}" \
+            --notes-file notes.md \
+            index.html "bomarkdown-studio-${GITHUB_REF_NAME}.html"
