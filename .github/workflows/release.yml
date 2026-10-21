@@ -1,10 +1,19 @@
-# Publie une release GitHub à chaque tag vX.Y.Z, avec index.html en téléchargement
-# et les notes de la section correspondante du CHANGELOG.
+# Publie une release GitHub avec index.html en téléchargement et les notes
+# de la section correspondante du CHANGELOG.
+# Deux déclenchements possibles :
+#   - pousser un tag vX.Y.Z ;
+#   - lancer le workflow à la main (onglet Actions → Release → Run workflow) avec la version X.Y.Z :
+#     le tag est alors créé sur le commit choisi.
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version à publier, sans le v (ex. 0.1.0)"
+        required: true
 
 permissions:
   contents: write
@@ -15,22 +24,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Vérifier que la version de l'application correspond au tag
+      - name: Déterminer la version
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          grep -q "const VERSION = '${version}';" index.html \
-            || { echo "::error::index.html ne déclare pas VERSION = '${version}'"; exit 1; }
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          version="${version#v}"
+          echo "VERSION=${version}" >> "$GITHUB_ENV"
+          echo "TAG=v${version}" >> "$GITHUB_ENV"
+
+      - name: Vérifier que la version de l'application correspond
+        run: |
+          grep -q "const VERSION = '${VERSION}';" index.html \
+            || { echo "::error::index.html ne déclare pas VERSION = '${VERSION}'"; exit 1; }
 
       - name: Extraire les notes du CHANGELOG
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          awk -v v="$version" '
+          awk -v v="$VERSION" '
             $0 ~ "^## \\[" v "\\]" { on = 1; next }
             on && /^## \[/ { exit }
             on && /^\[[^]]+\]: / { next }
             on { print }
           ' CHANGELOG.md > notes.md
-          test -s notes.md || { echo "::error::Aucune section ${version} dans CHANGELOG.md"; exit 1; }
+          test -s notes.md || { echo "::error::Aucune section ${VERSION} dans CHANGELOG.md"; exit 1; }
           {
             echo
             echo "---"
@@ -42,8 +60,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp index.html "bomarkdown-studio-${GITHUB_REF_NAME}.html"
-          gh release create "$GITHUB_REF_NAME" \
-            --title "BoMarkdown Studio ${GITHUB_REF_NAME}" \
+          cp index.html "bomarkdown-studio-${TAG}.html"
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "BoMarkdown Studio ${TAG}" \
             --notes-file notes.md \
-            index.html "bomarkdown-studio-${GITHUB_REF_NAME}.html"
+            index.html "bomarkdown-studio-${TAG}.html"
