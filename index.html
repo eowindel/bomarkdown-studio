@@ -385,6 +385,13 @@ textarea.json.bad { border-color: var(--err); }
 .help kbd { font: 11.5px var(--mono); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--panel-2); }
 .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 
+/* langue */
+.lang-sw { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-left: 4px; }
+.lang-sw button { border: 0; background: transparent; padding: 0 9px; height: 30px; font-size: 12px; font-weight: 600; letter-spacing: .03em; color: var(--muted); cursor: pointer; }
+.lang-sw button:hover { background: var(--hover); color: var(--fg); }
+.lang-sw button.on { background: var(--accent); color: var(--accent-fg); }
+html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: none !important; }
+
 /* toasts */
 .toasts { position: fixed; bottom: 34px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
 .toast { background: #1c2230; color: #fff; padding: 8px 14px; border-radius: 9px; box-shadow: var(--shadow); font-size: 13.5px; animation: tin .18s ease; }
@@ -454,6 +461,7 @@ textarea.json.bad { border-color: var(--err); }
   <button class="btn" id="btn-settings" title="Réglages"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="lbl opt">Réglages</span></button>
   <button class="btn icon" id="btn-help" title="Aide et syntaxe (F1)"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></button>
   <button class="btn icon" id="btn-theme" title="Thème : automatique"><svg class="i" viewBox="0 0 24 24" id="theme-ico"></svg></button>
+  <div class="lang-sw" id="lang-sw" role="group" title="Langue de l'interface"><button data-lang="fr" title="Français">FR</button><button data-lang="en" title="English">EN</button></div>
 </header>
 
 <main id="main">
@@ -562,7 +570,10 @@ textarea.json.bad { border-color: var(--err); }
     <h3 class="sec">Définitions avancées (JSON)</h3>
     <textarea class="json" id="s-json" spellcheck="false"></textarea>
     <div class="err-msg" id="s-json-err"></div>
-    <p class="hint">Clés : <code>links</code> (types de liens : label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
+    <p class="hint" data-only="en">Keys: <code>links</code> (link types: label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
+      <code>emphasis</code> (label emphasis rules), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (replacements in effectivity).
+      Import also accepts a VS Code <code>settings.json</code> containing <code>bomarkdown.*</code> keys.</p>
+    <p class="hint" data-only="fr">Clés : <code>links</code> (types de liens : label, arrow, Color, thickness, dashpattern), <code>status</code>, <code>bubbles</code> (SVG + label),
       <code>emphasis</code> (règles d'emphase des libellés), <code>mandatoryDefs</code> (undef, placeholder, eff, grad), <code>utf8replacement</code> (remplacements dans l'effectivité).
       L'import accepte aussi un <code>settings.json</code> de VS Code contenant des clés <code>bomarkdown.*</code>.</p>
   </div>
@@ -582,8 +593,10 @@ textarea.json.bad { border-color: var(--err); }
   <div class="modal-head"><h2>Bibliothèque d'icônes</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="modal-body">
     <div class="dropzone" id="icon-drop" tabindex="0" role="button">
-      <b>Déposez des images ici</b> ou cliquez pour en choisir (PNG, JPG, SVG, WebP).<br>
-      <span class="hint">Le nom du type = nom du fichier en minuscules, sans espaces. Un fichier de même nom met l'icône à jour. Les images sont réduites à 64 px et intégrées en base64.</span>
+      <div data-only="fr"><b>Déposez des images ici</b> ou cliquez pour en choisir (PNG, JPG, SVG, WebP).<br>
+      <span class="hint">Le nom du type = nom du fichier en minuscules, sans espaces. Un fichier de même nom met l'icône à jour. Les images sont réduites à 64 px et intégrées en base64.</span></div>
+      <div data-only="en"><b>Drop images here</b> or click to choose some (PNG, JPG, SVG, WebP).<br>
+      <span class="hint">Type name = file name in lower case, without spaces. A file with the same name updates the icon. Images are scaled down to 64 px and embedded as base64.</span></div>
     </div>
     <div class="icon-tools">
       <input type="search" id="icon-filter" placeholder="Filtrer les icônes…">
@@ -598,6 +611,7 @@ textarea.json.bad { border-color: var(--err); }
 <dialog class="modal" id="dlg-help">
   <div class="modal-head"><h2>Aide : syntaxe BoMarkdown</h2><button class="btn icon" data-close title="Fermer"><svg class="i" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="modal-body help">
+  <div data-only="fr">
     <div class="cols2">
       <div>
         <h3 class="sec">Hiérarchie</h3>
@@ -663,6 +677,73 @@ textarea.json.bad { border-color: var(--err); }
       </table>
     </div>
   </div>
+  <div data-only="en">
+    <div class="cols2">
+      <div>
+        <h3 class="sec">Hierarchy</h3>
+        <p>Each <code>+ </code> line is an item; the number of characters before the <code>+</code> gives its level. Other lines are ignored (comments).</p>
+<pre>+ Root
+ + Child
+  + Grandchild
++newcolumn 40      ← new column (+ gap)
++ Another root</pre>
+        <h3 class="sec">Item blocks</h3>
+        <table>
+          <tr><th>Block</th><th>Purpose</th></tr>
+          <tr><td><code>(i:type,label,rev)</code></td><td>Type (icon), label, revision. A single value = label only.</td></tr>
+          <tr><td><code>(s:IW)</code></td><td>Status (D, IW, F, R, O…)</td></tr>
+          <tr><td><code>(a:alias)</code></td><td>Alias, target of cross links</td></tr>
+          <tr><td><code>(l:i:a1,a2)</code></td><td>Links of type <i>i</i> to aliases a1, a2. <code>a1!text</code> adds a label (<code>!&lt;</code> at the start, <code>!&gt;</code> at the end).</td></tr>
+          <tr><td><code>(b:lock,matrice)</code></td><td>Bubbles drawn on the icon</td></tr>
+          <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivity on the left; <code>(e:o)</code> = dot</td></tr>
+        </table>
+        <p class="hint">Emphasis in labels: <code>*italic*</code>, <code>**bold**</code>, <code>***both***</code>. Text after the last block is ignored.</p>
+      </div>
+      <div>
+        <h3 class="sec">Per-block parameters</h3>
+        <p>At the top of a block, JSON between <code>${{</code> and <code>}}$</code> overrides the settings (e.g. <code>"haslegend": false</code>, <code>"bend": 0.5</code>, <code>"h": 24</code>, <code>"emphasis": […]</code>).</p>
+        <h3 class="sec">In a Markdown document</h3>
+<pre>```bomarkdown images/my-bom
++ (i:assembly,Product)
+```
+&lt;!--bomarkdown images/hidden-bom
++ (i:assembly,Block not displayed)
+--&gt;</pre>
+        <p>The path after <code>bomarkdown</code> names the exported SVG. Put the cursor in a block to display it; <b>Export → Insert image links</b> adds <code>![name](name.svg)</code> below each block.</p>
+        <h3 class="sec">Shortcuts</h3>
+        <table>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Space</kbd></td><td>Autocompletion (types, statuses, bubbles, links, aliases)</td></tr>
+          <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Indent / outdent one level</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>New item at the same level</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Save / open</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd></td><td>Export the block as SVG</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+wheel</td><td>Zoom the preview (drag to pan)</td></tr>
+        </table>
+        <p class="hint">Everything is saved automatically in the browser.</p>
+      </div>
+    </div>
+    <h3 class="sec">Editing directly on the graph</h3>
+    <div class="cols2">
+      <table>
+        <tr><td>Click an item</td><td>Selection + action toolbar (<kbd>Ctrl</kbd>+click: go to the source line)</td></tr>
+        <tr><td>Double-click / <kbd>F2</kbd></td><td>Rename in place (<kbd>Tab</kbd> confirms and adds a child)</td></tr>
+        <tr><td><kbd>Tab</kbd> / <kbd>Enter</kbd></td><td>Add a child / a sibling</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (or <kbd>Shift</kbd>+<kbd>Tab</kbd>)</td><td>Move down / up one level (with its children)</td></tr>
+        <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Reorder among siblings</td></tr>
+        <tr><td>Arrows</td><td>Navigate (← parent, → first child)</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Del</kbd></td><td>Type / status / delete with children</td></tr>
+      </table>
+      <table>
+        <tr><td>Drag an item onto another</td><td>It becomes its child (with <kbd>Shift</kbd> or <kbd>Alt</kbd>: placed right after it, at the same level)</td></tr>
+        <tr><td>Drag the blue handle</td><td>Creates a link to the item you drop on (type chosen at the top of the preview; alias created if needed)</td></tr>
+        <tr><td><kbd>L</kbd> then click</td><td>Same thing without dragging</td></tr>
+        <tr><td>Click a link</td><td>Change its type or delete it (<kbd>Del</kbd>)</td></tr>
+        <tr><td><b>+ Root</b> / <b>+ Column</b></td><td>At the top of the preview; double-click the background = new root</td></tr>
+        <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / redo (every action edits the text)</td></tr>
+      </table>
+    </div>
+  </div>
+  </div>
 </dialog>
 
 <!-- Référence (équivalent de « BOM Commands ») -->
@@ -678,7 +759,45 @@ textarea.json.bad { border-color: var(--err); }
 <input type="file" id="file-json" accept=".json,application/json" hidden>
 
 <!-- ===================== Exemples (repris du README de l'extension) ===================== -->
-<script type="text/x-bomarkdown" data-name="Démo complète (Markdown)" data-file="demo.md">
+<script type="text/x-bomarkdown" data-lang="en" data-name="Full demo (Markdown)" data-file="demo.md">
+# BoMarkdown Studio demo
+
+This Markdown document contains several `bomarkdown` blocks.
+Put the cursor in a block (or pick it at the top of the preview) to display it.
+
+## Product
+
+```bomarkdown images/product
++ (i:assembly,City bike,B)(s:IW)(a:bike)
+ + (i:assembly,Frame,A)(s:R)(a:frame)
+  + (b:matrice)(i:component,Top tube,A)(s:R)
+  + (b:matrice)(i:component,Down tube,A)(s:F)
+ + (i:assembly,Front wheel,C)(s:IW)(a:wheel)
+  + (e:[A -> B[)(i:component,**Aluminium** rim,A)(s:R)
+  + (e:[B -> #oo[)(i:component,*Carbon* rim,A)(s:D)(a:carbon)
+ + (b:lock)(i:component,Saddle,A)(s:R)
+
++newcolumn 40
++ (i:spec,Frame specification)(l:i:frame!implements)
+ + (i:req,Mass < 2 kg)
+ + (i:req,Lateral stiffness)
++ (i:spec,Wheel specification)(l:i:wheel)
+ + (i:req,700C diameter)(l:c:carbon)
+```
+
+## Manufacturing (block hidden in the Markdown rendering)
+
+<!--bomarkdown images/manufacturing
++ (i:plant,Lyon plant)
+ + (i:routing,Assembly routing)
+  + (i:function,Frame welding)
+   + (i:worker,Welder)
+   + (i:resource,TIG station)
+  + (i:function,Wheel assembly)
+   + (i:mitem,Assembled wheel,A)(s:R)
+-->
+</script>
+<script type="text/x-bomarkdown" data-lang="fr" data-name="Démo complète (Markdown)" data-file="demo.md">
 # Démo BoMarkdown Studio
 
 Ce document Markdown contient plusieurs blocs `bomarkdown`.
@@ -716,14 +835,14 @@ Placez le curseur dans un bloc (ou choisissez-le en haut de l'aperçu) pour l'af
    + (i:mitem,Roue montée,A)(s:R)
 -->
 </script>
-<script type="text/x-bomarkdown" data-name="Arborescence de dossiers" data-file="dossiers.bmd">
+<script type="text/x-bomarkdown" data-name="Arborescence de dossiers" data-name-en="Folder tree" data-file="dossiers.bmd">
 + (i:folder,rootfolder)
  + (i:folder, subfolder1)
   + (i:file, Fil>e)
   + (i:file, Another File)
  + (i:file, Root File)
 </script>
-<script type="text/x-bomarkdown" data-name="Hiérarchie et colonnes" data-file="hierarchie.bmd">
+<script type="text/x-bomarkdown" data-name="Hiérarchie et colonnes" data-name-en="Hierarchy and columns" data-file="hierarchie.bmd">
 + first root first column
 -+ Child
 ++ It works as long as there is a plus followed by a space
@@ -738,7 +857,7 @@ to add a new column juste type
 + several root on the same column
  + another child
 </script>
-<script type="text/x-bomarkdown" data-name="Types d'éléments et légende" data-file="types.bmd">
+<script type="text/x-bomarkdown" data-name="Types d'éléments et légende" data-name-en="Item types and legend" data-file="types.bmd">
 + (i:folder,A folder item) As long as there is a block text after blocks is ignored
  + (i:file, A file item) so it can be use as a comment
  + (i:file, A file item with revision (label supports parenthesis),A)
@@ -748,7 +867,7 @@ to add a new column juste type
  + (z:Block with wrong identifier)(i:but with a valid block afterwards)
  + no bloc but (parenthesis)
 </script>
-<script type="text/x-bomarkdown" data-name="Emphase dans les libellés" data-file="emphase.bmd">
+<script type="text/x-bomarkdown" data-name="Emphase dans les libellés" data-name-en="Emphasis in labels" data-file="emphase.bmd">
 ${{
   "haslegend":false
 }}$
@@ -757,7 +876,7 @@ ${{
  + (i:file, A file item with revision (*Emphase just a part of it*))
  + (i:file,*it also can be **nested***)
 </script>
-<script type="text/x-bomarkdown" data-name="Emphase personnalisée" data-file="emphase-perso.bmd">
+<script type="text/x-bomarkdown" data-name="Emphase personnalisée" data-name-en="Custom emphasis" data-file="emphase-perso.bmd">
 ${{
   "haslegend":false,
   "emphasis":
@@ -774,12 +893,12 @@ ${{
  + (i:file,*it also can be **nested***)
   + (i:file,#use of custom marker#)
 </script>
-<script type="text/x-bomarkdown" data-name="Statuts" data-file="statuts.bmd">
+<script type="text/x-bomarkdown" data-name="Statuts" data-name-en="Statuses" data-file="statuts.bmd">
 + (i:assembly,In Work Assembly,1)(s:IW)
  + (i:component, A released component,1)(s:R)
  + (i:component, A frozen component,A)(s:F)
 </script>
-<script type="text/x-bomarkdown" data-name="Plusieurs colonnes" data-file="multicolonnes.bmd">
+<script type="text/x-bomarkdown" data-name="Plusieurs colonnes" data-name-en="Several columns" data-file="multicolonnes.bmd">
 + (i:assembly,Assembly,1)(s:IW)
  + (i:component, First component,1)(s:R)
  + (i:component, Second component,A)(s:F)
@@ -798,7 +917,7 @@ you can define an additional gap between column
 +newcolumn 100
 +(i:logical,Logical)
 </script>
-<script type="text/x-bomarkdown" data-name="Alias et liens transverses" data-file="liens.bmd">
+<script type="text/x-bomarkdown" data-name="Alias et liens transverses" data-name-en="Aliases and cross links" data-file="liens.bmd">
 + (i:assembly,Assembly (avec parenthèse),1)(s:IW)
  + (i:component, First component,A)(s:R)(a:c1)
  + (i:component, Second component,A)(s:F)(a:c2)
@@ -819,7 +938,7 @@ you can define an additional gap between column
  + (i:req, req6)
  + (i:req, req7)
 </script>
-<script type="text/x-bomarkdown" data-name="Étiquettes de liens (nouveau)" data-file="etiquettes.bmd">
+<script type="text/x-bomarkdown" data-name="Étiquettes de liens (nouveau)" data-name-en="Link labels (new)" data-file="etiquettes.bmd">
 + (i:function,Freiner)(a:f1)
  + (i:function,Détecter l'appui)(a:f2)
  + (i:function,Appliquer l'effort)(a:f3)
@@ -828,14 +947,14 @@ you can define an additional gap between column
 + (i:logical,Levier)(l:i:f2!<réalise)
 + (i:logical,Étrier)(l:i:f3!assure,f1!>contribue)
 </script>
-<script type="text/x-bomarkdown" data-name="Bulles" data-file="bulles.bmd">
+<script type="text/x-bomarkdown" data-name="Bulles" data-name-en="Bubbles" data-file="bulles.bmd">
 + (b:lock)(i:component, Locked item)
  + (b:matrice)(i:component, Item with a position matrix)
  + (b:matrice,unlock)(i:component, Item with 2 Bubbles)
  + (b:context)(i:component, In a configuration context)
  + (b:noway)(i:component, Forbidden item)
 </script>
-<script type="text/x-bomarkdown" data-name="Effectivité" data-file="effectivite.bmd">
+<script type="text/x-bomarkdown" data-name="Effectivité" data-name-en="Effectivity" data-file="effectivite.bmd">
 + (b:context)(i:component,Unvariable Component)
  + (e:o)(i:component,Use o to display an effetivity bubble)
  + (e:[A -> B[)(i:component,effectivity can be a range)
@@ -864,6 +983,71 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem('bomd.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem('bomd.' + k, JSON.stringify(v)); } catch { /* stockage indisponible */ } },
 };
+
+/* ---------- Langue de l'interface (FR / EN) ---------- */
+let lang = store.get('lang', null) || ((navigator.language || '').toLowerCase().startsWith('fr') ? 'fr' : 'en');
+const T = (fr, en) => lang === 'en' ? en : fr;
+/* Textes et attributs du HTML statique : le français sert de clé. */
+const EN = {
+  'Document courant': 'Current document', 'Nouveau document': 'New document', 'Nouveau': 'New',
+  'Ouvrir un fichier .md / .bmd (Ctrl+O)': 'Open a .md / .bmd file (Ctrl+O)', 'Ouvrir': 'Open',
+  'Enregistrer (Ctrl+S)': 'Save (Ctrl+S)', 'Enregistrer': 'Save', 'Charger un exemple': 'Load an example', 'Exemples': 'Examples',
+  'Exporter': 'Export', 'Bloc courant en SVG': 'Current block as SVG', 'Ctrl+Maj+E': 'Ctrl+Shift+E',
+  'Bloc courant en PNG': 'Current block as PNG', 'Résolution ×2': '2× resolution', 'Copier le SVG': 'Copy SVG',
+  'Tous les blocs → dossier': 'All blocks → folder', 'Écrit chaque SVG à son chemin': 'Writes each SVG to its path',
+  'Tous les blocs → ZIP': 'All blocks → ZIP', 'Insérer les liens image': 'Insert image links',
+  'Ajoute ![…](….svg) sous chaque bloc': 'Adds ![…](….svg) below each block',
+  'Référence : types, statuts, bulles, liens (équivalent « BOM Commands »)': 'Reference: types, statuses, bubbles, links (same as “BOM Commands”)',
+  'Référence': 'Reference', "Bibliothèque d'icônes": 'Icon library', 'Icônes': 'Icons', 'Réglages': 'Settings',
+  'Aide et syntaxe (F1)': 'Help and syntax (F1)', "Langue de l'interface": 'Interface language',
+  'Éditeur': 'Editor', 'Source BoMarkdown': 'BoMarkdown source', 'Glisser pour redimensionner': 'Drag to resize',
+  'Aperçu': 'Preview', 'Bloc affiché': 'Displayed block',
+  "Ajouter une racine dans la colonne de l'élément sélectionné (ou double-clic sur le fond)": "Add a root to the selected item's column (or double-click the background)",
+  'Racine': 'Root', "Ajouter une colonne après celle de l'élément sélectionné": "Add a column after the selected item's column", 'Colonne': 'Column',
+  'Type des liens créés depuis le graphe': 'Type of links created from the graph',
+  'Zoom arrière': 'Zoom out', 'Taille réelle (100 %)': 'Actual size (100%)', 'Zoom avant': 'Zoom in', 'Ajuster à la fenêtre': 'Fit to window',
+  'Télécharger le SVG': 'Download SVG', "Graphe : cliquez sur un élément pour l'éditer": 'Graph: click an item to edit it',
+  "Actions sur l'élément": 'Item actions', 'Ajouter un enfant (Tab)': 'Add a child (Tab)',
+  'Ajouter un élément au même niveau (Entrée)': 'Add a sibling (Enter)',
+  "Remonter d'un niveau (Maj+Tab ou Alt+←)": 'Move up one level (Shift+Tab or Alt+←)',
+  "Descendre d'un niveau (Alt+→)": 'Move down one level (Alt+→)',
+  'Monter parmi les frères (Alt+↑)': 'Move up among siblings (Alt+↑)', 'Descendre parmi les frères (Alt+↓)': 'Move down among siblings (Alt+↓)',
+  'Renommer (F2 ou double-clic)': 'Rename (F2 or double-click)', 'Changer le type (T)': 'Change type (T)', 'Changer le statut (S)': 'Change status (S)',
+  'Créer un lien (L) : cliquez ensuite sur la cible, ou glissez la poignée bleue': 'Create a link (L): then click the target, or drag the blue handle',
+  'Supprimer avec ses enfants (Suppr)': 'Delete with its children (Del)', 'Glisser vers un élément pour créer un lien': 'Drag onto an item to create a link',
+  'Actions sur le lien': 'Link actions', 'Type du lien': 'Link type', 'Supprimer le lien (Suppr)': 'Delete link (Del)', 'Supprimer': 'Delete',
+  'Problèmes': 'Problems', "© 2026 Arnaud Rousseau · Apache 2.0 · d'après": '© 2026 Arnaud Rousseau · Apache 2.0 · based on', 'de': 'by',
+  'Fermer': 'Close', 'Mise en page': 'Layout', "Hauteur d'un élément (h)": 'Item height (h)',
+  "Espace entre éléments d'une ligne (gap)": 'Space between elements on a row (gap)', 'Décalage horizontal (panh)': 'Horizontal offset (panh)',
+  'Espacement vertical (panv)': 'Vertical spacing (panv)', 'Courbure des liens (bend)': 'Link curvature (bend)', 'Échelle de la légende': 'Legend scale',
+  'Révision : fond': 'Revision: background', 'Révision : texte': 'Revision: text', 'Fond du SVG': 'SVG background',
+  'Afficher la légende': 'Show legend', 'Fond transparent': 'Transparent background', 'Définitions avancées (JSON)': 'Advanced definitions (JSON)',
+  'Importer…': 'Import…', 'Réinitialiser': 'Reset', 'Annuler': 'Cancel', 'Appliquer': 'Apply',
+  'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
+  'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
+  'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
+  "Déposez un fichier .md / .bmd pour l'ouvrir": 'Drop a .md / .bmd file to open it',
+};
+const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
+const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, [data-only], #toasts';
+const i18nText = new WeakMap(), i18nAttr = new WeakMap();
+function translateStatic() {
+  const tr = orig => { const k = orig.trim(); const v = lang === 'en' && k ? EN[k] : null; return v ? orig.replace(k, v) : orig; };
+  // textes : on évite les zones dont le contenu est généré par le script
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    { acceptNode: n => n.nodeType === 1 && n.matches(I18N_SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (n.nodeType !== 3) continue;
+    if (!i18nText.has(n)) i18nText.set(n, n.nodeValue);
+    n.nodeValue = tr(i18nText.get(n));
+  }
+  // infobulles, libellés d'accessibilité et textes indicatifs, y compris sur les éléments au contenu dynamique
+  for (const el of document.body.querySelectorAll('[title], [aria-label], [placeholder]')) {
+    if (el.parentElement?.closest(I18N_DYNAMIC) || el.matches('#toasts *')) continue;
+    if (!i18nAttr.has(el)) i18nAttr.set(el, Object.fromEntries(['title', 'aria-label', 'placeholder'].filter(a => el.hasAttribute(a)).map(a => [a, el.getAttribute(a)])));
+    for (const [a, v] of Object.entries(i18nAttr.get(el))) el.setAttribute(a, tr(v));
+  }
+}
 
 /* ---------- Réglages par défaut (identiques à ceux de l'extension) ---------- */
 const DEFAULT_SETTINGS = {
@@ -1007,10 +1191,10 @@ function parseBomText(text, baseLine = 0) {
       try {
         const p = JSON.parse('{' + lines.slice(first + 1, end).join('\n') + '}');
         if (isObj(p)) params = p;
-      } catch (e) { diags.push({ line: baseLine + first, level: 'error', msg: 'Bloc de paramètres ${{ }}$ : JSON invalide (' + e.message + ')' }); }
+      } catch (e) { diags.push({ line: baseLine + first, level: 'error', msg: T('Bloc de paramètres ${{ }}$ : JSON invalide (', 'Parameter block ${{ }}$: invalid JSON (') + e.message + ')' }); }
       start = end + 1;
     } else {
-      diags.push({ line: baseLine + first, level: 'error', msg: 'Bloc de paramètres non fermé : « }}$ » manquant' });
+      diags.push({ line: baseLine + first, level: 'error', msg: T('Bloc de paramètres non fermé : « }}$ » manquant', 'Unclosed parameter block: missing “}}$”') });
     }
   }
   const boms = []; let bom = { items: [], extraGap: 0 };
@@ -1038,11 +1222,11 @@ function parseArgs(s, it, diags) {
   const spans = blockSpans(s);
   if (!spans.length) {
     it.label = s.trim();
-    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: `Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e)` });
+    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: T(`Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e)`, `Unknown block “${s.match(/\([a-z]:/i)[0]}”: treated as a label (valid blocks: i a l b s e)`) });
     return;
   }
   for (const b of spans) {
-    if (!b.closed) diags.push({ line: it.line, level: 'warn', msg: `Bloc « (${b.kind}: » sans parenthèse fermante` });
+    if (!b.closed) diags.push({ line: it.line, level: 'warn', msg: T(`Bloc « (${b.kind}: » sans parenthèse fermante`, `Block “(${b.kind}:” has no closing parenthesis`) });
     const c = b.content;
     switch (b.kind) {
       case 'i': {
@@ -1060,7 +1244,7 @@ function parseArgs(s, it, diags) {
       case 'l': {
         const parts = c.split(':');
         const linktype = parts[0].trim();
-        if (parts.length < 2) { diags.push({ line: it.line, level: 'warn', msg: `Lien « (l:${c}) » incomplet : syntaxe (l:type:alias1,alias2)` }); break; }
+        if (parts.length < 2) { diags.push({ line: it.line, level: 'warn', msg: T(`Lien « (l:${c}) » incomplet : syntaxe (l:type:alias1,alias2)`, `Incomplete link “(l:${c})”: syntax is (l:type:alias1,alias2)`) }); break; }
         for (const a of parts.slice(1).join(':').split(',').map(x => x.trim()).filter(Boolean)) {
           const k = a.indexOf('!');
           if (k > 0) {
@@ -1092,17 +1276,17 @@ function effectiveSettings(params) {
 function validate(parsed, S) {
   const d = []; const icons = iconMap(); const aliases = new Map();
   for (const bom of parsed.boms) for (const it of bom.items) {
-    if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: `Type « ${it.type} » inconnu (icône « ? » affichée)` });
-    if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: `Statut « ${it.status} » inconnu` });
-    for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: `Bulle « ${b} » inconnue` });
+    if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: T(`Type « ${it.type} » inconnu (icône « ? » affichée)`, `Unknown type “${it.type}” (“?” icon shown)`) });
+    if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: T(`Statut « ${it.status} » inconnu`, `Unknown status “${it.status}”`) });
+    for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: T(`Bulle « ${b} » inconnue`, `Unknown bubble “${b}”`) });
     if (it.alias) {
-      if (aliases.has(it.alias)) d.push({ line: it.line, level: 'warn', msg: `Alias « ${it.alias} » déjà défini ligne ${aliases.get(it.alias) + 1}` });
+      if (aliases.has(it.alias)) d.push({ line: it.line, level: 'warn', msg: T(`Alias « ${it.alias} » déjà défini ligne ${aliases.get(it.alias) + 1}`, `Alias “${it.alias}” already defined on line ${aliases.get(it.alias) + 1}`) });
       else aliases.set(it.alias, it.line);
     }
   }
   for (const bom of parsed.boms) for (const it of bom.items) for (const r of it.relatives) {
-    if (!has(S.links, r.linktype)) d.push({ line: it.line, level: 'warn', msg: `Type de lien « ${r.linktype} » inconnu` });
-    else if (!aliases.has(r.relative)) d.push({ line: it.line, level: 'warn', msg: `Alias cible « ${r.relative} » introuvable` });
+    if (!has(S.links, r.linktype)) d.push({ line: it.line, level: 'warn', msg: T(`Type de lien « ${r.linktype} » inconnu`, `Unknown link type “${r.linktype}”`) });
+    else if (!aliases.has(r.relative)) d.push({ line: it.line, level: 'warn', msg: T(`Alias cible « ${r.relative} » introuvable`, `Target alias “${r.relative}” not found`) });
   }
   return d;
 }
@@ -1221,7 +1405,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     });
     o.push('</g>');
     o.push(`<rect x="18" y="10" width="45" height="5" fill="${S.transparent ? 'none' : attr(S.background || 'white')}"/>`);
-    o.push(`<text font-family="${FONT}" font-size="12" x="20" y="16" fill="grey">Légende</text></g>`);
+    o.push(`<text font-family="${FONT}" font-size="12" x="20" y="16" fill="grey">${T('Légende', 'Legend')}</text></g>`);
   }
 
   // liens hiérarchiques (dessinés en premier pour que les éléments passent au-dessus)
@@ -1327,7 +1511,7 @@ function sanitizeSvg(str) {
 }
 function exportableSvg(svgStr) {
   const root = sanitizeSvg(svgStr);
-  if (!root) throw new Error('SVG invalide : vérifiez les définitions SVG des réglages');
+  if (!root) throw new Error(T('SVG invalide : vérifiez les définitions SVG des réglages', 'Invalid SVG: check the SVG definitions in the settings'));
   return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(root);
 }
 
@@ -1457,7 +1641,7 @@ function onTextChange() {
 function setDirty(v) {
   docState.dirty = v;
   $('#docname').classList.toggle('dirty', v);
-  $('#st-save').textContent = docState.handle ? (v ? 'Modifié · non enregistré sur le disque' : 'Enregistré sur le disque') : 'Sauvegarde automatique dans le navigateur';
+  $('#st-save').textContent = docState.handle ? (v ? T('Modifié · non enregistré sur le disque', 'Modified · not saved to disk') : T('Enregistré sur le disque', 'Saved to disk')) : T('Sauvegarde automatique dans le navigateur', 'Auto-saved in the browser');
 }
 function setDocName(name) {
   docState.name = name;
@@ -1495,8 +1679,8 @@ function updateBlockSelect() {
   sel.innerHTML = info.blocks.map((b, i) => `<option value="${i}">${escapeHtml(blockName(b, i))}${info.markdown ? ` · l.${b.start + 1}` : ''}</option>`).join('');
   sel.value = String(Math.min(curBlock, info.blocks.length - 1));
   sel.hidden = !info.markdown;
-  $('#mode-hint').textContent = info.markdown ? `Markdown · ${info.blocks.length} bloc${info.blocks.length > 1 ? 's' : ''} bomarkdown` : 'BoMarkdown seul';
-  $('#st-block').textContent = info.markdown ? `Bloc : ${blockName(info.blocks[curBlock] || info.blocks[0], curBlock)}` : '';
+  $('#mode-hint').textContent = info.markdown ? `Markdown · ${info.blocks.length} ${T('bloc', 'block')}${info.blocks.length > 1 ? 's' : ''} bomarkdown` : T('BoMarkdown seul', 'BoMarkdown only');
+  $('#st-block').textContent = info.markdown ? `${T('Bloc :', 'Block:')} ${blockName(info.blocks[curBlock] || info.blocks[0], curBlock)}` : '';
 }
 $('#blocksel').addEventListener('change', e => {
   const b = info.blocks[+e.target.value];
@@ -1522,21 +1706,23 @@ function renderPreview() {
   const b = info.blocks[curBlock];
   let r;
   try { r = renderBlockText(blockText(b), b.start, { meta: true }); }
-  catch (e) { console.error(e); showEmpty('Erreur de rendu : ' + e.message); return; }
+  catch (e) { console.error(e); showEmpty(T('Erreur de rendu : ', 'Rendering error: ') + e.message); return; }
   lastRender = r;
   diagByLine = new Map();
   for (const d of r.diags) { const lv = d.level === 'error' ? 'error' : 'warn'; if (diagByLine.get(d.line) !== 'error') diagByLine.set(d.line, lv); }
   markLines();
   renderProblems(r.diags);
-  $('#st-items').textContent = `${r.count} élément${r.count > 1 ? 's' : ''}`;
+  $('#st-items').textContent = `${r.count} ${T('élément', 'item')}${r.count > 1 ? 's' : ''}`;
   if (!r.count) {
     showEmpty(info.markdown
-      ? 'Ce bloc ne contient aucun élément. Ajoutez une ligne <b>+ (i:assembly,Mon produit)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>'
-      : 'Commencez à écrire, par exemple :<br><b>+ (i:assembly,Mon produit,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Pièce 1)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>');
+      ? T('Ce bloc ne contient aucun élément. Ajoutez une ligne <b>+ (i:assembly,Mon produit)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>',
+        'This block has no items. Add a line <b>+ (i:assembly,My product)</b><br>or:<br><button class="btn primary" data-gact="root">+ Add a root</button>')
+      : T('Commencez à écrire, par exemple :<br><b>+ (i:assembly,Mon produit,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Pièce 1)</b><br>ou :<br><button class="btn primary" data-gact="root">+ Ajouter une racine</button>',
+        'Start typing, for example:<br><b>+ (i:assembly,My product,A)(s:IW)</b><br><b>&nbsp;+ (i:component,Part 1)</b><br>or:<br><button class="btn primary" data-gact="root">+ Add a root</button>'));
     return;
   }
   const root = sanitizeSvg(r.svg);
-  if (!root) { showEmpty('SVG invalide : une définition SVG des réglages ou du bloc ${{ }}$ est mal formée.'); return; }
+  if (!root) { showEmpty(T('SVG invalide : une définition SVG des réglages ou du bloc ${{ }}$ est mal formée.', 'Invalid SVG: an SVG definition in the settings or in the ${{ }}$ block is malformed.')); return; }
   sheet.replaceChildren(document.importNode(root, true));
   sheet.classList.toggle('transparent', !!r.S.transparent);
   sheet.hidden = false; $('#stage .empty-state')?.remove();
@@ -1560,7 +1746,7 @@ function highlightActiveItem() {
 function renderProblems(diags) {
   const list = $('#problems-list'); const cnt = $('#prob-count');
   cnt.textContent = diags.length; cnt.classList.toggle('has', diags.length > 0);
-  if (!diags.length) { list.innerHTML = '<div class="ok-msg">Aucun problème détecté.</div>'; return; }
+  if (!diags.length) { list.innerHTML = `<div class="ok-msg">${T('Aucun problème détecté.', 'No problems detected.')}</div>`; return; }
   list.innerHTML = diags.sort((a, b) => a.line - b.line).map(d =>
     `<div class="prob" data-line="${d.line}"><i class="lv ${d.level}"></i><span class="ln">l.${d.line + 1}</span><span>${escapeHtml(d.msg)}</span></div>`).join('');
 }
@@ -1662,10 +1848,10 @@ function acContext() {
   if ((m = /\(b:(?:[^,()]*,)*([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.bubbles).map(([k, v]) => ({ label: k, detail: v.label, icon: bubbleSwatch(k), insert: k })) };
   if ((m = /\(l:[^:()]*:(?:[^,()]*,)*([^,()!]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: currentAliases().map(a => ({ label: a.alias, detail: a.label, insert: a.alias })) };
   if ((m = /\(l:([^:()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => ({ label: k, detail: v.label, icon: linkSwatch(k), insert: k + ':' })) };
-  if ((m = /\(e:$/.exec(before))) return { from: pos, q: '', items: [{ label: 'o', detail: 'pastille d\'effectivité', insert: 'o)' }, { label: '[A -> B[', detail: 'plage', insert: '[A -> B[)' }, { label: '[A -> #oo[', detail: 'plage ouverte (∞)', insert: '[A -> #oo[)' }] };
+  if ((m = /\(e:$/.exec(before))) return { from: pos, q: '', items: [{ label: 'o', detail: T('pastille d\'effectivité', 'effectivity dot'), insert: 'o)' }, { label: '[A -> B[', detail: T('plage', 'range'), insert: '[A -> B[)' }, { label: '[A -> #oo[', detail: T('plage ouverte (∞)', 'open range (∞)'), insert: '[A -> #oo[)' }] };
   if ((m = /^[ \t\-+]*?\+ .*\(([a-z]?)$/.exec(before))) return {
     from: pos - m[1].length, q: q(m[1]), items: [
-      ['i', 'type, libellé, révision'], ['s', 'statut'], ['a', 'alias'], ['l', 'lien transverse'], ['b', 'bulles'], ['e', 'effectivité']].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
+      ['i', T('type, libellé, révision', 'type, label, revision')], ['s', T('statut', 'status')], ['a', 'alias'], ['l', T('lien transverse', 'cross link')], ['b', T('bulles', 'bubbles')], ['e', T('effectivité', 'effectivity')]].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
   };
   return null;
 }
@@ -1678,7 +1864,7 @@ function acUpdate(force) {
   if (!items.length || (!force && items.length === 1 && c.q && items[0].insert.toLowerCase() === c.q)) return acClose();
   ac.items = items.slice(0, 60); ac.idx = 0; ac.from = c.from; ac.open = true;
   ac.el.innerHTML = ac.items.map((it, i) => `<div class="ac-item${i ? '' : ' sel'}" data-i="${i}" role="option"><span class="ico">${it.icon || ''}</span><b>${escapeHtml(it.label)}</b><small>${escapeHtml(it.detail || '')}</small></div>`).join('')
-    + '<div class="ac-hint">↑↓ choisir · Entrée/Tab valider · Échap fermer</div>';
+    + `<div class="ac-hint">${T('↑↓ choisir · Entrée/Tab valider · Échap fermer', '↑↓ choose · Enter/Tab accept · Esc close')}</div>`;
   ac.el.hidden = false;
   // position du curseur (police à chasse fixe, pas de retour à la ligne automatique)
   const line = lineOfPos(ta.selectionStart); const col = ta.selectionStart - posOfLine(line);
@@ -1751,21 +1937,21 @@ async function openFile() {
   if (window.showOpenFilePicker) {
     try {
       const [h] = await showOpenFilePicker({ types: [{ description: 'Markdown / BoMarkdown', accept: { 'text/markdown': ['.md', '.markdown', '.bmd', '.bom', '.txt'] } }] });
-      const f = await h.getFile(); loadText(await f.text(), f.name, h); toast('Ouvert : ' + f.name);
+      const f = await h.getFile(); loadText(await f.text(), f.name, h); toast(T('Ouvert : ', 'Opened: ') + f.name);
     } catch (e) { if (e.name !== 'AbortError') toast(e.message, true); }
   } else $('#file-open').click();
 }
-$('#file-open').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { loadText(await f.text(), f.name); toast('Ouvert : ' + f.name); } e.target.value = ''; });
+$('#file-open').addEventListener('change', async e => { const f = e.target.files[0]; if (f) { loadText(await f.text(), f.name); toast(T('Ouvert : ', 'Opened: ') + f.name); } e.target.value = ''; });
 async function saveFile(saveAs = false) {
   try {
     if (!saveAs && docState.handle) {
       const w = await docState.handle.createWritable(); await w.write(ta.value); await w.close();
-      setDirty(false); toast('Enregistré : ' + docState.name); return;
+      setDirty(false); toast(T('Enregistré : ', 'Saved: ') + docState.name); return;
     }
     if (window.showSaveFilePicker) {
       const h = await showSaveFilePicker({ suggestedName: docState.name, types: [{ description: 'Markdown / BoMarkdown', accept: { 'text/markdown': ['.md', '.bmd', '.txt'] } }] });
       const w = await h.createWritable(); await w.write(ta.value); await w.close();
-      docState.handle = h; setDocName(h.name); setDirty(false); persistDoc(); toast('Enregistré : ' + h.name); return;
+      docState.handle = h; setDocName(h.name); setDirty(false); persistDoc(); toast(T('Enregistré : ', 'Saved: ') + h.name); return;
     }
     download(docState.name, ta.value, 'text/markdown;charset=utf-8'); setDirty(false); persistDoc();
   } catch (e) { if (e.name !== 'AbortError') toast(e.message, true); }
@@ -1773,7 +1959,7 @@ async function saveFile(saveAs = false) {
 $('#btn-open').onclick = openFile;
 $('#btn-save').onclick = () => saveFile(false);
 $('#btn-new').onclick = () => {
-  loadText('+ (i:assembly,Mon produit,A)(s:IW)\n + (i:component,Composant 1,A)(s:R)\n + (i:component,Composant 2,B)(s:F)\n', 'nouveau.bmd');
+  loadText(T('+ (i:assembly,Mon produit,A)(s:IW)\n + (i:component,Composant 1,A)(s:R)\n + (i:component,Composant 2,B)(s:F)\n', '+ (i:assembly,My product,A)(s:IW)\n + (i:component,Component 1,A)(s:R)\n + (i:component,Component 2,B)(s:F)\n'), T('nouveau.bmd', 'new.bmd'));
   gotoLine(0);
 };
 
@@ -1789,7 +1975,7 @@ $('#btn-new').onclick = () => {
     if ($('#dlg-icons').open) return;
     const f = e.dataTransfer.files[0]; if (!f) return;
     if (f.type.startsWith('image/')) { $('#btn-icons').click(); addIconFiles([...e.dataTransfer.files]); return; }
-    loadText(await f.text(), f.name); toast('Ouvert : ' + f.name);
+    loadText(await f.text(), f.name); toast(T('Ouvert : ', 'Opened: ') + f.name);
   });
 })();
 
@@ -1797,7 +1983,7 @@ $('#btn-new').onclick = () => {
 function currentSvg() {
   const b = info.blocks[curBlock];
   const r = renderBlockText(blockText(b), b.start, { meta: false });
-  if (!r.count) throw new Error('Le bloc courant est vide');
+  if (!r.count) throw new Error(T('Le bloc courant est vide', 'The current block is empty'));
   return { name: blockName(b, curBlock), svg: exportableSvg(r.svg), w: r.width, h: r.height };
 }
 function svgToPng(svg, w, h, scale = 2) {
@@ -1806,9 +1992,9 @@ function svgToPng(svg, w, h, scale = 2) {
     img.onload = () => {
       const c = document.createElement('canvas'); c.width = Math.ceil(w * scale); c.height = Math.ceil(h * scale);
       const ctx = c.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, w, h);
-      c.toBlob(b => b ? resolve(b) : reject(new Error('Conversion PNG impossible')), 'image/png');
+      c.toBlob(b => b ? resolve(b) : reject(new Error(T('Conversion PNG impossible', 'PNG conversion failed'))), 'image/png');
     };
-    img.onerror = () => reject(new Error('Conversion PNG impossible'));
+    img.onerror = () => reject(new Error(T('Conversion PNG impossible', 'PNG conversion failed')));
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   });
 }
@@ -1845,7 +2031,7 @@ function makeZip(files) {
   return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
 }
 function insertImageLinks() {
-  if (!info.markdown) { toast('Fonction réservée aux documents Markdown contenant des blocs bomarkdown', true); return 0; }
+  if (!info.markdown) { toast(T('Fonction réservée aux documents Markdown contenant des blocs bomarkdown', 'Only available for Markdown documents containing bomarkdown blocks'), true); return 0; }
   const lines = [...info.lines]; let added = 0;
   for (let i = info.blocks.length - 1; i >= 0; i--) {
     const b = info.blocks[i]; if (b.footer < 0) continue;
@@ -1858,22 +2044,22 @@ function insertImageLinks() {
   return added;
 }
 const actions = {
-  'export-svg': () => { const s = currentSvg(); download(baseName(s.name) + '.svg', s.svg, 'image/svg+xml'); toast(`SVG exporté : ${baseName(s.name)}.svg`); },
-  'export-png': async () => { const s = currentSvg(); download(baseName(s.name) + '.png', await svgToPng(s.svg, s.w, s.h), 'image/png'); toast(`PNG exporté : ${baseName(s.name)}.png`); },
-  'copy-svg': async () => { const s = currentSvg(); await navigator.clipboard.writeText(s.svg); toast('SVG copié dans le presse-papiers'); },
-  'export-zip': () => { const f = allSvgs(); if (!f.length) throw new Error('Aucun bloc à exporter'); download(baseName(docState.name) + '-svg.zip', makeZip(f)); toast(`${f.length} SVG exporté(s) en ZIP`); },
+  'export-svg': () => { const s = currentSvg(); download(baseName(s.name) + '.svg', s.svg, 'image/svg+xml'); toast(`${T('SVG exporté :', 'SVG exported:')} ${baseName(s.name)}.svg`); },
+  'export-png': async () => { const s = currentSvg(); download(baseName(s.name) + '.png', await svgToPng(s.svg, s.w, s.h), 'image/png'); toast(`${T('PNG exporté :', 'PNG exported:')} ${baseName(s.name)}.png`); },
+  'copy-svg': async () => { const s = currentSvg(); await navigator.clipboard.writeText(s.svg); toast(T('SVG copié dans le presse-papiers', 'SVG copied to the clipboard')); },
+  'export-zip': () => { const f = allSvgs(); if (!f.length) throw new Error(T('Aucun bloc à exporter', 'No block to export')); download(baseName(docState.name) + '-svg.zip', makeZip(f)); toast(T(`${f.length} SVG exporté(s) en ZIP`, `${f.length} SVG(s) exported as ZIP`)); },
   'export-folder': async () => {
-    const f = allSvgs(); if (!f.length) throw new Error('Aucun bloc à exporter');
-    if (!window.showDirectoryPicker) { actions['export-zip'](); toast('Navigateur sans accès aux dossiers : export ZIP à la place'); return; }
+    const f = allSvgs(); if (!f.length) throw new Error(T('Aucun bloc à exporter', 'No block to export'));
+    if (!window.showDirectoryPicker) { actions['export-zip'](); toast(T('Navigateur sans accès aux dossiers : export ZIP à la place', 'This browser cannot write folders: exported as ZIP instead')); return; }
     let dir; try { dir = await showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { if (e.name === 'AbortError') return; throw e; }
     for (const file of f) {
       const segs = file.name.split('/'); let d = dir;
       for (const s of segs.slice(0, -1)) d = await d.getDirectoryHandle(s, { create: true });
       const w = await (await d.getFileHandle(segs.at(-1), { create: true })).createWritable(); await w.write(file.data); await w.close();
     }
-    toast(`${f.length} SVG écrit(s) dans « ${dir.name} »`);
+    toast(T(`${f.length} SVG écrit(s) dans « ${dir.name} »`, `${f.length} SVG(s) written to “${dir.name}”`));
   },
-  'insert-links': () => { const n = insertImageLinks(); if (info.markdown) toast(n ? `${n} lien(s) image inséré(s)` : 'Tous les liens image sont déjà présents'); },
+  'insert-links': () => { const n = insertImageLinks(); if (info.markdown) toast(n ? T(`${n} lien(s) image inséré(s)`, `${n} image link(s) inserted`) : T('Tous les liens image sont déjà présents', 'All image links are already present')); },
 };
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
@@ -1883,11 +2069,15 @@ document.addEventListener('click', async e => {
 
 /* ---------- Menus ---------- */
 document.addEventListener('click', e => { $$('details.menu[open]').forEach(d => { if (!d.contains(e.target)) d.removeAttribute('open'); }); });
-const EXAMPLES = $$('script[type="text/x-bomarkdown"]').map(s => ({ name: s.dataset.name, file: s.dataset.file, text: s.textContent.replace(/^\n/, '') }));
-$('#examples-list').innerHTML = EXAMPLES.map((x, i) => `<button data-ex="${i}">${escapeHtml(x.name)}<small style="margin-left:auto">${escapeHtml(x.file)}</small></button>${i === 0 ? '<hr>' : ''}`).join('');
+const examples = () => $$('script[type="text/x-bomarkdown"]').filter(s => !s.dataset.lang || s.dataset.lang === lang)
+  .map(s => ({ name: (lang === 'en' && s.dataset.nameEn) || s.dataset.name, file: s.dataset.file, text: s.textContent.replace(/^\n/, '') }));
+function renderExamples() {
+  $('#examples-list').innerHTML = examples().map((x, i) => `<button data-ex="${i}">${escapeHtml(x.name)}<small style="margin-left:auto">${escapeHtml(x.file)}</small></button>${i === 0 ? '<hr>' : ''}`).join('');
+}
+renderExamples();
 $('#examples-list').addEventListener('click', e => {
   const b = e.target.closest('[data-ex]'); if (!b) return;
-  const x = EXAMPLES[+b.dataset.ex]; $('#menu-examples').removeAttribute('open');
+  const x = examples()[+b.dataset.ex]; $('#menu-examples').removeAttribute('open');
   loadText(x.text, x.file); setZoom(zoom, true);
 });
 
@@ -1901,7 +2091,7 @@ const THEME_ICO = {
 function applyTheme(t) {
   if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
   $('#theme-ico').innerHTML = THEME_ICO[t];
-  $('#btn-theme').title = 'Thème : ' + { auto: 'automatique', light: 'clair', dark: 'sombre' }[t];
+  $('#btn-theme').title = T('Thème : ', 'Theme: ') + (lang === 'en' ? { auto: 'automatic', light: 'light', dark: 'dark' } : { auto: 'automatique', light: 'clair', dark: 'sombre' })[t];
   store.set('theme', t);
 }
 let theme = store.get('theme', 'auto'); applyTheme(theme);
@@ -1928,7 +2118,7 @@ function parseJsonc(src) {
 function readJsonFile() {
   return new Promise(resolve => {
     const inp = $('#file-json');
-    inp.onchange = async () => { const f = inp.files[0]; inp.value = ''; if (!f) return resolve(null); try { resolve({ name: f.name, data: parseJsonc(await f.text()) }); } catch (e) { toast('JSON invalide : ' + e.message, true); resolve(null); } };
+    inp.onchange = async () => { const f = inp.files[0]; inp.value = ''; if (!f) return resolve(null); try { resolve({ name: f.name, data: parseJsonc(await f.text()) }); } catch (e) { toast(T('JSON invalide : ', 'Invalid JSON: ') + e.message, true); resolve(null); } };
     inp.click();
   });
 }
@@ -1949,7 +2139,7 @@ function fillSettingsForm(s) {
 }
 function readSettingsForm() {
   let adv;
-  try { adv = JSON.parse($('#s-json').value); } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = 'JSON invalide : ' + e.message; return null; }
+  try { adv = JSON.parse($('#s-json').value); } catch (e) { $('#s-json').classList.add('bad'); $('#s-json-err').textContent = T('JSON invalide : ', 'Invalid JSON: ') + e.message; return null; }
   const s = normalizeSettings({ ...settings, ...adv });
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) { const v = parseFloat($('#s-' + k).value); if (Number.isFinite(v)) s[k] = v; }
   s.renderlegend = $('#s-legend').checked; s.transparent = $('#s-transparent').checked;
@@ -1962,11 +2152,11 @@ $('#s-json').addEventListener('input', () => { try { JSON.parse($('#s-json').val
 $('#btn-settings').onclick = () => { fillSettingsForm(settings); $('#dlg-settings').showModal(); };
 $('#s-apply').onclick = () => {
   const s = readSettingsForm(); if (!s) return;
-  settings = s; store.set('settings', settings); $('#dlg-settings').close(); fillLinkTypes(); renderPreview(); toast('Réglages appliqués');
+  settings = s; store.set('settings', settings); $('#dlg-settings').close(); fillLinkTypes(); renderPreview(); toast(T('Réglages appliqués', 'Settings applied'));
 };
-$('#s-reset').onclick = () => { fillSettingsForm(clone(DEFAULT_SETTINGS)); toast('Valeurs par défaut chargées : cliquez sur Appliquer'); };
+$('#s-reset').onclick = () => { fillSettingsForm(clone(DEFAULT_SETTINGS)); toast(T('Valeurs par défaut chargées : cliquez sur Appliquer', 'Defaults loaded: click Apply')); };
 $('#s-export').onclick = () => { const s = readSettingsForm(); if (s) download('bomarkdown-settings.json', JSON.stringify(s, null, 2), 'application/json'); };
-$('#s-import').onclick = async () => { const r = await readJsonFile(); if (!r) return; fillSettingsForm(normalizeSettings({ ...settings, ...r.data })); toast('Réglages importés depuis ' + r.name + ' : cliquez sur Appliquer'); };
+$('#s-import').onclick = async () => { const r = await readJsonFile(); if (!r) return; fillSettingsForm(normalizeSettings({ ...settings, ...r.data })); toast(T(`Réglages importés depuis ${r.name} : cliquez sur Appliquer`, `Settings imported from ${r.name}: click Apply`)); };
 
 /* Icônes */
 function renderIconGrid() {
@@ -1976,10 +2166,10 @@ function renderIconGrid() {
     <div class="icon-card" data-name="${attr(i.name)}">
       <img alt="" src="${attr(i.icon)}">
       <div class="meta"><div class="nm" title="${attr(i.name)}">${escapeHtml(i.name)}</div>
-        <input value="${attr(i.label || '')}" placeholder="Libellé de légende" data-label title="Libellé affiché dans la légende"></div>
-      <span class="badge ${i.source === 'user' ? 'user' : ''}">${i.source === 'user' ? 'perso' : 'défaut'}</span>
-      ${i.source === 'user' ? '<button class="btn icon danger" data-del title="Supprimer"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>' : ''}
-    </div>`).join('') || '<p class="hint">Aucune icône.</p>';
+        <input value="${attr(i.label || '')}" placeholder="${T('Libellé de légende', 'Legend label')}" data-label title="${T('Libellé affiché dans la légende', 'Label shown in the legend')}"></div>
+      <span class="badge ${i.source === 'user' ? 'user' : ''}">${i.source === 'user' ? T('perso', 'custom') : T('défaut', 'default')}</span>
+      ${i.source === 'user' ? `<button class="btn icon danger" data-del title="${T('Supprimer', 'Delete')}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>` : ''}
+    </div>`).join('') || `<p class="hint">${T('Aucune icône.', 'No icons.')}</p>`;
 }
 /* comme la commande AddIcons : un fichier de même nom ne met à jour que l'image (le libellé est conservé) */
 function upsertUserIcon(icon, keepLabel = true) {
@@ -1998,7 +2188,7 @@ $('#icon-grid').addEventListener('change', e => {
 $('#icon-grid').addEventListener('click', e => {
   if (!e.target.closest('[data-del]')) return;
   const name = e.target.closest('.icon-card').dataset.name;
-  userIcons = userIcons.filter(u => u.name !== name); saveIcons(); renderIconGrid(); renderPreview(); toast(`Icône « ${name} » supprimée`);
+  userIcons = userIcons.filter(u => u.name !== name); saveIcons(); renderIconGrid(); renderPreview(); toast(T(`Icône « ${name} » supprimée`, `Icon “${name}” deleted`));
 });
 $('#icon-filter').addEventListener('input', renderIconGrid);
 $('#btn-icons').onclick = () => { renderIconGrid(); if (!$('#dlg-icons').open) $('#dlg-icons').showModal(); };
@@ -2019,7 +2209,7 @@ function fileToIcon(file) {
         const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, c.width, c.height);
         resolve({ name, label, type: 'png', filename: file.name, icon: c.toDataURL('image/png') });
       };
-      img.onerror = () => reject(new Error('Image illisible : ' + file.name));
+      img.onerror = () => reject(new Error(T('Image illisible : ', 'Unreadable image: ') + file.name));
       img.src = url;
     };
     rd.readAsDataURL(file);
@@ -2031,7 +2221,7 @@ async function addIconFiles(files) {
     if (!f.type.startsWith('image/')) continue;
     try { upsertUserIcon(await fileToIcon(f)); n++; } catch (e) { toast(e.message, true); }
   }
-  if (n) { saveIcons(); renderIconGrid(); renderPreview(); toast(`${n} icône(s) ajoutée(s) ou mise(s) à jour`); }
+  if (n) { saveIcons(); renderIconGrid(); renderPreview(); toast(T(`${n} icône(s) ajoutée(s) ou mise(s) à jour`, `${n} icon(s) added or updated`)); }
 }
 const drop = $('#icon-drop');
 drop.onclick = () => $('#file-icons').click();
@@ -2046,10 +2236,10 @@ $('#icon-import').onclick = async () => {
   const arr = Array.isArray(r.data) ? r.data : [];
   let n = 0;
   for (const i of arr) if (i && i.name && typeof i.icon === 'string' && /^data:image\//.test(i.icon)) { upsertUserIcon({ name: String(i.name), label: i.label || '', type: i.type || 'png', filename: i.filename || '', icon: i.icon }); n++; }
-  saveIcons(); renderIconGrid(); renderPreview(); toast(`${n} icône(s) importée(s) depuis ${r.name}`);
+  saveIcons(); renderIconGrid(); renderPreview(); toast(T(`${n} icône(s) importée(s) depuis ${r.name}`, `${n} icon(s) imported from ${r.name}`));
 };
 $('#icon-export').onclick = () => {
-  if (!userIcons.length) { toast('Aucune icône personnalisée à exporter', true); return; }
+  if (!userIcons.length) { toast(T('Aucune icône personnalisée à exporter', 'No custom icons to export'), true); return; }
   download('UserIcons.json', JSON.stringify(userIcons.map(({ source, ...i }) => i), null, 2), 'application/json');
 };
 
@@ -2058,28 +2248,28 @@ function renderReference() {
   const icons = [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name));
   const sec = (title, html) => `<h3 class="sec">${title}</h3>${html}`;
   const grid = items => `<div class="ref-grid">${items.join('')}</div>`;
-  const item = (ins, sw, name, label) => `<button class="ref-item" data-ins="${attr(ins)}" title="Insérer ${attr(ins)}">${sw}<span><b>${escapeHtml(name)}</b><small>${escapeHtml(label || '')}</small></span></button>`;
+  const item = (ins, sw, name, label) => `<button class="ref-item" data-ins="${attr(ins)}" title="${T('Insérer', 'Insert')} ${attr(ins)}">${sw}<span><b>${escapeHtml(name)}</b><small>${escapeHtml(label || '')}</small></span></button>`;
   const sw = (inner, vb) => swatchSvg(inner, vb, 'sw');
   $('#ref-body').innerHTML =
-    `<p class="hint" style="margin-top:0">Cliquez pour insérer à la position du curseur. Tapez aussi <code>(i:</code>, <code>(s:</code>, <code>(b:</code>, <code>(l:</code> dans l'éditeur pour l'autocomplétion.</p>`
-    + sec(`Types d'éléments (${icons.length})`, grid(icons.map(i => item(`(i:${i.name},`, `<img alt="" src="${attr(i.icon)}">`, i.name, i.label))))
-    + sec('Statuts', grid(Object.entries(settings.status).map(([k, v]) => item(`(s:${k})`, sw(stripRootId(v.svg)), k, v.label))))
-    + sec('Bulles', grid(Object.entries(settings.bubbles).map(([k, v]) => item(`(b:${k})`, sw(stripRootId(settings.mandatoryDefs.placeholder) + stripRootId(v.svg), '-8 -8 36 36'), k, v.label))))
-    + sec('Liens', grid(Object.entries(settings.links).map(([k, v]) => item(k === 'h' ? '+ ' : `(l:${k}:`, sw(`<defs>${v.arrow || ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? ' (hiérarchie)' : '')))))
-    + sec('Autres', grid([
+    `<p class="hint" style="margin-top:0">${T('Cliquez pour insérer à la position du curseur. Tapez aussi', 'Click to insert at the cursor position. You can also type')} <code>(i:</code>, <code>(s:</code>, <code>(b:</code>, <code>(l:</code> ${T("dans l'éditeur pour l'autocomplétion.", 'in the editor for autocompletion.')}</p>`
+    + sec(`${T('Types d\'éléments', 'Item types')} (${icons.length})`, grid(icons.map(i => item(`(i:${i.name},`, `<img alt="" src="${attr(i.icon)}">`, i.name, i.label))))
+    + sec(T('Statuts', 'Statuses'), grid(Object.entries(settings.status).map(([k, v]) => item(`(s:${k})`, sw(stripRootId(v.svg)), k, v.label))))
+    + sec(T('Bulles', 'Bubbles'), grid(Object.entries(settings.bubbles).map(([k, v]) => item(`(b:${k})`, sw(stripRootId(settings.mandatoryDefs.placeholder) + stripRootId(v.svg), '-8 -8 36 36'), k, v.label))))
+    + sec(T('Liens', 'Links'), grid(Object.entries(settings.links).map(([k, v]) => item(k === 'h' ? '+ ' : `(l:${k}:`, sw(`<defs>${v.arrow || ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? T(' (hiérarchie)', ' (hierarchy)') : '')))))
+    + sec(T('Autres', 'Other'), grid([
       item('(a:', sw('<text x="10" y="15" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b0599">a</text>'), '(a:alias)', 'Alias'),
-      item('(e:o)', sw(`<g transform="translate(16,0)">${stripRootId(settings.mandatoryDefs.eff)}</g>`), '(e:o)', 'Pastille d\'effectivité'),
-      item('(e:[A -> B[)', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#795e26">A→B</text>'), '(e:[A -> B[)', 'Plage d\'effectivité'),
-      item('+newcolumn ', sw('<path d="M4 4v12M10 4v12M16 4v12" stroke="#0550ae" stroke-width="1.6"/>'), '+newcolumn', 'Nouvelle colonne'),
-      item('${{\n"haslegend": false\n}}$\n', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#6639ba">{ }</text>'), '${{ }}$', 'Paramètres du bloc'),
+      item('(e:o)', sw(`<g transform="translate(16,0)">${stripRootId(settings.mandatoryDefs.eff)}</g>`), '(e:o)', T('Pastille d\'effectivité', 'Effectivity dot')),
+      item('(e:[A -> B[)', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#795e26">A→B</text>'), '(e:[A -> B[)', T('Plage d\'effectivité', 'Effectivity range')),
+      item('+newcolumn ', sw('<path d="M4 4v12M10 4v12M16 4v12" stroke="#0550ae" stroke-width="1.6"/>'), '+newcolumn', T('Nouvelle colonne', 'New column')),
+      item('${{\n"haslegend": false\n}}$\n', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#6639ba">{ }</text>'), '${{ }}$', T('Paramètres du bloc', 'Block parameters')),
     ]))
-    + sec('Remplacements d\'effectivité', `<table class="help" style="width:100%">${Object.entries(settings.utf8replacement).map(([k, v]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${escapeHtml(decodeEntities(String(v)))}</td></tr>`).join('')}</table>`);
+    + sec(T('Remplacements d\'effectivité', 'Effectivity replacements'), `<table class="help" style="width:100%">${Object.entries(settings.utf8replacement).map(([k, v]) => `<tr><td><code>${escapeHtml(k)}</code></td><td>${escapeHtml(decodeEntities(String(v)))}</td></tr>`).join('')}</table>`);
 }
 $('#ref-body').addEventListener('click', e => {
   const b = e.target.closest('[data-ins]'); if (!b) return;
   const ins = b.dataset.ins;
   if (ins === '+ ') { const ls = posOfLine(curLine); insertText(ins, ls, ls); } else insertText(ins);
-  toast('Inséré : ' + ins.split('\n')[0]);
+  toast(T('Inséré : ', 'Inserted: ') + ins.split('\n')[0]);
 });
 $('#btn-ref').onclick = () => { const d = $('#drawer'); if (!d.classList.contains('open')) renderReference(); d.classList.toggle('open'); };
 $('#drawer-close').onclick = () => $('#drawer').classList.remove('open');
@@ -2226,27 +2416,27 @@ const G = {
   child(line) {
     const ch = childrenOf(line), end = subtreeEnd(line);
     const type = ch.length ? itemType(ch.at(-1)) : (CHILD_TYPE[itemType(line)] ?? itemType(line));
-    applyEdit(end + 1, end + 1, [newItem(levelOf(line) + 1, type, 'Nouvel élément')], end + 1, () => startRename(end + 1, line));
+    applyEdit(end + 1, end + 1, [newItem(levelOf(line) + 1, type, T('Nouvel élément', 'New item'))], end + 1, () => startRename(end + 1, line));
   },
   sibling(line) {
     const end = subtreeEnd(line);
-    applyEdit(end + 1, end + 1, [newItem(levelOf(line), itemType(line), 'Nouvel élément')], end + 1, () => startRename(end + 1, line));
+    applyEdit(end + 1, end + 1, [newItem(levelOf(line), itemType(line), T('Nouvel élément', 'New item'))], end + 1, () => startRename(end + 1, line));
   },
   indent(line, d = 1) {
     const L = levelOf(line), end = subtreeEnd(line);
-    if (d < 0 && L === 0) return toast('Déjà au niveau racine');
-    if (d > 0 && prevSibling(line) < 0) return toast('Impossible : aucun élément de même niveau au-dessus pour devenir le parent', true);
+    if (d < 0 && L === 0) return toast(T('Déjà au niveau racine', 'Already at root level'));
+    if (d > 0 && prevSibling(line) < 0) return toast(T('Impossible : aucun élément de même niveau au-dessus pour devenir le parent', 'Not possible: no item at the same level above to become the parent'), true);
     const out = info.lines.slice(line, end + 1).map((l, k) => isItem(line + k) ? reLevel(line + k, levelOf(line + k) + d) : l);
     applyEdit(line, end + 1, out, line);
   },
   outdent(line) { G.indent(line, -1); },
   up(line) {
-    const p = prevSibling(line); if (p < 0) return toast('Déjà en première position');
+    const p = prevSibling(line); if (p < 0) return toast(T('Déjà en première position', 'Already in first position'));
     const end = subtreeEnd(line);
     applyEdit(p, end + 1, [...info.lines.slice(line, end + 1), ...info.lines.slice(p, line)], p);
   },
   down(line) {
-    const nx = nextSibling(line); if (nx < 0) return toast('Déjà en dernière position');
+    const nx = nextSibling(line); if (nx < 0) return toast(T('Déjà en dernière position', 'Already in last position'));
     const nEnd = subtreeEnd(nx);
     applyEdit(line, nEnd + 1, [...info.lines.slice(nx, nEnd + 1), ...info.lines.slice(line, nx)], line + (nEnd - nx + 1));
   },
@@ -2255,7 +2445,7 @@ const G = {
     const before = blockItems().filter(i => i < line).at(-1);
     const afterIt = blockItems().find(i => i > end);
     applyEdit(line, end + 1, [], before ?? (afterIt != null ? afterIt - n : null));
-    toast(n > 1 ? `Élément et ${n - 1} ligne(s) dépendante(s) supprimés · Ctrl+Z pour annuler` : 'Élément supprimé · Ctrl+Z pour annuler');
+    toast(n > 1 ? T(`Élément et ${n - 1} ligne(s) dépendante(s) supprimés · Ctrl+Z pour annuler`, `Item and ${n - 1} dependent line(s) deleted · Ctrl+Z to undo`) : T('Élément supprimé · Ctrl+Z pour annuler', 'Item deleted · Ctrl+Z to undo'));
   },
   rename(line) { startRename(line); },
   link() { setLinkMode(!linkMode); },
@@ -2265,7 +2455,7 @@ const G = {
 
 function moveItem(src, target, asSibling) {
   const end = subtreeEnd(src);
-  if (target >= src && target <= end) return toast('Impossible de déplacer un élément dans sa propre descendance', true);
+  if (target >= src && target <= end) return toast(T('Impossible de déplacer un élément dans sa propre descendance', 'An item cannot be moved into its own descendants'), true);
   const d = (asSibling ? levelOf(target) : levelOf(target) + 1) - levelOf(src);
   const moved = info.lines.slice(src, end + 1).map((l, k) => isItem(src + k) ? reLevel(src + k, levelOf(src + k) + d) : l);
   const tEnd = subtreeEnd(target);
@@ -2280,7 +2470,7 @@ function genAlias(label, used) {
 }
 const linkTypeSel = () => $('#linktype').value || 'i';
 function linkItems(src, tgt, type = linkTypeSel()) {
-  if (src === tgt) return toast('Un élément ne peut pas être lié à lui-même', true);
+  if (src === tgt) return toast(T('Un élément ne peut pas être lié à lui-même', 'An item cannot be linked to itself'), true);
   const sSt = lineStruct(info.lines[src]), tSt = lineStruct(info.lines[tgt]);
   let alias = ''; const ak = blockIdx(tSt, 'a');
   if (ak >= 0 && tSt.blocks[ak].content.trim()) alias = tSt.blocks[ak].content.trim();
@@ -2288,12 +2478,12 @@ function linkItems(src, tgt, type = linkTypeSel()) {
     alias = genAlias(getI(tSt).label, new Set(currentAliases().map(a => a.alias)));
     if (ak >= 0) tSt.blocks[ak].content = alias; else insertBlock(tSt, afterI(tSt), { kind: 'a', content: alias });
   }
-  if (!addLinkEntry(sSt, type, alias)) return toast('Ce lien existe déjà');
+  if (!addLinkEntry(sSt, type, alias)) return toast(T('Ce lien existe déjà', 'This link already exists'));
   const lo = Math.min(src, tgt), hi = Math.max(src, tgt);
   const region = info.lines.slice(lo, hi + 1);
   region[src - lo] = structText(sSt); region[tgt - lo] = structText(tSt);
   applyEdit(lo, hi + 1, region, src);
-  toast(`Lien « ${settings.links[type]?.label || type} » créé vers « ${alias} »`);
+  toast(T(`Lien « ${settings.links[type]?.label || type} » créé vers « ${alias} »`, `“${settings.links[type]?.label || type}” link created to “${alias}”`));
 }
 
 /* --- sélection --- */
@@ -2315,7 +2505,7 @@ function setLinkMode(on) {
   linkMode = on && isItem(curLine);
   preview.classList.toggle('linking', linkMode);
   banner.hidden = !linkMode;
-  if (linkMode) banner.textContent = `Lien « ${settings.links[linkTypeSel()]?.label || linkTypeSel()} » : cliquez sur l'élément cible · Échap pour annuler`;
+  if (linkMode) banner.textContent = T(`Lien « ${settings.links[linkTypeSel()]?.label || linkTypeSel()} » : cliquez sur l'élément cible · Échap pour annuler`, `“${settings.links[linkTypeSel()]?.label || linkTypeSel()}” link: click the target item · Esc to cancel`);
   positionOverlay();
 }
 function clearLinkSel() { selLink = null; ltb.hidden = true; sheet.querySelectorAll('g.lk.sel').forEach(g => g.classList.remove('sel')); }
@@ -2349,7 +2539,7 @@ function editSelLink(newType) {
   const keep = selLink;
   applyEdit(src, src + 1, [structText(st)], null);
   if (keep) { selLink = keep; markLinkSel(); ltb.hidden = !selLink; }
-  toast(newType ? 'Type de lien modifié' : 'Lien supprimé · Ctrl+Z pour annuler');
+  toast(newType ? T('Type de lien modifié', 'Link type changed') : T('Lien supprimé · Ctrl+Z pour annuler', 'Link deleted · Ctrl+Z to undo'));
 }
 $('#ltb-type').addEventListener('change', e => editSelLink(e.target.value));
 
@@ -2384,11 +2574,11 @@ function openPop(kind, btn, line) {
   let html = '';
   if (kind === 'type') {
     const cur = getI(st).type.toLowerCase();
-    html = `<button data-v="">— <span>Aucun type</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
+    html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
       .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
   } else {
     const sk = blockIdx(st, 's'); const cur = sk >= 0 ? st.blocks[sk].content.trim() : '';
-    html = `<button data-v="">— <span>Aucun statut</span></button>` + Object.entries(settings.status)
+    html = `<button data-v="">— <span>${T('Aucun statut', 'No status')}</span></button>` + Object.entries(settings.status)
       .map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${statusSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml(v.label || '')}</small></button>`).join('');
   }
   gpop.innerHTML = html; gpop.dataset.kind = kind; gpop.dataset.line = line; gpop.hidden = false;
@@ -2477,7 +2667,7 @@ preview.addEventListener('pointermove', e => {
     if (drag.mode === 'pan') preview.classList.add('panning');
     if (drag.mode === 'item') {
       if (linkMode) setLinkMode(false);
-      ghost.hidden = false; ghost.textContent = 'Déplacer « ' + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + ' »';
+      ghost.hidden = false; ghost.textContent = T('Déplacer « ', 'Move “') + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + T(' »', '”');
       gtb.hidden = handle.hidden = true;
     }
   }
@@ -2488,8 +2678,8 @@ preview.addEventListener('pointermove', e => {
     ghost.style.left = (e.clientX - sr.left + 14) + 'px'; ghost.style.top = (e.clientY - sr.top + 10) + 'px';
     const t = itemAt(e.clientX, e.clientY); markDrop(t, drag.g);
     ghost.textContent = t && t !== drag.g
-      ? (e.altKey || e.shiftKey ? 'Placer après « ' : 'Devenir enfant de « ') + getI(lineStruct(info.lines[+t.dataset.line])).label + ' »'
-      : 'Déplacer « ' + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + ' »';
+      ? (e.altKey || e.shiftKey ? T('Placer après « ', 'Place after “') : T('Devenir enfant de « ', 'Become a child of “')) + getI(lineStruct(info.lines[+t.dataset.line])).label + T(' »', '”')
+      : T('Déplacer « ', 'Move “') + getI(lineStruct(info.lines[+drag.g.dataset.line])).label + T(' »', '”');
   } else if (drag.mode === 'link') {
     const hr = handle.getBoundingClientRect();
     tmpLink.querySelector('path').setAttribute('d', `M ${hr.left - sr.left + 7} ${hr.top - sr.top + 7} L ${e.clientX - sr.left} ${e.clientY - sr.top}`);
@@ -2562,19 +2752,19 @@ function addRoot() {
   if (!items.length) {
     const b = blk(), bs = bodyStart(b); let at = b.end;
     while (at > bs && (info.lines[at - 1] || '').trim() === '') at--;
-    return applyEdit(at, at, ['+ (i:assembly,Nouvelle racine)'], at, () => startRename(at, -1));
+    return applyEdit(at, at, ['+ (i:assembly,' + T('Nouvelle racine', 'New root') + ')'], at, () => startRename(at, -1));
   }
   const ref = isItem(curLine) ? curLine : items.at(-1);
   const [cs, ce] = colRange(ref); const last = lastItemIn(cs, ce); const at = last >= 0 ? last + 1 : cs;
   const type = itemType(items.find(i => i >= cs) ?? ref);
-  applyEdit(at, at, [newItem(0, type, 'Nouvelle racine')], at, () => startRename(at, -1));
+  applyEdit(at, at, [newItem(0, type, T('Nouvelle racine', 'New root'))], at, () => startRename(at, -1));
 }
 function addColumn() {
   const items = blockItems(); if (!items.length) return addRoot();
   const ref = isItem(curLine) ? curLine : items.at(-1);
   const [cs, ce] = colRange(ref); const at = lastItemIn(cs, ce) + 1;
-  applyEdit(at, at, ['+newcolumn', newItem(0, itemType(items[0]), 'Nouvelle racine')], at + 1, () => startRename(at + 1, -1));
-  toast('Colonne ajoutée');
+  applyEdit(at, at, ['+newcolumn', newItem(0, itemType(items[0]), T('Nouvelle racine', 'New root'))], at + 1, () => startRename(at + 1, -1));
+  toast(T('Colonne ajoutée', 'Column added'));
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-gact]'); if (!b) return;
@@ -2588,6 +2778,24 @@ function fillLinkTypes() {
 $('#linktype').addEventListener('change', e => { store.set('linktype', e.target.value); if (linkMode) setLinkMode(true); });
 fillLinkTypes();
 
+/* ---------- Bascule FR / EN ---------- */
+function setLang(l) {
+  lang = l === 'en' ? 'en' : 'fr';
+  store.set('lang', lang);
+  document.documentElement.lang = lang;
+  $$('#lang-sw button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+  translateStatic();
+  applyTheme(theme);
+  renderExamples();
+  updateBlockSelect();
+  setDirty(docState.dirty);
+  renderPreview();
+  if (linkMode) setLinkMode(true);
+  if ($('#drawer').classList.contains('open')) renderReference();
+  if ($('#dlg-icons').open) renderIconGrid();
+}
+$('#lang-sw').addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b && b.dataset.lang !== lang) setLang(b.dataset.lang); });
+
 /* ---------- Raccourcis globaux ---------- */
 document.addEventListener('keydown', e => {
   const mod = e.ctrlKey || e.metaKey;
@@ -2600,8 +2808,12 @@ document.addEventListener('keydown', e => {
 
 /* ---------- Démarrage ---------- */
 (function init() {
+  document.documentElement.lang = lang;
+  $$('#lang-sw button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+  translateStatic();
+  applyTheme(theme);
   const saved = store.get('doc', null);
-  const demo = EXAMPLES[0];
+  const demo = examples()[0];
   if (saved != null) {
     loadText(saved, docState.name || 'document.md');
     setDirty(store.get('docDirty', false));

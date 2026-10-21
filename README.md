@@ -19,6 +19,7 @@ Double-cliquez dessus pour l'ouvrir dans un navigateur récent (Chrome, Edge, Fi
 | `AddIcons` / `Edit UserIcons.json` | Bibliothèque d'icônes : **glisser-déposer** d'images, libellés modifiables, import/export JSON compatible avec l'extension |
 | Snippets + `Update snippets` | **Autocomplétion contextuelle** toujours à jour (`(i:`, `(s:`, `(b:`, `(l:`, alias, `(e:`, `+newcolumn`) |
 | Grammaire TextMate | Coloration syntaxique intégrée, thème clair/sombre |
+| Interface en anglais | Interface **FR / EN** (sélecteur en haut à droite, langue du navigateur par défaut) |
 | Réglages `bomarkdown.*` | Dialogue **Réglages** (formulaire + JSON avancé) ; importe un `settings.json` de VS Code |
 | Table `Fontsize.json` pour mesurer le texte | Mesure réelle par le navigateur (marche avec toutes les polices et tous les caractères) |
 | — | Panneau **Problèmes** : type/statut/bulle/type de lien inconnu, alias introuvable ou en double, JSON `${{ }}$` invalide… |
@@ -39,6 +40,8 @@ Les blocs ` ```bomarkdown chemin ` et `<!--bomarkdown chemin` sont détectés, e
 
 - `Ctrl+Espace` : autocomplétion · `Tab` / `Maj+Tab` : changer de niveau · `Entrée` : nouvel élément au même niveau
 - `Ctrl+S` / `Ctrl+O` : enregistrer / ouvrir · `Ctrl+Maj+E` : exporter le SVG · `F1` : aide complète
+- Langue de l'interface : boutons **FR / EN** en haut à droite. Au premier lancement, c'est la langue du navigateur
+  qui est choisie ; la légende des SVG exportés suit aussi la langue (« Légende » / « Legend »).
 - Le document, les réglages et les icônes personnelles sont **sauvegardés automatiquement** dans le navigateur
   (`localStorage`).
 
