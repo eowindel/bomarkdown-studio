@@ -83,7 +83,14 @@ corrigés au passage :
 - le SVG injecté par les réglages ou un bloc `${{ }}$` est nettoyé (scripts, `on*`) avant affichage et export,
   puisqu'un document partagé peut en contenir.
 
-## Crédits
+## Licence et crédits
 
-Syntaxe, rendu d'origine et icônes par défaut : [Roeperni/bomarkdown](https://github.com/Roeperni/bomarkdown)
-(licence MIT). Les exemples du menu *Exemples* viennent de son README.
+BoMarkdown Studio est © 2026 **Arnaud Rousseau**, distribué sous [licence Apache 2.0](LICENSE).
+Vous pouvez l'utiliser, le modifier et le redistribuer, y compris à des fins commerciales, à condition :
+
+- de conserver le fichier [`NOTICE`](NOTICE) et la mention de l'auteur dans toute redistribution ;
+- d'indiquer les fichiers que vous avez modifiés.
+
+Ce projet est dérivé de [Roeperni/bomarkdown](https://github.com/Roeperni/bomarkdown) (licence MIT) : syntaxe, logique de
+rendu, réglages et icônes par défaut, exemples du menu *Exemples*. Sa notice MIT est reproduite dans
+[`THIRD_PARTY_LICENSES`](THIRD_PARTY_LICENSES).

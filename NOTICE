@@ -1,0 +1,19 @@
+BoMarkdown Studio
+Copyright 2026 Arnaud Rousseau
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+Any redistribution of this work or of a derivative work must retain this
+NOTICE file, including the attribution to Arnaud Rousseau.
+
+-------------------------------------------------------------------------------
+Third-party material
+-------------------------------------------------------------------------------
+
+This product is derived from "BoMarkdown", a Visual Studio Code extension
+(https://github.com/Roeperni/bomarkdown), distributed under the MIT License.
+It reuses that project's text syntax, its layout and SVG rendering logic
+(ported to the browser), its default settings, its default icons (embedded in
+index.html as base64 images) and the examples from its README.
+
+The MIT License text and copyright notice of that project are reproduced in
+THIRD_PARTY_LICENSES.
