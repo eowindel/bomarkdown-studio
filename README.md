@@ -1,3 +1,5 @@
+![BoMarkdown Studio](docs/banner.webp)
+
 # BoMarkdown Studio
 
 **Concevez vos nomenclatures (BOM) en texte, en graphique, ou les deux à la fois : écrivez quelques lignes ou
