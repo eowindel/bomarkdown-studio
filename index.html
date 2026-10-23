@@ -48,6 +48,7 @@
   --t-e: #795e26;
   --t-l: #af00db;
   --t-b: #267f99;
+  --t-hl: #a0522d;
   --t-cm: #8b93a1;
   --t-delim: #8b93a1;
   --t-path: #0a7f52;
@@ -63,7 +64,7 @@
     --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
     --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
     --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
-    --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+    --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-hl: #d7ba7d; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
     --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
   }
 }
@@ -74,7 +75,7 @@
   --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
   --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
   --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
-  --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+  --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-hl: #d7ba7d; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
   --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
 }
 
@@ -190,6 +191,7 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .t-e { color: var(--t-e); font-style: italic; }
 .t-l { color: var(--t-l); }
 .t-b { color: var(--t-b); }
+.t-hl { color: var(--t-hl); }
 .t-cm { color: var(--t-cm); font-style: italic; }
 .t-delim { color: var(--t-delim); }
 .t-path { color: var(--t-path); }
@@ -268,9 +270,9 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .gbanner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9; padding: 6px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: 13px; box-shadow: var(--shadow); white-space: nowrap; }
 .preview.linking, .preview.linking .sheet g[data-line] { cursor: crosshair; }
 .sheet g[data-line].drop .hit { fill: rgba(19, 138, 82, .16); stroke: #138a52; stroke-width: 1.5; stroke-dasharray: 4 2; }
-.sheet g.lk { cursor: pointer; }
-.sheet g.lk .lk-hit { stroke: transparent !important; stroke-width: 10 !important; fill: none; }
-.sheet g.lk:hover .lk-hit { stroke: rgba(79, 107, 237, .18) !important; }
+.sheet g.lk, .sheet g.hk { cursor: pointer; }
+.sheet g.lk .lk-hit, .sheet g.hk .lk-hit { stroke: transparent !important; stroke-width: 10 !important; fill: none; }
+.sheet g.lk:hover .lk-hit, .sheet g.hk:hover .lk-hit { stroke: rgba(79, 107, 237, .18) !important; }
 .sheet g.lk.sel .lk-hit { stroke: rgba(79, 107, 237, .35) !important; }
 .gtools { display: inline-flex; align-items: center; gap: 2px; }
 .gtools select { height: 30px; max-width: 130px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 0 6px; font-size: 12.5px; }
@@ -539,6 +541,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
             <button class="btn" data-g="rename" title="Renommer (F2 ou double-clic)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
             <button class="btn" data-g="type" title="Changer le type (T)"><span id="gtb-type"></span></button>
             <button class="btn" data-g="status" title="Changer le statut (S)"><span id="gtb-status"></span></button>
+            <button class="btn" data-g="hlink" title="Style du lien vers le parent (P)"><svg class="i" viewBox="0 0 24 24"><path d="M6 3v9a3 3 0 0 0 3 3h11" stroke-dasharray="3 3"/><path d="M17 12l3 3-3 3"/></svg></button>
             <button class="btn" data-g="link" title="Créer un lien (L) : cliquez ensuite sur la cible, ou glissez la poignée bleue"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></button>
             <span class="vsep"></span>
             <button class="btn danger" data-g="delete" title="Supprimer avec ses enfants (Suppr)"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
@@ -597,8 +600,8 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
     </div>
     </div>
     <div class="tabpanel" data-panel="links" hidden>
-      <p class="hint" style="margin:0 0 12px" data-only="fr">Chaque type s'utilise dans le texte avec son code : <code>(l:code:alias)</code>. Changer un code ne modifie pas les documents existants.</p>
-      <p class="hint" style="margin:0 0 12px" data-only="en">Each type is used in the text through its code: <code>(l:code:alias)</code>. Changing a code does not update existing documents.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Chaque type s'utilise dans le texte avec son code : <code>(l:code:alias)</code>. Pour styler un lien parent → enfant, ajoutez <code>(h:code)</code> sur l'enfant. Changer un code ne modifie pas les documents existants.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Each type is used in the text through its code: <code>(l:code:alias)</code>. To style a parent → child link, add <code>(h:code)</code> to the child. Changing a code does not update existing documents.</p>
       <div class="lk-grid" id="lk-rows"></div>
       <div class="err-msg" id="lk-err"></div>
       <button class="btn outline lk-add" id="lk-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un type de lien</button>
@@ -670,6 +673,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><code>(l:i:a1,a2)</code></td><td>Liens de type <i>i</i> vers les alias a1, a2. <code>a1!texte</code> ajoute une étiquette (<code>!&lt;</code> au début, <code>!&gt;</code> à la fin).</td></tr>
           <tr><td><code>(b:lock,matrice)</code></td><td>Bulles dessinées sur l'icône</td></tr>
           <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivité à gauche ; <code>(e:o)</code> = pastille</td></tr>
+          <tr><td><code>(h:code)</code></td><td>Style du lien vers le parent : un type de lien des Réglages (pointillés, couleur…). Affiché dans la légende dès que plusieurs styles sont utilisés.</td></tr>
         </table>
         <p class="hint">Emphase dans les libellés : <code>*italique*</code>, <code>**gras**</code>, <code>***les deux***</code>. Le texte après le dernier bloc est ignoré.</p>
       </div>
@@ -705,13 +709,13 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
         <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (ou <kbd>Maj</kbd>+<kbd>Tab</kbd>)</td><td>Descendre / remonter d'un niveau (avec les enfants)</td></tr>
         <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Réordonner parmi les frères</td></tr>
         <tr><td>Flèches</td><td>Naviguer (←  parent, → premier enfant)</td></tr>
-        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Suppr</kbd></td><td>Type / statut / supprimer avec les enfants</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>P</kbd> / <kbd>Suppr</kbd></td><td>Type / statut / style du lien vers le parent / supprimer avec les enfants</td></tr>
       </table>
       <table>
         <tr><td>Glisser un élément sur un autre</td><td>Il devient son enfant (avec <kbd>Maj</kbd> ou <kbd>Alt</kbd> : placé juste après, au même niveau)</td></tr>
         <tr><td>Glisser la poignée bleue</td><td>Crée un lien vers l'élément lâché (type choisi en haut de l'aperçu ; alias créé si besoin)</td></tr>
         <tr><td><kbd>L</kbd> puis clic</td><td>Même chose sans glisser</td></tr>
-        <tr><td>Clic sur un lien</td><td>Changer son type ou le supprimer (<kbd>Suppr</kbd>)</td></tr>
+        <tr><td>Clic sur un lien</td><td>Changer son type ou le supprimer (<kbd>Suppr</kbd>) ; sur un trait de hiérarchie : changer son style</td></tr>
         <tr><td><b>+ Racine</b> / <b>+ Colonne</b></td><td>En haut de l'aperçu ; double-clic sur le fond = nouvelle racine</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Annuler / rétablir (chaque action modifie le texte)</td></tr>
       </table>
@@ -736,6 +740,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><code>(l:i:a1,a2)</code></td><td>Links of type <i>i</i> to aliases a1, a2. <code>a1!text</code> adds a label (<code>!&lt;</code> at the start, <code>!&gt;</code> at the end).</td></tr>
           <tr><td><code>(b:lock,matrice)</code></td><td>Bubbles drawn on the icon</td></tr>
           <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivity on the left; <code>(e:o)</code> = dot</td></tr>
+          <tr><td><code>(h:code)</code></td><td>Style of the link to the parent: a link type from the Settings (dots, color…). Shown in the legend as soon as several styles are used.</td></tr>
         </table>
         <p class="hint">Emphasis in labels: <code>*italic*</code>, <code>**bold**</code>, <code>***both***</code>. Text after the last block is ignored.</p>
       </div>
@@ -771,13 +776,13 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
         <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (or <kbd>Shift</kbd>+<kbd>Tab</kbd>)</td><td>Move down / up one level (with its children)</td></tr>
         <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Reorder among siblings</td></tr>
         <tr><td>Arrows</td><td>Navigate (← parent, → first child)</td></tr>
-        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Del</kbd></td><td>Type / status / delete with children</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>P</kbd> / <kbd>Del</kbd></td><td>Type / status / style of the link to the parent / delete with children</td></tr>
       </table>
       <table>
         <tr><td>Drag an item onto another</td><td>It becomes its child (with <kbd>Shift</kbd> or <kbd>Alt</kbd>: placed right after it, at the same level)</td></tr>
         <tr><td>Drag the blue handle</td><td>Creates a link to the item you drop on (type chosen at the top of the preview; alias created if needed)</td></tr>
         <tr><td><kbd>L</kbd> then click</td><td>Same thing without dragging</td></tr>
-        <tr><td>Click a link</td><td>Change its type or delete it (<kbd>Del</kbd>)</td></tr>
+        <tr><td>Click a link</td><td>Change its type or delete it (<kbd>Del</kbd>); on a hierarchy line: change its style</td></tr>
         <tr><td><b>+ Root</b> / <b>+ Column</b></td><td>At the top of the preview; double-click the background = new root</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / redo (every action edits the text)</td></tr>
       </table>
@@ -987,6 +992,16 @@ you can define an additional gap between column
 + (i:logical,Levier)(l:i:f2!<réalise)
 + (i:logical,Étrier)(l:i:f3!assure,f1!>contribue)
 </script>
+<script type="text/x-bomarkdown" data-name="Styles des liens de hiérarchie (nouveau)" data-name-en="Hierarchy link styles (new)" data-file="hierarchie-styles.bmd">
++ (i:assembly,Vélo urbain,B)(s:IW)
+ + (i:component,Cadre,A)(s:R)
+ + (i:component,Roue avant,C)(s:R)
+ + (i:component,Roue arrière,C)(s:R)
+ + (h:a)(i:component,Panier avant,A)(s:IW)
+ + (h:a)(i:component,Sacoche,A)(s:D)
+  + (i:component,Fixation,A)
+ + (h:c)(i:file,Notice de montage)
+</script>
 <script type="text/x-bomarkdown" data-name="Bulles" data-name-en="Bubbles" data-file="bulles.bmd">
 + (b:lock)(i:component, Locked item)
  + (b:matrice)(i:component, Item with a position matrix)
@@ -1066,6 +1081,7 @@ const EN = {
   'Importer…': 'Import…', 'Réinitialiser': 'Reset', 'Annuler': 'Cancel', 'Appliquer': 'Apply',
   'Types de liens': 'Link types', 'Avancé (JSON)': 'Advanced (JSON)', 'Ajouter un type de lien': 'Add a link type',
   'Modifier les types de liens': 'Edit link types',
+  'Style du lien vers le parent (P)': 'Style of the link to the parent (P)',
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
   'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
   'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
@@ -1214,7 +1230,7 @@ const ITEM_RE = /^([ \t\-+]*?)\+ (.*)$/;
 /* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
    ce qui autorise les parenthèses dans les libellés (comme l'extension). */
 function blockSpans(s) {
-  const re = /\(([ialbse]):/g; const starts = []; let m;
+  const re = /\(([ialbseh]):/g; const starts = []; let m;
   while ((m = re.exec(s))) starts.push(m.index);
   return starts.map((st, k) => {
     const end = k + 1 < starts.length ? starts[k + 1] : s.length;
@@ -1253,7 +1269,7 @@ function parseBomText(text, baseLine = 0) {
     const m = ITEM_RE.exec(raw);
     if (!m) continue;
     const level = m[1].length;
-    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
+    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
     parents[level + 1] = line;
     parseArgs(m[2], it, diags);
     bom.items.push(it);
@@ -1266,7 +1282,7 @@ function parseArgs(s, it, diags) {
   const spans = blockSpans(s);
   if (!spans.length) {
     it.label = s.trim();
-    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: T(`Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e)`, `Unknown block “${s.match(/\([a-z]:/i)[0]}”: treated as a label (valid blocks: i a l b s e)`) });
+    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: T(`Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e h)`, `Unknown block “${s.match(/\([a-z]:/i)[0]}”: treated as a label (valid blocks: i a l b s e h)`) });
     return;
   }
   for (const b of spans) {
@@ -1283,6 +1299,7 @@ function parseArgs(s, it, diags) {
       }
       case 'a': it.alias = c.trim(); break;
       case 's': it.status = c.trim(); break;
+      case 'h': it.hlink = c.trim(); break;
       case 'e': it.effectivity = c.trim(); break;
       case 'b': it.bubbles.push(...c.split(',').map(x => x.trim()).filter(Boolean)); break;
       case 'l': {
@@ -1322,6 +1339,8 @@ function validate(parsed, S) {
   for (const bom of parsed.boms) for (const it of bom.items) {
     if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: T(`Type « ${it.type} » inconnu (icône « ? » affichée)`, `Unknown type “${it.type}” (“?” icon shown)`) });
     if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: T(`Statut « ${it.status} » inconnu`, `Unknown status “${it.status}”`) });
+    if (it.hlink && !has(S.links, it.hlink)) d.push({ line: it.line, level: 'warn', msg: T(`Type de lien « ${it.hlink} » inconnu pour le lien vers le parent`, `Unknown link type “${it.hlink}” for the link to the parent`) });
+    else if (it.hlink && !bom.items.some(p => p.id === it.parentId)) d.push({ line: it.line, level: 'info', msg: T('« (h:…) » sans effet : cet élément n\'a pas de parent', '“(h:…)” has no effect: this item has no parent') });
     for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: T(`Bulle « ${b} » inconnue`, `Unknown bubble “${b}”`) });
     if (it.alias) {
       if (aliases.has(it.alias)) d.push({ line: it.line, level: 'warn', msg: T(`Alias « ${it.alias} » déjà défini ligne ${aliases.get(it.alias) + 1}`, `Alias “${it.alias}” already defined on line ${aliases.get(it.alias) + 1}`) });
@@ -1360,6 +1379,9 @@ function lineProps(def, key) {
   return s;
 }
 
+/* type de lien vers le parent : (h:code) s'il est défini, sinon le type « h » */
+const hierKey = (it, links) => it.hlink && has(links, it.hlink) ? it.hlink : 'h';
+
 function bezierPoint(p, t) {
   const u = 1 - t;
   return [0, 1].map(k => u * u * u * p[0][k] + 3 * u * u * t * p[1][k] + 3 * u * t * t * p[2][k] + t * t * t * p[3][k]);
@@ -1397,6 +1419,10 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     const entries = []; const seen = new Set();
     const add = (kind, name, label) => { const k = kind + ':' + name; if (seen.has(k)) return; seen.add(k); entries.push({ kind, name, label: String(label ?? name), w: measure(escapeXml(label ?? name), 12) + iconw + gap }); };
     for (const bom of boms) for (const it of bom.items) { const ic = it.type && icons.get(it.type.toLowerCase()); if (ic) add('type', ic.name, ic.label || ic.name); }
+    // styles de hiérarchie : seulement quand le diagramme en utilise plusieurs
+    const hier = [];
+    for (const bom of boms) for (const it of bom.items) if (bom.items.some(p => p.id === it.parentId)) { const k = hierKey(it, links); if (!hier.includes(k)) hier.push(k); }
+    if (hier.length > 1) for (const k of hier) add('link', k, links[k]?.label || k);
     for (const bom of boms) for (const it of bom.items) for (const r of it.relatives) if (has(links, r.linktype)) add('link', r.linktype, links[r.linktype].label || r.linktype);
     for (const bom of boms) for (const it of bom.items) if (it.status && has(S.status, it.status)) add('status', it.status, S.status[it.status].label || it.status);
     for (const bom of boms) for (const it of bom.items) for (const b of it.bubbles) if (has(S.bubbles, b)) add('bubble', b, S.bubbles[b].label || b);
@@ -1455,12 +1481,24 @@ function buildSvg(parsed, S, { meta = false } = {}) {
 
   // liens hiérarchiques (dessinés en premier pour que les éléments passent au-dessus)
   o.push('<g id="links">');
-  for (const bom of boms) for (const it of bom.items) {
-    if (it.parentId < 0) continue;
-    const p = bom.items.find(b => b.id === it.parentId);
-    if (!p) continue;
-    const px = n2(p.x + bom.x + h / 2);
-    o.push(`<polyline fill="none" ${lineProps(links.h, 'h')} points="${px},${n2(p.y + bom.y + h)} ${px},${n2(it.y + bom.y + h / 2)} ${n2(it.x + bom.x)},${n2(it.y + bom.y + h / 2)}"/>`);
+  // chaque enfant trace le tronc depuis le bas du parent, comme avant ; quand le style change
+  // entre deux frères, le tronc repart du frère précédent pour que les styles ne se recouvrent pas
+  for (const bom of boms) {
+    const run = new Map();
+    for (const it of bom.items) {
+      if (it.parentId < 0) continue;
+      const p = bom.items.find(b => b.id === it.parentId);
+      if (!p) continue;
+      const k = hierKey(it, links);
+      const px = n2(p.x + bom.x + h / 2), cy = n2(it.y + bom.y + h / 2);
+      let r = run.get(p.id);
+      if (!r) { r = { key: k, start: n2(p.y + bom.y + h), last: 0 }; run.set(p.id, r); }
+      else if (r.key !== k) { r.key = k; r.start = r.last; }
+      r.last = cy;
+      const pts = `${px},${r.start} ${px},${cy} ${n2(it.x + bom.x)},${cy}`;
+      const line = `<polyline fill="none" ${lineProps(links[k] || links.h, k)} points="${pts}"/>`;
+      o.push(meta ? `<g class="hk" data-child="${it.line}"><polyline class="lk-hit" points="${pts}"/>${line}</g>` : line);
+    }
   }
   // liens transverses (implémentation, couverture, alternative…)
   const labels = [];
@@ -1609,7 +1647,7 @@ function hlItemArgs(s) {
   if (!spans.length) return escapeHtml(s);
   let out = `<span class="t-cm">${escapeHtml(s.slice(0, spans[0].start))}</span>`;
   spans.forEach((b, k) => {
-    out += `<span class="t-${b.kind}">${escapeHtml(s.slice(b.start, b.end))}</span>`;
+    out += `<span class="t-${b.kind === 'h' ? 'hl' : b.kind}">${escapeHtml(s.slice(b.start, b.end))}</span>`;
     const next = k + 1 < spans.length ? spans[k + 1].start : s.length;
     if (next > b.end) out += `<span class="t-cm">${escapeHtml(s.slice(b.end, next))}</span>`;
   });
@@ -1893,10 +1931,11 @@ function acContext() {
   if ((m = /\(b:(?:[^,()]*,)*([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.bubbles).map(([k, v]) => ({ label: k, detail: v.label, icon: bubbleSwatch(k), insert: k })) };
   if ((m = /\(l:[^:()]*:(?:[^,()]*,)*([^,()!]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: currentAliases().map(a => ({ label: a.alias, detail: a.label, insert: a.alias })) };
   if ((m = /\(l:([^:()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => ({ label: k, detail: v.label, icon: linkSwatch(k), insert: k + ':' })) };
+  if ((m = /\(h:([^()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.links).map(([k, v]) => ({ label: k, detail: (v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''), icon: linkSwatch(k), insert: k + ')' })) };
   if ((m = /\(e:$/.exec(before))) return { from: pos, q: '', items: [{ label: 'o', detail: T('pastille d\'effectivité', 'effectivity dot'), insert: 'o)' }, { label: '[A -> B[', detail: T('plage', 'range'), insert: '[A -> B[)' }, { label: '[A -> #oo[', detail: T('plage ouverte (∞)', 'open range (∞)'), insert: '[A -> #oo[)' }] };
   if ((m = /^[ \t\-+]*?\+ .*\(([a-z]?)$/.exec(before))) return {
     from: pos - m[1].length, q: q(m[1]), items: [
-      ['i', T('type, libellé, révision', 'type, label, revision')], ['s', T('statut', 'status')], ['a', 'alias'], ['l', T('lien transverse', 'cross link')], ['b', T('bulles', 'bubbles')], ['e', T('effectivité', 'effectivity')]].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
+      ['i', T('type, libellé, révision', 'type, label, revision')], ['s', T('statut', 'status')], ['a', 'alias'], ['l', T('lien transverse', 'cross link')], ['b', T('bulles', 'bubbles')], ['e', T('effectivité', 'effectivity')], ['h', T('lien vers le parent', 'link to the parent')]].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
   };
   return null;
 }
@@ -2437,6 +2476,7 @@ function renderReference() {
     + sec(T('Liens', 'Links'), grid(Object.entries(settings.links).map(([k, v]) => item(k === 'h' ? '+ ' : `(l:${k}:`, sw(`<defs>${v.arrow || ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? T(' (hiérarchie)', ' (hierarchy)') : '')))))
     + sec(T('Autres', 'Other'), grid([
       item('(a:', sw('<text x="10" y="15" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b0599">a</text>'), '(a:alias)', 'Alias'),
+      item('(h:', sw('<path d="M5 2v9h12" fill="none" stroke="#a0522d" stroke-width="1.6" stroke-dasharray="2 2"/>'), '(h:code)', T('Style du lien vers le parent', 'Style of the link to the parent')),
       item('(e:o)', sw(`<g transform="translate(16,0)">${stripRootId(settings.mandatoryDefs.eff)}</g>`), '(e:o)', T('Pastille d\'effectivité', 'Effectivity dot')),
       item('(e:[A -> B[)', sw('<text x="10" y="14" text-anchor="middle" font-size="9" fill="#795e26">A→B</text>'), '(e:[A -> B[)', T('Plage d\'effectivité', 'Effectivity range')),
       item('+newcolumn ', sw('<path d="M4 4v12M10 4v12M16 4v12" stroke="#0550ae" stroke-width="1.6"/>'), '+newcolumn', T('Nouvelle colonne', 'New column')),
@@ -2630,6 +2670,10 @@ const G = {
   link() { setLinkMode(!linkMode); },
   type(line, btn) { openPop('type', btn, line); },
   status(line, btn) { openPop('status', btn, line); },
+  hlink(line, btn) {
+    if (parentOf(line) < 0) return toast(T('Cet élément est une racine : il n\'a pas de lien vers un parent', 'This item is a root: it has no link to a parent'));
+    openPop('hlink', btn, line);
+  },
 };
 
 function moveItem(src, target, asSibling) {
@@ -2755,6 +2799,9 @@ function openPop(kind, btn, line) {
     const cur = getI(st).type.toLowerCase();
     html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
       .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
+  } else if (kind === 'hlink') {
+    const hk = blockIdx(st, 'h'); const cur = hk >= 0 ? st.blocks[hk].content.trim() : 'h';
+    html = Object.entries(settings.links).map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${linkSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml((v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''))}</small></button>`).join('');
   } else {
     const sk = blockIdx(st, 's'); const cur = sk >= 0 ? st.blocks[sk].content.trim() : '';
     html = `<button data-v="">— <span>${T('Aucun statut', 'No status')}</span></button>` + Object.entries(settings.status)
@@ -2768,7 +2815,12 @@ gpop.addEventListener('click', e => {
   const b = e.target.closest('button[data-v]'); if (!b) return;
   const line = +gpop.dataset.line, v = b.dataset.v, st = lineStruct(info.lines[line]);
   if (gpop.dataset.kind === 'type') { const cur = getI(st); setI(st, { ...cur, type: v }); }
-  else {
+  else if (gpop.dataset.kind === 'hlink') {
+    const hk = blockIdx(st, 'h');
+    if (v === 'h') { if (hk >= 0) removeBlock(st, hk); }
+    else if (hk >= 0) st.blocks[hk].content = v;
+    else insertBlock(st, afterI(st), { kind: 'h', content: v });
+  } else {
     const sk = blockIdx(st, 's');
     if (!v) { if (sk >= 0) removeBlock(st, sk); }
     else if (sk >= 0) st.blocks[sk].content = v;
@@ -2780,7 +2832,7 @@ gpop.addEventListener('click', e => {
 gtb.addEventListener('click', e => {
   const b = e.target.closest('[data-g]'); if (!b || !isItem(curLine)) return;
   const act = b.dataset.g;
-  if (act !== 'type' && act !== 'status') gpop.hidden = true;
+  if (act !== 'type' && act !== 'status' && act !== 'hlink') gpop.hidden = true;
   G[act](curLine, b);
 });
 ltb.addEventListener('click', e => { if (e.target.closest('[data-g="unlink"]')) editSelLink(null); });
@@ -2834,8 +2886,9 @@ preview.addEventListener('pointerdown', e => {
   if (!e.target.closest('#gpop')) gpop.hidden = true;
   const g = e.button === 0 ? e.target.closest('#sheet g[data-line]') : null;
   const lk = e.button === 0 ? e.target.closest('#sheet g.lk') : null;
+  const hk = e.button === 0 ? e.target.closest('#sheet g.hk') : null;
   const mode = e.target.closest('#link-handle') ? 'link' : g ? 'item' : 'pan';
-  drag = { mode, g, lk, x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
+  drag = { mode, g, lk, hk, x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
   if (mode === 'link') { e.preventDefault(); drag.moved = true; preview.setPointerCapture(e.pointerId); tmpLink.removeAttribute('hidden'); }
 });
 preview.addEventListener('pointermove', e => {
@@ -2876,6 +2929,12 @@ preview.addEventListener('pointerup', e => {
       return selectItem(line);
     }
     if (d.lk) return selectLink(d.lk, e);
+    if (d.hk) {
+      // trait de hiérarchie : on sélectionne l'enfant et on propose les styles
+      const child = +d.hk.dataset.child;
+      selectItem(child);
+      return requestAnimationFrame(() => G.hlink(child, gtb.querySelector('[data-g="hlink"]')));
+    }
     if (d.mode === 'pan') { toolbarOn = false; clearLinkSel(); setLinkMode(false); positionOverlay(); }
     return;
   }
@@ -2922,6 +2981,7 @@ preview.addEventListener('keydown', e => {
   else if (k === 'l' || k === 'L') act = () => setLinkMode(!linkMode);
   else if (k === 't' || k === 'T') act = () => G.type(L, gtb.querySelector('[data-g="type"]'));
   else if (k === 's' || k === 'S') act = () => G.status(L, gtb.querySelector('[data-g="status"]'));
+  else if (k === 'p' || k === 'P') act = () => G.hlink(L, gtb.querySelector('[data-g="hlink"]'));
   if (act) { e.preventDefault(); toolbarOn = true; act(); }
 });
 

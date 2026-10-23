@@ -68,6 +68,7 @@ On complète une ligne avec des blocs entre parenthèses, dans n'importe quel or
 | `(l:type:alias1,alias2)` | Liens vers d'autres éléments (`i` implémente, `c` couvre, `a` alternative) | `(l:i:cadre)` |
 | `(b:bulle1,bulle2)` | Pictogrammes sur l'icône (`lock`, `unlock`, `matrice`, `context`, `noway`) | `(b:lock)` |
 | `(e:effectivité)` | Plage d'effectivité affichée à gauche, ou `o` pour une simple pastille | `(e:[A -> #oo[)` |
+| `(h:type)` | Style du lien vers le parent : un type de lien (pointillés, couleur, flèche…) | `(h:a)` |
 
 Quelques compléments :
 
@@ -75,6 +76,9 @@ Quelques compléments :
   départ, `!>texte` à l'arrivée.
 - **Mise en forme des libellés** : `*italique*`, `**gras**`, `***gras italique***`.
 - **Symboles d'effectivité** : `->` devient →, `<-` devient ← et `#oo` devient ∞.
+- **Styles de hiérarchie** : par défaut, un enfant est relié à son parent par un trait plein. `(h:a)` utilise à la
+  place le style du type de lien `a` (pointillés verts par défaut), pratique pour distinguer des éléments optionnels ou
+  des variantes. Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils apparaissent dans la légende.
 
 ```text
 + (i:assembly,Vélo urbain,B)(s:IW)
@@ -146,6 +150,7 @@ s'annule avec `Ctrl+Z`.
 | Créer un lien | Glisser la **poignée bleue** de l'élément vers la cible, ou `L` puis clic sur la cible |
 | Modifier ou supprimer un lien | Cliquer sur le lien |
 | Choisir le type ou le statut | Boutons de la barre, ou touches `T` et `S` |
+| Changer le style du lien vers le parent | Bouton de la barre, touche `P`, ou clic sur le trait de hiérarchie |
 | Supprimer un élément et ses enfants | `Suppr` |
 | Ajouter une racine ou une colonne | Boutons **+ Racine** et **+ Colonne** en haut de l'aperçu (ou double-clic sur le fond) |
 

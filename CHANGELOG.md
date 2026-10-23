@@ -4,6 +4,16 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Ajouté
+- Styles des liens de hiérarchie ([#1](https://github.com/eowindel/bomarkdown-studio/issues/1)) : le bloc
+  `(h:type)` sur un enfant dessine son lien vers le parent avec le style d'un type de lien (couleur, épaisseur,
+  tirets ou pointillés, extrémités). Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils figurent dans la
+  légende. Modifiable depuis le diagramme : bouton « style du lien vers le parent », touche `P` ou clic sur un trait
+  de hiérarchie. Autocomplétion, coloration, détection des types inconnus et nouvel exemple *Styles des liens de
+  hiérarchie*.
+
 ## [0.1.1] - 2026-10-21
 
 ### Corrigé
