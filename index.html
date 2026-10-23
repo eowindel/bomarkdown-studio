@@ -48,6 +48,7 @@
   --t-e: #795e26;
   --t-l: #af00db;
   --t-b: #267f99;
+  --t-hl: #a0522d;
   --t-cm: #8b93a1;
   --t-delim: #8b93a1;
   --t-path: #0a7f52;
@@ -63,7 +64,7 @@
     --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
     --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
     --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
-    --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+    --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-hl: #d7ba7d; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
     --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
   }
 }
@@ -74,7 +75,7 @@
   --code-bg: #15181f; --cur-line: #1d222d; --warn: #f0a63a; --err: #ff6b6b; --ok: #3ccf8e;
   --preview-bg: #0e1116; --preview-dot: #1f2530; --shadow: 0 10px 30px rgba(0,0,0,.5);
   --t-plus: #ce9178; --t-kw: #569cd6; --t-num: #b5cea8; --t-i: #e3e7ee; --t-a: #e07ad8; --t-s: #569cd6;
-  --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
+  --t-e: #dcdcaa; --t-l: #c586c0; --t-b: #4ec9b0; --t-hl: #d7ba7d; --t-cm: #6a7383; --t-delim: #6a7383; --t-path: #4ec9b0;
   --t-param: #b392f0; --t-md: #aab2c0; --t-h: #ffffff;
 }
 
@@ -190,6 +191,7 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .t-e { color: var(--t-e); font-style: italic; }
 .t-l { color: var(--t-l); }
 .t-b { color: var(--t-b); }
+.t-hl { color: var(--t-hl); }
 .t-cm { color: var(--t-cm); font-style: italic; }
 .t-delim { color: var(--t-delim); }
 .t-path { color: var(--t-path); }
@@ -255,6 +257,7 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .gpop button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: left; font-size: 13px; }
 .gpop button:hover { background: var(--hover); }
 .gpop button.cur { background: var(--accent-soft); }
+.gpop .gpop-edit { border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; margin-top: 4px; color: var(--accent); }
 .gpop img, .gpop svg { width: 20px; height: 20px; flex: none; }
 .gpop b { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
 .gpop small { color: var(--muted); margin-left: auto; padding-left: 10px; }
@@ -268,9 +271,9 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .gbanner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9; padding: 6px 14px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: 13px; box-shadow: var(--shadow); white-space: nowrap; }
 .preview.linking, .preview.linking .sheet g[data-line] { cursor: crosshair; }
 .sheet g[data-line].drop .hit { fill: rgba(19, 138, 82, .16); stroke: #138a52; stroke-width: 1.5; stroke-dasharray: 4 2; }
-.sheet g.lk { cursor: pointer; }
-.sheet g.lk .lk-hit { stroke: transparent !important; stroke-width: 10 !important; fill: none; }
-.sheet g.lk:hover .lk-hit { stroke: rgba(79, 107, 237, .18) !important; }
+.sheet g.lk, .sheet g.hk { cursor: pointer; }
+.sheet g.lk .lk-hit, .sheet g.hk .lk-hit { stroke: transparent !important; stroke-width: 10 !important; fill: none; }
+.sheet g.lk:hover .lk-hit, .sheet g.hk:hover .lk-hit { stroke: rgba(79, 107, 237, .18) !important; }
 .sheet g.lk.sel .lk-hit { stroke: rgba(79, 107, 237, .35) !important; }
 .gtools { display: inline-flex; align-items: center; gap: 2px; }
 .gtools select { height: 30px; max-width: 130px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); padding: 0 6px; font-size: 12.5px; }
@@ -539,6 +542,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
             <button class="btn" data-g="rename" title="Renommer (F2 ou double-clic)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
             <button class="btn" data-g="type" title="Changer le type (T)"><span id="gtb-type"></span></button>
             <button class="btn" data-g="status" title="Changer le statut (S)"><span id="gtb-status"></span></button>
+            <button class="btn" data-g="hlink" title="Style du lien vers le parent (P)"><svg class="i" viewBox="0 0 24 24"><path d="M6 3v9a3 3 0 0 0 3 3h11" stroke-dasharray="3 3"/><path d="M17 12l3 3-3 3"/></svg></button>
             <button class="btn" data-g="link" title="Créer un lien (L) : cliquez ensuite sur la cible, ou glissez la poignée bleue"><svg class="i" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></button>
             <span class="vsep"></span>
             <button class="btn danger" data-g="delete" title="Supprimer avec ses enfants (Suppr)"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
@@ -597,11 +601,20 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
     </div>
     </div>
     <div class="tabpanel" data-panel="links" hidden>
-      <p class="hint" style="margin:0 0 12px" data-only="fr">Chaque type s'utilise dans le texte avec son code : <code>(l:code:alias)</code>. Changer un code ne modifie pas les documents existants.</p>
-      <p class="hint" style="margin:0 0 12px" data-only="en">Each type is used in the text through its code: <code>(l:code:alias)</code>. Changing a code does not update existing documents.</p>
-      <div class="lk-grid" id="lk-rows"></div>
+      <h3 class="sec">Liens de hiérarchie (parent → enfant)</h3>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Trait entre un élément et son parent. <code>h</code> est le style par défaut ; les autres s'appliquent avec <code>(h:code)</code> sur l'enfant.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Line between an item and its parent. <code>h</code> is the default style; the others apply with <code>(h:code)</code> on the child.</p>
+      <div class="lk-grid" id="hk-rows" data-list="hierarchy"></div>
+      <div class="err-msg" id="hk-err"></div>
+      <button class="btn outline lk-add" id="hk-add" data-list="hierarchy"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un style de hiérarchie</button>
+      <h3 class="sec" style="margin-top:28px">Liens transverses (entre structures)</h3>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Liens entre éléments désignés par leur alias : <code>(l:code:alias)</code>.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Links between items designated by their alias: <code>(l:code:alias)</code>.</p>
+      <div class="lk-grid" id="lk-rows" data-list="links"></div>
       <div class="err-msg" id="lk-err"></div>
-      <button class="btn outline lk-add" id="lk-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un type de lien</button>
+      <button class="btn outline lk-add" id="lk-add" data-list="links"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un type de lien</button>
+      <p class="hint" data-only="fr">Changer un code ne modifie pas les documents existants.</p>
+      <p class="hint" data-only="en">Changing a code does not update existing documents.</p>
     </div>
     <div class="tabpanel" data-panel="adv" hidden>
     <textarea class="json" id="s-json" spellcheck="false"></textarea>
@@ -670,6 +683,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><code>(l:i:a1,a2)</code></td><td>Liens de type <i>i</i> vers les alias a1, a2. <code>a1!texte</code> ajoute une étiquette (<code>!&lt;</code> au début, <code>!&gt;</code> à la fin).</td></tr>
           <tr><td><code>(b:lock,matrice)</code></td><td>Bulles dessinées sur l'icône</td></tr>
           <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivité à gauche ; <code>(e:o)</code> = pastille</td></tr>
+          <tr><td><code>(h:code)</code></td><td>Style du lien vers le parent, choisi parmi les styles de hiérarchie (Réglages → Types de liens) : <code>o</code> optionnel, <code>v</code> variante… Affiché dans la légende dès que plusieurs styles sont utilisés.</td></tr>
         </table>
         <p class="hint">Emphase dans les libellés : <code>*italique*</code>, <code>**gras**</code>, <code>***les deux***</code>. Le texte après le dernier bloc est ignoré.</p>
       </div>
@@ -705,13 +719,13 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
         <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (ou <kbd>Maj</kbd>+<kbd>Tab</kbd>)</td><td>Descendre / remonter d'un niveau (avec les enfants)</td></tr>
         <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Réordonner parmi les frères</td></tr>
         <tr><td>Flèches</td><td>Naviguer (←  parent, → premier enfant)</td></tr>
-        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Suppr</kbd></td><td>Type / statut / supprimer avec les enfants</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>P</kbd> / <kbd>Suppr</kbd></td><td>Type / statut / style du lien vers le parent / supprimer avec les enfants</td></tr>
       </table>
       <table>
         <tr><td>Glisser un élément sur un autre</td><td>Il devient son enfant (avec <kbd>Maj</kbd> ou <kbd>Alt</kbd> : placé juste après, au même niveau)</td></tr>
         <tr><td>Glisser la poignée bleue</td><td>Crée un lien vers l'élément lâché (type choisi en haut de l'aperçu ; alias créé si besoin)</td></tr>
         <tr><td><kbd>L</kbd> puis clic</td><td>Même chose sans glisser</td></tr>
-        <tr><td>Clic sur un lien</td><td>Changer son type ou le supprimer (<kbd>Suppr</kbd>)</td></tr>
+        <tr><td>Clic sur un lien</td><td>Changer son type ou le supprimer (<kbd>Suppr</kbd>) ; sur un trait de hiérarchie : changer son style</td></tr>
         <tr><td><b>+ Racine</b> / <b>+ Colonne</b></td><td>En haut de l'aperçu ; double-clic sur le fond = nouvelle racine</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Annuler / rétablir (chaque action modifie le texte)</td></tr>
       </table>
@@ -736,6 +750,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><code>(l:i:a1,a2)</code></td><td>Links of type <i>i</i> to aliases a1, a2. <code>a1!text</code> adds a label (<code>!&lt;</code> at the start, <code>!&gt;</code> at the end).</td></tr>
           <tr><td><code>(b:lock,matrice)</code></td><td>Bubbles drawn on the icon</td></tr>
           <tr><td><code>(e:[A -&gt; B[)</code></td><td>Effectivity on the left; <code>(e:o)</code> = dot</td></tr>
+          <tr><td><code>(h:code)</code></td><td>Style of the link to the parent, picked from the hierarchy styles (Settings → Link types): <code>o</code> optional, <code>v</code> variant… Shown in the legend as soon as several styles are used.</td></tr>
         </table>
         <p class="hint">Emphasis in labels: <code>*italic*</code>, <code>**bold**</code>, <code>***both***</code>. Text after the last block is ignored.</p>
       </div>
@@ -771,13 +786,13 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
         <tr><td><kbd>Alt</kbd>+<kbd>→</kbd> <kbd>←</kbd> (or <kbd>Shift</kbd>+<kbd>Tab</kbd>)</td><td>Move down / up one level (with its children)</td></tr>
         <tr><td><kbd>Alt</kbd>+<kbd>↑</kbd> <kbd>↓</kbd></td><td>Reorder among siblings</td></tr>
         <tr><td>Arrows</td><td>Navigate (← parent, → first child)</td></tr>
-        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>Del</kbd></td><td>Type / status / delete with children</td></tr>
+        <tr><td><kbd>T</kbd> / <kbd>S</kbd> / <kbd>P</kbd> / <kbd>Del</kbd></td><td>Type / status / style of the link to the parent / delete with children</td></tr>
       </table>
       <table>
         <tr><td>Drag an item onto another</td><td>It becomes its child (with <kbd>Shift</kbd> or <kbd>Alt</kbd>: placed right after it, at the same level)</td></tr>
         <tr><td>Drag the blue handle</td><td>Creates a link to the item you drop on (type chosen at the top of the preview; alias created if needed)</td></tr>
         <tr><td><kbd>L</kbd> then click</td><td>Same thing without dragging</td></tr>
-        <tr><td>Click a link</td><td>Change its type or delete it (<kbd>Del</kbd>)</td></tr>
+        <tr><td>Click a link</td><td>Change its type or delete it (<kbd>Del</kbd>); on a hierarchy line: change its style</td></tr>
         <tr><td><b>+ Root</b> / <b>+ Column</b></td><td>At the top of the preview; double-click the background = new root</td></tr>
         <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo / redo (every action edits the text)</td></tr>
       </table>
@@ -987,6 +1002,16 @@ you can define an additional gap between column
 + (i:logical,Levier)(l:i:f2!<réalise)
 + (i:logical,Étrier)(l:i:f3!assure,f1!>contribue)
 </script>
+<script type="text/x-bomarkdown" data-name="Styles des liens de hiérarchie (nouveau)" data-name-en="Hierarchy link styles (new)" data-file="hierarchie-styles.bmd">
++ (i:assembly,Vélo urbain,B)(s:IW)
+ + (i:component,Cadre,A)(s:R)
+ + (i:component,Roue avant,C)(s:R)
+ + (i:component,Roue arrière,C)(s:R)
+ + (h:v)(i:component,Roue avant renforcée,A)(s:F)
+ + (h:o)(i:component,Panier avant,A)(s:IW)
+ + (h:o)(i:component,Sacoche,A)(s:D)
+  + (i:component,Fixation,A)
+</script>
 <script type="text/x-bomarkdown" data-name="Bulles" data-name-en="Bubbles" data-file="bulles.bmd">
 + (b:lock)(i:component, Locked item)
  + (b:matrice)(i:component, Item with a position matrix)
@@ -1066,14 +1091,17 @@ const EN = {
   'Importer…': 'Import…', 'Réinitialiser': 'Reset', 'Annuler': 'Cancel', 'Appliquer': 'Apply',
   'Types de liens': 'Link types', 'Avancé (JSON)': 'Advanced (JSON)', 'Ajouter un type de lien': 'Add a link type',
   'Modifier les types de liens': 'Edit link types',
+  'Liens de hiérarchie (parent → enfant)': 'Hierarchy links (parent → child)', 'Liens transverses (entre structures)': 'Cross links (between structures)',
+  'Ajouter un style de hiérarchie': 'Add a hierarchy style',
+  'Style du lien vers le parent (P)': 'Style of the link to the parent (P)',
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
   'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
   'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
   'Signaler un bug ou proposer une idée sur GitHub': 'Report a bug or suggest an idea on GitHub', 'Signaler un problème': 'Report an issue',
   "Déposez un fichier .md / .bmd pour l'ouvrir": 'Drop a .md / .bmd file to open it',
 };
-const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
-const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #lk-rows, [data-only], #toasts';
+const I18N_SKIP = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #hk-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
+const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #lk-rows, #hk-rows, [data-only], #toasts';
 const i18nText = new WeakMap(), i18nAttr = new WeakMap();
 function translateStatic() {
   const tr = orig => { const k = orig.trim(); const v = lang === 'en' && k ? EN[k] : null; return v ? orig.replace(k, v) : orig; };
@@ -1098,8 +1126,14 @@ const DEFAULT_SETTINGS = {
   h: 20, gap: 2, panh: 20, panv: 5, bend: 1, legendscale: 0.8, renderlegend: true,
   background: '#ffffff', transparent: false,
   revision: { font: 'white', background: 'dimgrey' },
-  links: {
+  /* styles des liens parent → enfant ; « h » est le style par défaut, les autres s'appliquent avec (h:code) */
+  hierarchy: {
     h: { label: 'Child', arrow: '', Color: 'black', thickness: 1, dashpattern: '' },
+    o: { label: 'Optional', arrow: '', arrowStyle: 'none', Color: '#6b7280', thickness: 1, dashpattern: '6 4' },
+    v: { label: 'Variant', arrow: '', arrowStyle: 'none', Color: 'steelblue', thickness: 1, dashpattern: '2 2' },
+  },
+  /* liens transverses entre structures : (l:code:alias) */
+  links: {
     i: { label: 'implement', arrow: '<marker id="arrow_i" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="steelblue"/></marker>', Color: 'steelblue', thickness: 1, dashpattern: '' },
     c: { label: 'coverage', arrow: '<marker id="arrow_c" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="hotpink"/></marker>', Color: 'hotpink', thickness: 1, dashpattern: '' },
     a: { label: 'alternate', arrow: '<marker id="arrow_a" refX="6" refY="3" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 6 3 L 0 6 z" fill="green"/></marker>', Color: 'green', thickness: 1, dashpattern: '2 2' },
@@ -1147,6 +1181,18 @@ function normalizeSettings(raw) {
     if (!(k in DEFAULT_SETTINGS)) continue;
     s[k] = v;
   }
+  return splitHierarchy(s);
+}
+/* Compatibilité : l'ancien type de lien « h » (extension VS Code, réglages antérieurs) devient le style de
+   hiérarchie par défaut ; la liste des liens transverses ne contient plus de « h ». */
+function splitHierarchy(s) {
+  if (!isObj(s.hierarchy)) s.hierarchy = clone(DEFAULT_SETTINGS.hierarchy);
+  if (isObj(s.links) && has(s.links, 'h')) {
+    const { h, ...rest } = s.links;
+    s.links = rest;
+    s.hierarchy = { ...s.hierarchy, h: { ...(s.hierarchy.h || {}), ...h } };
+  }
+  if (!has(s.hierarchy, 'h')) s.hierarchy = { h: clone(DEFAULT_SETTINGS.hierarchy.h), ...s.hierarchy };
   return s;
 }
 
@@ -1214,7 +1260,7 @@ const ITEM_RE = /^([ \t\-+]*?)\+ (.*)$/;
 /* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
    ce qui autorise les parenthèses dans les libellés (comme l'extension). */
 function blockSpans(s) {
-  const re = /\(([ialbse]):/g; const starts = []; let m;
+  const re = /\(([ialbseh]):/g; const starts = []; let m;
   while ((m = re.exec(s))) starts.push(m.index);
   return starts.map((st, k) => {
     const end = k + 1 < starts.length ? starts[k + 1] : s.length;
@@ -1253,7 +1299,7 @@ function parseBomText(text, baseLine = 0) {
     const m = ITEM_RE.exec(raw);
     if (!m) continue;
     const level = m[1].length;
-    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
+    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
     parents[level + 1] = line;
     parseArgs(m[2], it, diags);
     bom.items.push(it);
@@ -1266,7 +1312,7 @@ function parseArgs(s, it, diags) {
   const spans = blockSpans(s);
   if (!spans.length) {
     it.label = s.trim();
-    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: T(`Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e)`, `Unknown block “${s.match(/\([a-z]:/i)[0]}”: treated as a label (valid blocks: i a l b s e)`) });
+    if (/\([a-z]:/i.test(s)) diags.push({ line: it.line, level: 'info', msg: T(`Bloc inconnu « ${s.match(/\([a-z]:/i)[0]} » : traité comme libellé (blocs valides : i a l b s e h)`, `Unknown block “${s.match(/\([a-z]:/i)[0]}”: treated as a label (valid blocks: i a l b s e h)`) });
     return;
   }
   for (const b of spans) {
@@ -1283,6 +1329,7 @@ function parseArgs(s, it, diags) {
       }
       case 'a': it.alias = c.trim(); break;
       case 's': it.status = c.trim(); break;
+      case 'h': it.hlink = c.trim(); break;
       case 'e': it.effectivity = c.trim(); break;
       case 'b': it.bubbles.push(...c.split(',').map(x => x.trim()).filter(Boolean)); break;
       case 'l': {
@@ -1314,7 +1361,7 @@ function effectiveSettings(params) {
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) {
     const v = Number(S[k]); S[k] = Number.isFinite(v) ? v : DEFAULT_SETTINGS[k];
   }
-  return S;
+  return splitHierarchy(S);
 }
 
 function validate(parsed, S) {
@@ -1322,6 +1369,8 @@ function validate(parsed, S) {
   for (const bom of parsed.boms) for (const it of bom.items) {
     if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: T(`Type « ${it.type} » inconnu (icône « ? » affichée)`, `Unknown type “${it.type}” (“?” icon shown)`) });
     if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: T(`Statut « ${it.status} » inconnu`, `Unknown status “${it.status}”`) });
+    if (it.hlink && !has(S.hierarchy, it.hlink)) d.push({ line: it.line, level: 'warn', msg: T(`Style de hiérarchie « ${it.hlink} » inconnu`, `Unknown hierarchy style “${it.hlink}”`) });
+    else if (it.hlink && !bom.items.some(p => p.id === it.parentId)) d.push({ line: it.line, level: 'info', msg: T('« (h:…) » sans effet : cet élément n\'a pas de parent', '“(h:…)” has no effect: this item has no parent') });
     for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: T(`Bulle « ${b} » inconnue`, `Unknown bubble “${b}”`) });
     if (it.alias) {
       if (aliases.has(it.alias)) d.push({ line: it.line, level: 'warn', msg: T(`Alias « ${it.alias} » déjà défini ligne ${aliases.get(it.alias) + 1}`, `Alias “${it.alias}” already defined on line ${aliases.get(it.alias) + 1}`) });
@@ -1351,14 +1400,19 @@ function emphasize(escaped, rules) {
   return out;
 }
 
-function lineProps(def, key) {
+function lineProps(def, key, prefix = 'arrow_') {
   def = def || {};
   let s = `stroke="${attr(def.Color ?? def.color ?? 'black')}" stroke-width="${attr(def.thickness ?? 1)}"`;
   if (def.dashpattern) s += ` stroke-dasharray="${attr(def.dashpattern)}"`;
-  if (def.arrow) s += ` marker-end="url(#arrow_${sid(key)})"`;
-  if (def.arrow && def.arrowBoth) s += ` marker-start="url(#arrow_${sid(key)})"`;
+  if (def.arrow) s += ` marker-end="url(#${prefix}${sid(key)})"`;
+  if (def.arrow && def.arrowBoth) s += ` marker-start="url(#${prefix}${sid(key)})"`;
   return s;
 }
+
+/* style du lien vers le parent : (h:code) s'il est défini, sinon le style « h » */
+const hierKey = (it, H) => it.hlink && has(H, it.hlink) ? it.hlink : 'h';
+/* marqueur d'extrémité avec un identifiant imposé (liens : arrow_code, hiérarchie : harrow_code) */
+const markerWithId = (def, id) => String(def.arrow || '').replace(/id\s*=\s*(["'])[^"']*\1/, `id="${id}"`);
 
 function bezierPoint(p, t) {
   const u = 1 - t;
@@ -1367,7 +1421,7 @@ function bezierPoint(p, t) {
 
 function buildSvg(parsed, S, { meta = false } = {}) {
   const { h, gap, panh, panv } = S; const iconw = h; const bend = S.bend; const ty = n2(h / 2 + 5);
-  const icons = iconMap(); const boms = parsed.boms; const links = S.links || {};
+  const icons = iconMap(); const boms = parsed.boms; const links = S.links || {}; const HS = S.hierarchy || {};
   const repl = Object.entries(S.utf8replacement || {}).map(([k, v]) => [k, decodeEntities(String(v))]);
 
   // 1) mise en page
@@ -1397,6 +1451,10 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     const entries = []; const seen = new Set();
     const add = (kind, name, label) => { const k = kind + ':' + name; if (seen.has(k)) return; seen.add(k); entries.push({ kind, name, label: String(label ?? name), w: measure(escapeXml(label ?? name), 12) + iconw + gap }); };
     for (const bom of boms) for (const it of bom.items) { const ic = it.type && icons.get(it.type.toLowerCase()); if (ic) add('type', ic.name, ic.label || ic.name); }
+    // styles de hiérarchie : seulement quand le diagramme en utilise plusieurs
+    const hier = [];
+    for (const bom of boms) for (const it of bom.items) if (bom.items.some(p => p.id === it.parentId)) { const k = hierKey(it, HS); if (!hier.includes(k)) hier.push(k); }
+    if (hier.length > 1) for (const k of hier) add('hier', k, HS[k]?.label || k);
     for (const bom of boms) for (const it of bom.items) for (const r of it.relatives) if (has(links, r.linktype)) add('link', r.linktype, links[r.linktype].label || r.linktype);
     for (const bom of boms) for (const it of bom.items) if (it.status && has(S.status, it.status)) add('status', it.status, S.status[it.status].label || it.status);
     for (const bom of boms) for (const it of bom.items) for (const b of it.bubbles) if (has(S.bubbles, b)) add('bubble', b, S.bubbles[b].label || b);
@@ -1427,7 +1485,8 @@ function buildSvg(parsed, S, { meta = false } = {}) {
   o.push(`<svg xmlns="${NS}" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`);
   if (!S.transparent) o.push(`<rect width="100%" height="100%" fill="${attr(S.background || 'white')}"/>`);
   o.push('<defs>');
-  for (const def of Object.values(links)) if (def && def.arrow) o.push(String(def.arrow));
+  for (const [k, def] of Object.entries(links)) if (def && def.arrow) o.push(markerWithId(def, 'arrow_' + sid(k)));
+  for (const [k, def] of Object.entries(HS)) if (def && def.arrow) o.push(markerWithId(def, 'harrow_' + sid(k)));
   for (const v of Object.values(S.mandatoryDefs || {})) o.push(String(v));
   for (const [k, v] of Object.entries(S.status || {})) o.push(`<g id="s-${sid(k)}">${stripRootId(v.svg)}</g>`);
   for (const [k, v] of Object.entries(S.bubbles || {})) o.push(`<g id="b-${sid(k)}">${stripRootId(v.svg)}</g>`);
@@ -1444,6 +1503,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
       const y = i * (h + panv);
       if (e.kind === 'type') o.push(`<use ${ref('t-' + sid(e.name.toLowerCase()))} x="${n2(c.x)}" y="${y}"/>`);
       else if (e.kind === 'status') o.push(`<use ${ref('s-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
+      else if (e.kind === 'hier') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(HS[e.name], e.name, 'harrow_')} stroke-linecap="round"/>`);
       else if (e.kind === 'link') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(links[e.name], e.name)} stroke-linecap="round"/>`);
       else if (e.kind === 'bubble') o.push(`<use ${ref('placeholder')} x="${n2(c.x)}" y="${y}"/><use ${ref('b-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
       o.push(`<text font-family="${FONT}" font-size="12" x="${n2(c.x + iconw + gap)}" y="${y + 15}" fill="black">${escapeXml(e.label)}</text>`);
@@ -1455,12 +1515,24 @@ function buildSvg(parsed, S, { meta = false } = {}) {
 
   // liens hiérarchiques (dessinés en premier pour que les éléments passent au-dessus)
   o.push('<g id="links">');
-  for (const bom of boms) for (const it of bom.items) {
-    if (it.parentId < 0) continue;
-    const p = bom.items.find(b => b.id === it.parentId);
-    if (!p) continue;
-    const px = n2(p.x + bom.x + h / 2);
-    o.push(`<polyline fill="none" ${lineProps(links.h, 'h')} points="${px},${n2(p.y + bom.y + h)} ${px},${n2(it.y + bom.y + h / 2)} ${n2(it.x + bom.x)},${n2(it.y + bom.y + h / 2)}"/>`);
+  // chaque enfant trace le tronc depuis le bas du parent, comme avant ; quand le style change
+  // entre deux frères, le tronc repart du frère précédent pour que les styles ne se recouvrent pas
+  for (const bom of boms) {
+    const run = new Map();
+    for (const it of bom.items) {
+      if (it.parentId < 0) continue;
+      const p = bom.items.find(b => b.id === it.parentId);
+      if (!p) continue;
+      const k = hierKey(it, HS);
+      const px = n2(p.x + bom.x + h / 2), cy = n2(it.y + bom.y + h / 2);
+      let r = run.get(p.id);
+      if (!r) { r = { key: k, start: n2(p.y + bom.y + h), last: 0 }; run.set(p.id, r); }
+      else if (r.key !== k) { r.key = k; r.start = r.last; }
+      r.last = cy;
+      const pts = `${px},${r.start} ${px},${cy} ${n2(it.x + bom.x)},${cy}`;
+      const line = `<polyline fill="none" ${lineProps(HS[k] || HS.h, k, 'harrow_')} points="${pts}"/>`;
+      o.push(meta ? `<g class="hk" data-child="${it.line}"><polyline class="lk-hit" points="${pts}"/>${line}</g>` : line);
+    }
   }
   // liens transverses (implémentation, couverture, alternative…)
   const labels = [];
@@ -1609,7 +1681,7 @@ function hlItemArgs(s) {
   if (!spans.length) return escapeHtml(s);
   let out = `<span class="t-cm">${escapeHtml(s.slice(0, spans[0].start))}</span>`;
   spans.forEach((b, k) => {
-    out += `<span class="t-${b.kind}">${escapeHtml(s.slice(b.start, b.end))}</span>`;
+    out += `<span class="t-${b.kind === 'h' ? 'hl' : b.kind}">${escapeHtml(s.slice(b.start, b.end))}</span>`;
     const next = k + 1 < spans.length ? spans[k + 1].start : s.length;
     if (next > b.end) out += `<span class="t-cm">${escapeHtml(s.slice(b.end, next))}</span>`;
   });
@@ -1873,7 +1945,11 @@ function statusSwatch(k) { return swatchSvg(stripRootId(settings.status[k]?.svg 
 function bubbleSwatch(k) { return swatchSvg(stripRootId(settings.mandatoryDefs.placeholder || '') + stripRootId(settings.bubbles[k]?.svg || ''), '-8 -8 36 36'); }
 function linkSwatch(k) {
   const d = settings.links[k] || {};
-  return swatchSvg(`<defs>${d.arrow || ''}</defs><line x1="1" y1="10" x2="17" y2="10" ${lineProps(d, k)} stroke-linecap="round"/>`);
+  return swatchSvg(`<defs>${d.arrow ? markerWithId(d, 'arrow_' + sid(k)) : ''}</defs><line x1="1" y1="10" x2="17" y2="10" ${lineProps(d, k)} stroke-linecap="round"/>`);
+}
+function hierSwatch(k) {
+  const d = settings.hierarchy[k] || {};
+  return swatchSvg(`<defs>${d.arrow ? markerWithId(d, 'harrow_' + sid(k)) : ''}</defs><line x1="1" y1="10" x2="17" y2="10" ${lineProps(d, k, 'harrow_')} stroke-linecap="round"/>`);
 }
 function currentAliases() {
   const b = info.blocks[curBlock]; if (!b) return [];
@@ -1893,10 +1969,11 @@ function acContext() {
   if ((m = /\(b:(?:[^,()]*,)*([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.bubbles).map(([k, v]) => ({ label: k, detail: v.label, icon: bubbleSwatch(k), insert: k })) };
   if ((m = /\(l:[^:()]*:(?:[^,()]*,)*([^,()!]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: currentAliases().map(a => ({ label: a.alias, detail: a.label, insert: a.alias })) };
   if ((m = /\(l:([^:()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.links).filter(([k]) => k !== 'h').map(([k, v]) => ({ label: k, detail: v.label, icon: linkSwatch(k), insert: k + ':' })) };
+  if ((m = /\(h:([^()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.hierarchy).map(([k, v]) => ({ label: k, detail: (v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''), icon: hierSwatch(k), insert: k + ')' })) };
   if ((m = /\(e:$/.exec(before))) return { from: pos, q: '', items: [{ label: 'o', detail: T('pastille d\'effectivité', 'effectivity dot'), insert: 'o)' }, { label: '[A -> B[', detail: T('plage', 'range'), insert: '[A -> B[)' }, { label: '[A -> #oo[', detail: T('plage ouverte (∞)', 'open range (∞)'), insert: '[A -> #oo[)' }] };
   if ((m = /^[ \t\-+]*?\+ .*\(([a-z]?)$/.exec(before))) return {
     from: pos - m[1].length, q: q(m[1]), items: [
-      ['i', T('type, libellé, révision', 'type, label, revision')], ['s', T('statut', 'status')], ['a', 'alias'], ['l', T('lien transverse', 'cross link')], ['b', T('bulles', 'bubbles')], ['e', T('effectivité', 'effectivity')]].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
+      ['i', T('type, libellé, révision', 'type, label, revision')], ['s', T('statut', 'status')], ['a', 'alias'], ['l', T('lien transverse', 'cross link')], ['b', T('bulles', 'bubbles')], ['e', T('effectivité', 'effectivity')], ['h', T('lien vers le parent', 'link to the parent')]].map(([k, d]) => ({ label: `(${k}:`, detail: d, insert: k + ':', key: k })),
   };
   return null;
 }
@@ -2181,8 +2258,8 @@ function fillSettingsForm(s) {
   $$('#dlg-settings input[type=color][data-for]').forEach(c => { c.value = cssColorToHex($('#' + c.dataset.for).value); });
   $('#s-json').value = JSON.stringify(Object.fromEntries(ADVANCED_KEYS.map(k => [k, s[k]])), null, 2);
   $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = '';
-  lkDraft = Object.entries(s.links || {}).map(([key, def]) => ({ key, def: { ...def }, style: detectArrow(def) }));
-  renderLinkRows();
+  for (const name of Object.keys(LK)) LK[name].rows = Object.entries(s[name] || {}).map(([key, def]) => ({ key, def: { ...def }, style: detectArrow(def) }));
+  renderAllRows();
 }
 /* JSON avancé : tolère les commentaires, les virgules finales et un extrait de settings.json collé sans ses accolades */
 function parseAdvanced(text) {
@@ -2198,9 +2275,13 @@ function readSettingsForm() {
   try { adv = parseAdvanced($('#s-json').value); } catch (e) { setSettingsTab('adv'); $('#s-json').classList.add('bad'); $('#s-json-err').textContent = T('JSON invalide : ', 'Invalid JSON: ') + e.message; return null; }
   if (!isObj(adv)) adv = {};
   // des types de liens collés dans le JSON avancé remplacent ceux de l'onglet « Types de liens »
-  const advLinks = LINK_KEYS.some(k => isObj(adv[k]));
-  const links = advLinks ? null : readLinkRows(); if (!advLinks && !links) { setSettingsTab('links'); return null; }
-  const s = normalizeSettings(advLinks ? { ...settings, ...adv } : { ...settings, ...adv, links });
+  const advLinks = LINK_KEYS.some(k => isObj(adv[k])), advHier = isObj(adv.hierarchy);
+  const links = advLinks ? null : readRows('links'), hierarchy = advHier ? null : readRows('hierarchy');
+  if ((!advLinks && !links) || (!advHier && !hierarchy)) { setSettingsTab('links'); return null; }
+  const base = { ...settings, ...adv };
+  if (!advLinks) base.links = links;
+  if (!advHier) base.hierarchy = hierarchy;
+  const s = normalizeSettings(base);
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) { const v = parseFloat($('#s-' + k).value); if (Number.isFinite(v)) s[k] = v; }
   s.renderlegend = $('#s-legend').checked; s.transparent = $('#s-transparent').checked;
   s.revision = { background: $('#s-revbg').value || 'dimgrey', font: $('#s-revfont').value || 'white' };
@@ -2221,7 +2302,13 @@ const ARROWS = {
   bar: { fr: 'Barre', en: 'Bar', ref: [1, 3.5], size: [3, 8], svg: c => `<path d="M 1 0 L 1 7" stroke="${c}" stroke-width="1.5"/>` },
 };
 const DASHES = [['', 'Continu', 'Solid'], ['6 4', 'Tirets', 'Dashed'], ['2 2', 'Pointillés', 'Dotted'], ['6 3 2 3', 'Tiret-point', 'Dash-dot']];
-let lkDraft = [];
+/* deux listes éditées de la même façon : styles de hiérarchie et liens transverses */
+const LK = {
+  hierarchy: { rows: [], el: 'hk', fixed: 'h', hint: ['Code utilisé dans (h:code)', 'Code used in (h:code)'],
+    fresh: () => ({ style: 'none', def: { label: T('nouveau style', 'new style'), Color: '#7c3aed', thickness: 1, dashpattern: '6 4' } }), pool: 'odvxyz' },
+  links: { rows: [], el: 'lk', fixed: null, hint: ['Code utilisé dans (l:code:…)', 'Code used in (l:code:…)'],
+    fresh: () => ({ style: 'triangle', def: { label: T('nouveau lien', 'new link'), Color: '#7c3aed', thickness: 1, dashpattern: '' } }), pool: 'pdrvux' },
+};
 function makeMarker(style, key, color) {
   const a = ARROWS[style]; if (!a) return '';
   return `<marker id="arrow_${sid(key)}" refX="${a.ref[0]}" refY="${a.ref[1]}" markerWidth="${a.size[0]}" markerHeight="${a.size[1]}" orient="auto-start-reverse" overflow="visible">${a.svg(attr(color))}</marker>`;
@@ -2235,23 +2322,24 @@ function rowMarker(r, key) {
   if (r.style === 'custom') return String(r.def.arrow || '').replace(/id\s*=\s*"[^"]*"/, `id="arrow_${sid(key)}"`);
   return makeMarker(r.style, key, r.def.Color ?? r.def.color ?? 'black');
 }
-function linkPreview(r, i) {
-  const k = 'pv' + i, d = { ...r.def, arrow: rowMarker(r, k) };
+function linkPreview(name, r, i) {
+  const k = 'pv' + name[0] + i, d = { ...r.def, arrow: rowMarker(r, k) };
   return swatchSvg(`<defs>${d.arrow}</defs><path d="M 12 16 C 40 4, 64 28, 90 16" fill="none" ${lineProps(d, k)} stroke-linecap="round"/>`, '0 0 104 32', 'lk-prev');
 }
-function renderLinkRows() {
+function renderRows(name) {
+  const L = LK[name];
   const H = (fr, en) => `<div class="hd">${T(fr, en)}</div>`;
   const opts = (list, cur) => list.map(([v, fr, en]) => `<option value="${attr(v)}"${v === cur ? ' selected' : ''}>${escapeHtml(T(fr, en))}</option>`).join('');
   let html = H('Aperçu', 'Preview') + H('Code', 'Code') + H('Libellé', 'Label') + H('Couleur', 'Color') + H('Épaisseur', 'Width')
     + H('Trait', 'Line') + H('Extrémité', 'Arrow head') + H('2 bouts', 'Both') + '<div></div>';
-  lkDraft.forEach((r, i) => {
-    const d = r.def, isH = r.key === 'h';
+  L.rows.forEach((r, i) => {
+    const d = r.def, fixed = L.fixed && r.key === L.fixed;
     const dash = d.dashpattern || '', preset = DASHES.some(x => x[0] === dash) ? dash : 'custom';
     const arrowOpts = [['none', 'Aucune', 'None'], ...Object.entries(ARROWS).filter(([, a]) => a).map(([k, a]) => [k, a.fr, a.en])]
       .concat(r.style === 'custom' ? [['custom', 'Personnalisée (SVG)', 'Custom (SVG)']] : []);
-    html += `<div class="lk-pv" data-i="${i}">${linkPreview(r, i)}</div>`
-      + (isH ? `<div class="lk-fixed" title="${attr(T('Lien parent → enfant de la hiérarchie', 'Parent → child hierarchy link'))}">h</div>`
-        : `<input type="text" data-i="${i}" data-f="key" value="${attr(r.key)}" maxlength="16" spellcheck="false" title="${attr(T('Code utilisé dans (l:code:…)', 'Code used in (l:code:…)'))}">`)
+    html += `<div class="lk-pv" data-i="${i}">${linkPreview(name, r, i)}</div>`
+      + (fixed ? `<div class="lk-fixed" title="${attr(T('Style par défaut des liens parent → enfant', 'Default style of parent → child links'))}">${escapeHtml(r.key)}</div>`
+        : `<input type="text" data-i="${i}" data-f="key" value="${attr(r.key)}" maxlength="16" spellcheck="false" title="${attr(T(...L.hint))}">`)
       + `<input type="text" data-i="${i}" data-f="label" value="${attr(d.label || '')}" placeholder="${attr(T('Libellé de légende', 'Legend label'))}">`
       + `<input type="color" data-i="${i}" data-f="color" value="${cssColorToHex(d.Color ?? d.color ?? 'black')}">`
       + `<input type="number" data-i="${i}" data-f="thickness" value="${attr(d.thickness ?? 1)}" min="0.25" max="10" step="0.25">`
@@ -2259,56 +2347,61 @@ function renderLinkRows() {
       + (preset === 'custom' ? `<input type="text" class="lk-dashc" data-i="${i}" data-f="dashc" value="${attr(dash)}" placeholder="ex. 8 3 1 3" title="stroke-dasharray">` : '') + '</div>'
       + `<select data-i="${i}" data-f="arrow">${opts(arrowOpts, r.style)}</select>`
       + `<div class="both"><input type="checkbox" data-i="${i}" data-f="both"${d.arrowBoth ? ' checked' : ''}${r.style === 'none' ? ' disabled' : ''} title="${attr(T('Extrémité aux deux bouts du lien', 'Arrow head at both ends'))}"></div>`
-      + (isH ? '<div></div>' : `<button class="btn icon danger" data-i="${i}" data-f="del" title="${attr(T('Supprimer ce type', 'Delete this type'))}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`);
+      + (fixed ? '<div></div>' : `<button class="btn icon danger" data-i="${i}" data-f="del" title="${attr(T('Supprimer', 'Delete'))}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`);
   });
-  $('#lk-rows').innerHTML = html;
-  $('#lk-err').textContent = '';
+  $(`#${L.el}-rows`).innerHTML = html;
+  $(`#${L.el}-err`).textContent = '';
 }
-function refreshLinkPreview(i) { const el = $(`#lk-rows .lk-pv[data-i="${i}"]`); if (el) el.innerHTML = linkPreview(lkDraft[i], i); }
-$('#lk-rows').addEventListener('input', e => {
-  const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = lkDraft[i]; if (!r) return;
-  if (f === 'key') { r.key = el.value.trim(); validateLinkKeys(); return; }
-  if (f === 'label') r.def.label = el.value;
-  else if (f === 'color') r.def.Color = el.value;
-  else if (f === 'thickness') { const v = parseFloat(el.value); if (v > 0) r.def.thickness = v; }
-  else if (f === 'dashc') r.def.dashpattern = el.value.trim();
-  else return;
-  refreshLinkPreview(i);
-});
-$('#lk-rows').addEventListener('change', e => {
-  const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = lkDraft[i]; if (!r) return;
-  if (f === 'dash') { r.def.dashpattern = el.value === 'custom' ? (r.def.dashpattern || '8 3 1 3') : el.value; renderLinkRows(); return; }
-  if (f === 'arrow') { r.style = el.value; if (r.style === 'none') r.def.arrowBoth = false; renderLinkRows(); return; }
-  if (f === 'both') { r.def.arrowBoth = el.checked; refreshLinkPreview(i); }
-});
-$('#lk-rows').addEventListener('click', e => {
-  const b = e.target.closest('[data-f="del"]'); if (!b) return;
-  lkDraft.splice(+b.dataset.i, 1); renderLinkRows();
-});
-$('#lk-add').onclick = () => {
-  const used = new Set(lkDraft.map(r => r.key)); let k = 'x', n = 1;
-  for (const c of 'pdrvux') if (!used.has(c)) { k = c; break; }
-  while (used.has(k)) k = 'l' + n++;
-  lkDraft.push({ key: k, style: 'triangle', def: { label: T('nouveau lien', 'new link'), Color: '#7c3aed', thickness: 1, dashpattern: '' } });
-  renderLinkRows();
-  $(`#lk-rows input[data-i="${lkDraft.length - 1}"][data-f="label"]`)?.select();
-};
-function validateLinkKeys() {
-  const seen = new Map(); let msg = '';
-  $$('#lk-rows input[data-f="key"]').forEach(inp => {
+function renderAllRows() { renderRows('hierarchy'); renderRows('links'); }
+function listOf(el) { const c = el.closest('[data-list]'); return c ? c.dataset.list : null; }
+for (const name of Object.keys(LK)) {
+  const L = LK[name], grid = $(`#${L.el}-rows`);
+  const refresh = i => { const el = grid.querySelector(`.lk-pv[data-i="${i}"]`); if (el) el.innerHTML = linkPreview(name, L.rows[i], i); };
+  grid.addEventListener('input', e => {
+    const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = L.rows[i]; if (!r) return;
+    if (f === 'key') { r.key = el.value.trim(); validateKeys(name); return; }
+    if (f === 'label') r.def.label = el.value;
+    else if (f === 'color') r.def.Color = el.value;
+    else if (f === 'thickness') { const v = parseFloat(el.value); if (v > 0) r.def.thickness = v; }
+    else if (f === 'dashc') r.def.dashpattern = el.value.trim();
+    else return;
+    refresh(i);
+  });
+  grid.addEventListener('change', e => {
+    const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = L.rows[i]; if (!r) return;
+    if (f === 'dash') { r.def.dashpattern = el.value === 'custom' ? (r.def.dashpattern || '8 3 1 3') : el.value; renderRows(name); return; }
+    if (f === 'arrow') { r.style = el.value; if (r.style === 'none') r.def.arrowBoth = false; renderRows(name); return; }
+    if (f === 'both') { r.def.arrowBoth = el.checked; refresh(i); }
+  });
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('[data-f="del"]'); if (!b) return;
+    L.rows.splice(+b.dataset.i, 1); renderRows(name);
+  });
+  $(`#${L.el}-add`).onclick = () => {
+    const used = new Set(L.rows.map(r => r.key)); let k = 'x', n = 1;
+    for (const c of L.pool) if (!used.has(c) && c !== 'h') { k = c; break; }
+    while (used.has(k)) k = name[0] + n++;
+    L.rows.push({ key: k, ...L.fresh() });
+    renderRows(name);
+    grid.querySelector(`input[data-i="${L.rows.length - 1}"][data-f="label"]`)?.select();
+  };
+}
+function validateKeys(name) {
+  const L = LK[name], seen = new Set(L.fixed ? [L.fixed] : ['h']); let msg = '';
+  $$(`#${L.el}-rows input[data-f="key"]`).forEach(inp => {
     const k = inp.value.trim(); let bad = '';
     if (!/^[\w-]+$/.test(k)) bad = T('Code invalide : lettres, chiffres, - ou _ uniquement', 'Invalid code: letters, digits, - or _ only');
-    else if (k === 'h' || seen.has(k)) bad = T(`Le code « ${k} » est déjà utilisé`, `Code “${k}” is already used`);
-    seen.set(k, true);
+    else if (seen.has(k)) bad = T(`Le code « ${k} » est déjà utilisé`, `Code “${k}” is already used`);
+    seen.add(k);
     inp.classList.toggle('bad', !!bad); if (bad && !msg) msg = bad;
   });
-  $('#lk-err').textContent = msg;
+  $(`#${L.el}-err`).textContent = msg;
   return !msg;
 }
-function readLinkRows() {
-  if (!validateLinkKeys()) return null;
+function readRows(name) {
+  if (!validateKeys(name)) return null;
   const out = {};
-  for (const r of lkDraft) {
+  for (const r of LK[name].rows) {
     const { arrowStyle, ...d } = r.def;
     d.arrow = rowMarker(r, r.key);
     if (r.style !== 'custom') d.arrowStyle = r.style;
@@ -2434,7 +2527,8 @@ function renderReference() {
     + sec(`${T('Types d\'éléments', 'Item types')} (${icons.length})`, grid(icons.map(i => item(`(i:${i.name},`, `<img alt="" src="${attr(i.icon)}">`, i.name, i.label))))
     + sec(T('Statuts', 'Statuses'), grid(Object.entries(settings.status).map(([k, v]) => item(`(s:${k})`, sw(stripRootId(v.svg)), k, v.label))))
     + sec(T('Bulles', 'Bubbles'), grid(Object.entries(settings.bubbles).map(([k, v]) => item(`(b:${k})`, sw(stripRootId(settings.mandatoryDefs.placeholder) + stripRootId(v.svg), '-8 -8 36 36'), k, v.label))))
-    + sec(T('Liens', 'Links'), grid(Object.entries(settings.links).map(([k, v]) => item(k === 'h' ? '+ ' : `(l:${k}:`, sw(`<defs>${v.arrow || ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? T(' (hiérarchie)', ' (hierarchy)') : '')))))
+    + sec(T('Liens de hiérarchie', 'Hierarchy links'), grid(Object.entries(settings.hierarchy).map(([k, v]) => item(k === 'h' ? '+ ' : `(h:${k})`, sw(`<defs>${v.arrow ? markerWithId(v, 'harrow_' + sid(k)) : ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k, 'harrow_')} stroke-linecap="round"/>`), k, (v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : '')))))
+    + sec(T('Liens transverses', 'Cross links'), grid(Object.entries(settings.links).map(([k, v]) => item(`(l:${k}:`, sw(`<defs>${v.arrow ? markerWithId(v, 'arrow_' + sid(k)) : ''}</defs><line x1="2" y1="10" x2="16" y2="10" ${lineProps(v, k)} stroke-linecap="round"/>`), k, v.label || ''))))
     + sec(T('Autres', 'Other'), grid([
       item('(a:', sw('<text x="10" y="15" text-anchor="middle" font-size="13" font-weight="bold" fill="#7b0599">a</text>'), '(a:alias)', 'Alias'),
       item('(e:o)', sw(`<g transform="translate(16,0)">${stripRootId(settings.mandatoryDefs.eff)}</g>`), '(e:o)', T('Pastille d\'effectivité', 'Effectivity dot')),
@@ -2630,6 +2724,10 @@ const G = {
   link() { setLinkMode(!linkMode); },
   type(line, btn) { openPop('type', btn, line); },
   status(line, btn) { openPop('status', btn, line); },
+  hlink(line, btn) {
+    if (parentOf(line) < 0) return toast(T('Cet élément est une racine : il n\'a pas de lien vers un parent', 'This item is a root: it has no link to a parent'));
+    openPop('hlink', btn, line);
+  },
 };
 
 function moveItem(src, target, asSibling) {
@@ -2755,6 +2853,10 @@ function openPop(kind, btn, line) {
     const cur = getI(st).type.toLowerCase();
     html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
       .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
+  } else if (kind === 'hlink') {
+    const hk = blockIdx(st, 'h'); const cur = hk >= 0 ? st.blocks[hk].content.trim() : 'h';
+    html = Object.entries(settings.hierarchy).map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${hierSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml((v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''))}</small></button>`).join('')
+      + `<button data-edit="1" class="gpop-edit">✎ <span>${T('Modifier les styles de hiérarchie…', 'Edit hierarchy styles…')}</span></button>`;
   } else {
     const sk = blockIdx(st, 's'); const cur = sk >= 0 ? st.blocks[sk].content.trim() : '';
     html = `<button data-v="">— <span>${T('Aucun statut', 'No status')}</span></button>` + Object.entries(settings.status)
@@ -2765,10 +2867,16 @@ function openPop(kind, btn, line) {
   gpop.style.top = (gtb.offsetTop + gtb.offsetHeight + 4) + 'px';
 }
 gpop.addEventListener('click', e => {
+  if (e.target.closest('[data-edit]')) { gpop.hidden = true; openSettings('links'); return; }
   const b = e.target.closest('button[data-v]'); if (!b) return;
   const line = +gpop.dataset.line, v = b.dataset.v, st = lineStruct(info.lines[line]);
   if (gpop.dataset.kind === 'type') { const cur = getI(st); setI(st, { ...cur, type: v }); }
-  else {
+  else if (gpop.dataset.kind === 'hlink') {
+    const hk = blockIdx(st, 'h');
+    if (v === 'h') { if (hk >= 0) removeBlock(st, hk); }
+    else if (hk >= 0) st.blocks[hk].content = v;
+    else insertBlock(st, afterI(st), { kind: 'h', content: v });
+  } else {
     const sk = blockIdx(st, 's');
     if (!v) { if (sk >= 0) removeBlock(st, sk); }
     else if (sk >= 0) st.blocks[sk].content = v;
@@ -2780,7 +2888,7 @@ gpop.addEventListener('click', e => {
 gtb.addEventListener('click', e => {
   const b = e.target.closest('[data-g]'); if (!b || !isItem(curLine)) return;
   const act = b.dataset.g;
-  if (act !== 'type' && act !== 'status') gpop.hidden = true;
+  if (act !== 'type' && act !== 'status' && act !== 'hlink') gpop.hidden = true;
   G[act](curLine, b);
 });
 ltb.addEventListener('click', e => { if (e.target.closest('[data-g="unlink"]')) editSelLink(null); });
@@ -2834,8 +2942,9 @@ preview.addEventListener('pointerdown', e => {
   if (!e.target.closest('#gpop')) gpop.hidden = true;
   const g = e.button === 0 ? e.target.closest('#sheet g[data-line]') : null;
   const lk = e.button === 0 ? e.target.closest('#sheet g.lk') : null;
+  const hk = e.button === 0 ? e.target.closest('#sheet g.hk') : null;
   const mode = e.target.closest('#link-handle') ? 'link' : g ? 'item' : 'pan';
-  drag = { mode, g, lk, x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
+  drag = { mode, g, lk, hk, x: e.clientX, y: e.clientY, sl: preview.scrollLeft, st: preview.scrollTop, moved: false, id: e.pointerId };
   if (mode === 'link') { e.preventDefault(); drag.moved = true; preview.setPointerCapture(e.pointerId); tmpLink.removeAttribute('hidden'); }
 });
 preview.addEventListener('pointermove', e => {
@@ -2876,6 +2985,12 @@ preview.addEventListener('pointerup', e => {
       return selectItem(line);
     }
     if (d.lk) return selectLink(d.lk, e);
+    if (d.hk) {
+      // trait de hiérarchie : on sélectionne l'enfant et on propose les styles
+      const child = +d.hk.dataset.child;
+      selectItem(child);
+      return requestAnimationFrame(() => G.hlink(child, gtb.querySelector('[data-g="hlink"]')));
+    }
     if (d.mode === 'pan') { toolbarOn = false; clearLinkSel(); setLinkMode(false); positionOverlay(); }
     return;
   }
@@ -2922,6 +3037,7 @@ preview.addEventListener('keydown', e => {
   else if (k === 'l' || k === 'L') act = () => setLinkMode(!linkMode);
   else if (k === 't' || k === 'T') act = () => G.type(L, gtb.querySelector('[data-g="type"]'));
   else if (k === 's' || k === 'S') act = () => G.status(L, gtb.querySelector('[data-g="status"]'));
+  else if (k === 'p' || k === 'P') act = () => G.hlink(L, gtb.querySelector('[data-g="hlink"]'));
   if (act) { e.preventDefault(); toolbarOn = true; act(); }
 });
 
@@ -2972,7 +3088,7 @@ function setLang(l) {
   if (linkMode) setLinkMode(true);
   if ($('#drawer').classList.contains('open')) renderReference();
   if ($('#dlg-icons').open) renderIconGrid();
-  if ($('#dlg-settings').open) renderLinkRows();
+  if ($('#dlg-settings').open) renderAllRows();
 }
 $('#lang-sw').addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b && b.dataset.lang !== lang) setLang(b.dataset.lang); });
 
