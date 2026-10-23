@@ -8,11 +8,16 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la nu
 
 ### Ajouté
 - Styles des liens de hiérarchie ([#1](https://github.com/eowindel/bomarkdown-studio/issues/1)) : le bloc
-  `(h:type)` sur un enfant dessine son lien vers le parent avec le style d'un type de lien (couleur, épaisseur,
-  tirets ou pointillés, extrémités). Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils figurent dans la
-  légende. Modifiable depuis le diagramme : bouton « style du lien vers le parent », touche `P` ou clic sur un trait
+  `(h:style)` sur un enfant dessine son lien vers le parent avec un style de hiérarchie (couleur, épaisseur, tirets ou
+  pointillés, extrémités). Ces styles forment une liste distincte des liens transverses, éditable dans
+  Réglages → *Types de liens* ; deux styles sont fournis : `o` (optionnel, tirets) et `v` (variante, pointillés).
+  Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils figurent dans la légende. Modifiable depuis le diagramme : bouton « style du lien vers le parent », touche `P` ou clic sur un trait
   de hiérarchie. Autocomplétion, coloration, détection des types inconnus et nouvel exemple *Styles des liens de
   hiérarchie*.
+
+### Modifié
+- Le type de lien `h` (lien parent → enfant) quitte la liste des liens transverses et devient le style de hiérarchie
+  par défaut. Les réglages existants et les réglages importés de VS Code sont convertis automatiquement.
 
 ## [0.1.1] - 2026-10-21
 

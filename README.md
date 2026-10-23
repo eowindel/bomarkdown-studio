@@ -68,7 +68,7 @@ On complète une ligne avec des blocs entre parenthèses, dans n'importe quel or
 | `(l:type:alias1,alias2)` | Liens vers d'autres éléments (`i` implémente, `c` couvre, `a` alternative) | `(l:i:cadre)` |
 | `(b:bulle1,bulle2)` | Pictogrammes sur l'icône (`lock`, `unlock`, `matrice`, `context`, `noway`) | `(b:lock)` |
 | `(e:effectivité)` | Plage d'effectivité affichée à gauche, ou `o` pour une simple pastille | `(e:[A -> #oo[)` |
-| `(h:type)` | Style du lien vers le parent : un type de lien (pointillés, couleur, flèche…) | `(h:a)` |
+| `(h:style)` | Style du lien vers le parent, parmi les styles de hiérarchie (`o` optionnel, `v` variante…) | `(h:o)` |
 
 Quelques compléments :
 
@@ -76,9 +76,10 @@ Quelques compléments :
   départ, `!>texte` à l'arrivée.
 - **Mise en forme des libellés** : `*italique*`, `**gras**`, `***gras italique***`.
 - **Symboles d'effectivité** : `->` devient →, `<-` devient ← et `#oo` devient ∞.
-- **Styles de hiérarchie** : par défaut, un enfant est relié à son parent par un trait plein. `(h:a)` utilise à la
-  place le style du type de lien `a` (pointillés verts par défaut), pratique pour distinguer des éléments optionnels ou
-  des variantes. Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils apparaissent dans la légende.
+- **Styles de hiérarchie** : par défaut, un enfant est relié à son parent par un trait plein (`h`). `(h:o)` le relie
+  en tirets (*optionnel*), `(h:v)` en pointillés (*variante*), et vous pouvez créer vos propres styles. Ils forment une
+  liste distincte des liens transverses. Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils apparaissent
+  dans la légende.
 
 ```text
 + (i:assembly,Vélo urbain,B)(s:IW)
@@ -176,7 +177,8 @@ documentation ou un traitement de texte.
   type : `moteur.png` s'utilise avec `(i:moteur,…)`. Les bibliothèques s'importent et s'exportent en JSON pour être
   partagées.
 - **Types de liens** : un éditeur visuel (Réglages → *Types de liens*, ou le crayon à côté du choix du type de
-  lien) permet de créer ses propres liens et d'en régler le code, le libellé, la couleur, l'épaisseur, le trait
+  lien) gère deux listes, les **styles de hiérarchie** (parent → enfant) et les **liens transverses** (entre
+  structures). Pour chacun, on règle le code, le libellé, la couleur, l'épaisseur, le trait
   (continu, tirets, pointillés, tiret-point ou motif libre) et l'extrémité (flèche pleine ou ouverte, triangle
   creux, losange, rond, barre), éventuellement aux deux bouts, avec un aperçu immédiat.
 - **Réglages** : dimensions et espacements, courbure des liens, légende, couleurs, fond transparent. Les statuts,
