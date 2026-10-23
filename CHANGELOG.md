@@ -4,16 +4,20 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [0.2.0] - 2026-10-23
 
 ### Ajouté
 - Styles des liens de hiérarchie ([#1](https://github.com/eowindel/bomarkdown-studio/issues/1)) : le bloc
   `(h:style)` sur un enfant dessine son lien vers le parent avec un style de hiérarchie (couleur, épaisseur, tirets ou
   pointillés, extrémités). Ces styles forment une liste distincte des liens transverses, éditable dans
   Réglages → *Types de liens* ; deux styles sont fournis : `o` (optionnel, tirets) et `v` (variante, pointillés).
-  Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils figurent dans la légende. Modifiable depuis le diagramme : bouton « style du lien vers le parent », touche `P` ou clic sur un trait
-  de hiérarchie. Autocomplétion, coloration, détection des types inconnus et nouvel exemple *Styles des liens de
-  hiérarchie*.
+  Dès qu'un diagramme utilise plusieurs styles de hiérarchie, ils figurent dans la légende.
+- Le style du lien vers le parent se modifie aussi depuis le diagramme : bouton de la barre d'actions, touche `P` ou
+  clic sur un trait de hiérarchie. Autocomplétion, coloration, détection des styles inconnus et nouvel exemple
+  *Styles des liens de hiérarchie*.
+- Nouveautés en un clic : le badge de version, à côté du logo, ouvre ce journal des versions directement dans
+  l'application, même hors ligne. Après une mise à jour, une pastille sur le badge signale qu'il y a du nouveau
+  jusqu'à la première consultation.
 
 ### Modifié
 - Le type de lien `h` (lien parent → enfant) quitte la liste des liens transverses et devient le style de hiérarchie
@@ -61,5 +65,6 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
 [0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
 [0.1.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.0

@@ -40,6 +40,9 @@ jobs:
           grep -q "const VERSION = '${VERSION}';" index.html \
             || { echo "::error::index.html ne déclare pas VERSION = '${VERSION}'"; exit 1; }
 
+      - name: Vérifier que le journal intégré à l'application est à jour
+        run: python3 tools/sync-changelog.py --check
+
       - name: Extraire les notes du CHANGELOG
         run: |
           awk -v v="$VERSION" '

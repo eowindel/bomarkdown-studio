@@ -40,7 +40,7 @@ body:
     attributes:
       label: "Version"
       description: "Affichée à côté du logo, en haut à gauche. · Shown next to the logo, top left."
-      placeholder: "v0.1.1"
+      placeholder: "v0.2.0"
     validations:
       required: true
   - type: input

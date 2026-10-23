@@ -213,7 +213,8 @@ BoMarkdown Studio en est à sa première version : vos retours sont précieux.
 une amélioration, en français ou en anglais. Le bouton **Signaler un problème** de l'aide (`F1`) y mène aussi.
 Indiquez la version affichée à côté du logo et, si possible, le texte BoMarkdown qui pose problème.
 
-L'historique des versions est dans le [CHANGELOG](CHANGELOG.md).
+L'historique des versions est dans le [CHANGELOG](CHANGELOG.md), et s'affiche aussi dans l'application en cliquant
+sur le badge de version, à côté du logo.
 
 ## Licence et crédits
 
