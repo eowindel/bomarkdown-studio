@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.2.0
+  BoMarkdown Studio v0.2.1
   Copyright 2026 Arnaud Rousseau
   SPDX-License-Identifier: Apache-2.0
   Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="Arnaud Rousseau">
-<meta name="version" content="0.2.0"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.2.1"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -484,7 +484,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <header class="topbar">
   <div class="brand" title="BoMarkdown Studio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
-    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.2.0</button>
+    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.2.1</button>
   </div>
   <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
 
@@ -1076,6 +1076,12 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.2.1] - 2026-10-27
+
+### Ajouté
+- Métadonnées (auteur, version, catégorie, tags, couleur) dans le `<head>` de `index.html`, pour que l'application
+  s'affiche correctement dans le lanceur Porta[b]l Apps.
+
 ## [0.2.0] - 2026-10-23
 
 ### Ajouté
@@ -1137,6 +1143,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
 [0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
 [0.1.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.0
@@ -1157,7 +1164,7 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const store = {

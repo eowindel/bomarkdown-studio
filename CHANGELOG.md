@@ -4,6 +4,12 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.2.1] - 2026-10-27
+
+### Ajouté
+- Métadonnées (auteur, version, catégorie, tags, couleur) dans le `<head>` de `index.html`, pour que l'application
+  s'affiche correctement dans le lanceur Porta[b]l Apps.
+
 ## [0.2.0] - 2026-10-23
 
 ### Ajouté
@@ -65,6 +71,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
 [0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
 [0.1.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.0
