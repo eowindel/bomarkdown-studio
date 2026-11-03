@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.2.1
+  BoMarkdown Studio v0.3.0
   Copyright 2026 Arnaud Rousseau
   SPDX-License-Identifier: Apache-2.0
   Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="Arnaud Rousseau">
-<meta name="version" content="0.2.1"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.3.0"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -289,6 +289,11 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .gpop button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: left; font-size: 13px; }
 .gpop button:hover { background: var(--hover); }
 .gpop button.cur { background: var(--accent-soft); }
+.gpop button.act { background: var(--hover); outline: 1px solid var(--accent); outline-offset: -1px; }
+.gpop button.nf { display: none; }
+.gpop .gpop-q { position: sticky; top: -4px; z-index: 1; display: block; width: 100%; margin: -4px 0 4px; padding: 7px 10px; border: 0; border-bottom: 1px solid var(--border); border-radius: 10px 10px 0 0; background: var(--panel); color: inherit; font: inherit; font-size: 13px; outline: none; box-sizing: border-box; }
+.gpop .gpop-q:focus { border-bottom-color: var(--accent); }
+.gpop .gpop-empty { padding: 6px 10px; color: var(--muted); font-size: 12.5px; }
 .gpop .gpop-edit { border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; margin-top: 4px; color: var(--accent); }
 .gpop img, .gpop svg { width: 20px; height: 20px; flex: none; }
 .gpop b { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
@@ -484,7 +489,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <header class="topbar">
   <div class="brand" title="BoMarkdown Studio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
-    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.2.1</button>
+    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.3.0</button>
   </div>
   <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
 
@@ -1076,6 +1081,13 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-11-03
+
+### Ajouté
+- Recherche dans les sélecteurs de type et de statut du diagramme ([#7](https://github.com/eowindel/bomarkdown-studio/issues/7)) :
+  un champ de saisie filtre la liste au fil de la frappe (nom et libellé), `↑` / `↓` parcourent les résultats,
+  `Entrée` valide et `Échap` ferme le sélecteur.
+
 ## [0.2.1] - 2026-10-27
 
 ### Ajouté
@@ -1143,6 +1155,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
 [0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
@@ -1164,7 +1177,7 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.2.1';
+const VERSION = '0.3.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 const store = {
@@ -3035,10 +3048,39 @@ function openPop(kind, btn, line) {
     html = `<button data-v="">— <span>${T('Aucun statut', 'No status')}</span></button>` + Object.entries(settings.status)
       .map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${statusSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml(v.label || '')}</small></button>`).join('');
   }
+  if (kind !== 'hlink') html = `<input class="gpop-q" type="text" autocomplete="off" spellcheck="false" placeholder="${attr(kind === 'type' ? T('Rechercher un type…', 'Search a type…') : T('Rechercher un statut…', 'Search a status…'))}">` + html + `<div class="gpop-empty" hidden>${T('Aucun résultat', 'No match')}</div>`;
   gpop.innerHTML = html; gpop.dataset.kind = kind; gpop.dataset.line = line; gpop.hidden = false;
   gpop.style.left = clampX(gtb.offsetLeft + btn.offsetLeft, gpop.offsetWidth) + 'px';
   gpop.style.top = (gtb.offsetTop + gtb.offsetHeight + 4) + 'px';
+  const q = gpop.querySelector('.gpop-q'); if (q) { q.focus(); popFilter(); }
 }
+/* recherche dans les sélecteurs de type et de statut : filtre au fil de la saisie, ↑/↓ + Entrée pour choisir */
+function popItems() { return [...gpop.querySelectorAll('button[data-v]')]; }
+function popFilter() {
+  const q = gpop.querySelector('.gpop-q').value.trim().toLowerCase(), all = popItems();
+  let first = null;
+  for (const b of all) {
+    const show = !q || (b.dataset.v !== '' && b.textContent.toLowerCase().includes(q));
+    b.classList.toggle('nf', !show); b.classList.remove('act');
+    if (show && !first && (q || b.dataset.v !== '')) first = b;
+  }
+  if (!first && !q) first = all.find(b => !b.classList.contains('nf')) || null;
+  if (first) first.classList.add('act');
+  gpop.querySelector('.gpop-empty').hidden = all.some(b => !b.classList.contains('nf'));
+}
+function popMove(d) {
+  const vis = popItems().filter(b => !b.classList.contains('nf')); if (!vis.length) return;
+  const i = vis.findIndex(b => b.classList.contains('act')), n = vis[(i + d + vis.length) % vis.length];
+  vis.forEach(b => b.classList.remove('act')); n.classList.add('act'); n.scrollIntoView({ block: 'nearest' });
+}
+gpop.addEventListener('input', e => { if (e.target.matches('.gpop-q')) popFilter(); });
+gpop.addEventListener('keydown', e => {
+  if (!e.target.matches('.gpop-q')) return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); popMove(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); popMove(-1); }
+  else if (e.key === 'Enter') { e.preventDefault(); gpop.querySelector('button.act')?.click(); }
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); gpop.hidden = true; preview.focus(); }
+});
 gpop.addEventListener('click', e => {
   if (e.target.closest('[data-edit]')) { gpop.hidden = true; openSettings('links'); return; }
   const b = e.target.closest('button[data-v]'); if (!b) return;
