@@ -4,6 +4,20 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.6.0] - 2026-11-03
+
+Troisième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
+([#6](https://github.com/eowindel/bomarkdown-studio/issues/6)).
+
+### Ajouté
+- Génération de nomenclature : une ligne `+genbom:type,nombre,préfixe[,révision[,lien]];…` décrit un niveau par bloc
+  séparé par `;`. Le bouton *Générer* de l'éditeur (ou `Ctrl+Maj+G`) insère sous cette ligne la nomenclature
+  correspondante, annulable avec `Ctrl+Z`. Le nombre peut être une plage (`2-5` : tirage aléatoire), le préfixe est
+  complété par un identifiant `x.y.z`, et le lien (une lettre) donne le style du lien vers le parent, comme `a+`.
+  Exemple : `+genbom:assembly,2-5,Product ,1;component,1-3,Part ,A.1;component,2,Alternatives ,A.1,a`.
+  La ligne peut aussi s'écrire `genbom:`. Une syntaxe invalide ou plus de 5 000 éléments sont refusés avec un
+  message. Coloration et autocomplétion de `+genbom:`.
+
 ## [0.5.0] - 2026-11-03
 
 Deuxième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
@@ -110,6 +124,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
