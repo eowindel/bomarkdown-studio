@@ -4,6 +4,13 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-11-03
+
+### Ajouté
+- Recherche dans les sélecteurs de type et de statut du diagramme ([#7](https://github.com/eowindel/bomarkdown-studio/issues/7)) :
+  un champ de saisie filtre la liste au fil de la frappe (nom et libellé), `↑` / `↓` parcourent les résultats,
+  `Entrée` valide et `Échap` ferme le sélecteur.
+
 ## [0.2.1] - 2026-10-27
 
 ### Ajouté
@@ -71,6 +78,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
 [0.1.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.1.1
