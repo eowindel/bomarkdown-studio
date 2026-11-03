@@ -41,6 +41,12 @@ statuts, effectivités, liens entre éléments et légende automatique, et s'exp
 Votre travail est **sauvegardé automatiquement** dans le navigateur. **Ouvrir** et **Enregistrer** permettent de
 travailler sur des fichiers `.bmd` (une nomenclature seule) ou `.md` (un document Markdown).
 
+### Avec Porta[b]l Apps
+
+BoMarkdown Studio est compatible avec [Porta[b]l Apps](https://github.com/eowindel/portabl-apps), un lanceur local
+pour vos applications autonomes : déposez `index.html` dans son dossier `apps/` et l'application apparaît sous forme de
+carte (nom, version, catégorie, icône), prête à démarrer dans sa propre fenêtre, sans serveur ni connexion.
+
 ## Concevoir en texte
 
 ### La hiérarchie
