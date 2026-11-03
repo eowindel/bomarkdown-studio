@@ -4,6 +4,21 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.5.0] - 2026-11-03
+
+Deuxième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
+([#6](https://github.com/eowindel/bomarkdown-studio/issues/6)).
+
+### Ajouté
+- Étiquettes : le bloc `(t:texte,style)` ajoute un ou plusieurs cadres colorés à la fin d'un élément. Le style est un
+  nom du réglage `tagstyles` ou, à défaut, une couleur de fond (`(t:banana,orange)`) ; sans style, le style `regular`
+  (rouge) s'applique. Chaque style définit le cadre (`rect` : `fill`, `stroke`, `stroke_width`, `fill_opacity`…) et la
+  police (`fontdef` : `wtag` texte blanc, `btag` texte noir, ou toute clé de `fontdefs`). Le réglage `tagstyles` se
+  définit dans Réglages → *Avancé (JSON)* ou dans le bloc `${{ }}$` d'un diagramme.
+- Édition depuis le graphe : bouton *Étiquette* de la barre d'actions (touche `E`) avec saisie du texte et choix du
+  style, et bouton pour retirer l'étiquette. Autocomplétion de `(t:` et des styles après la virgule, coloration, et
+  avertissement pour une étiquette sans texte.
+
 ## [0.4.0] - 2026-11-03
 
 Premier lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
@@ -95,6 +110,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
