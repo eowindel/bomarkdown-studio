@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.3.0
+  BoMarkdown Studio v0.4.0
   Copyright 2026 Arnaud Rousseau
   SPDX-License-Identifier: Apache-2.0
   Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="Arnaud Rousseau">
-<meta name="version" content="0.3.0"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.4.0"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -489,7 +489,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <header class="topbar">
   <div class="brand" title="BoMarkdown Studio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
-    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.3.0</button>
+    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.4.0</button>
   </div>
   <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
 
@@ -1081,6 +1081,23 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-11-03
+
+Premier lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
+([#6](https://github.com/eowindel/bomarkdown-studio/issues/6)).
+
+### Ajouté
+- Préfixe de hiérarchie `a+` : une lettre juste avant le `+` donne le style du lien vers le parent, comme dans
+  l'extension (`a+ (i:component,Alternative)`). C'est un raccourci de `(h:a)` : les deux écritures sont équivalentes.
+  Le code peut être un style de hiérarchie ou un type de lien transverse (`a`, `i`, `c`…). Un code inconnu est signalé
+  dans le panneau *Problèmes*, et le sélecteur graphique du style de lien remplace le préfixe par `(h:…)`.
+- Réglage `vpanfactor` (global, dans le bloc `${{ }}$` ou le JSON avancé) : espacement vertical en fraction de la hauteur
+  d'une ligne (`panv = h / vpanfactor`). La valeur 4 reproduit l'espacement par défaut.
+- Réglage `fontdefs` : surcharge facultative des polices (`label`, `eff`, `rev`, `linklabel`, `legend`) avec les clés
+  `font_family`, `font_size`, `font_weight`, `font_style`, `fill`, `stroke`, `stroke_width`, `paint_order`. Sans surcharge,
+  le rendu est inchangé.
+- Réglage `revisionstyle` : attributs SVG du cadre de la révision (`fill`, `stroke`, `stroke_width`, `fill_opacity`…).
+
 ## [0.3.0] - 2026-11-03
 
 ### Ajouté
@@ -1155,6 +1172,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
@@ -1177,8 +1195,18 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+/* fontdefs de l'extension : surcharges facultatives (label, eff, rev, linklabel, legend…) ; sans surcharge, les polices de
+   Studio restent inchangées. base : valeurs par défaut de Studio, clés en font_family, font_size, fill, stroke_width… */
+function fdef(S, key, base, subst) {
+  const o = {}; for (const [k, v] of Object.entries(((S && S.fontdefs) || {})[key] || {})) o[k.replace(/-/g, '_')] = String(v);
+  const m = { ...base, ...o }; const size = Number(m.font_size) > 0 ? Number(m.font_size) : base.font_size;
+  const val = k => { const v = m[k]; return subst && v === 'LinkColor' ? subst : v; };
+  let a = ` font-family="${attr(m.font_family || FONT)}" font-size="${size}"`;
+  for (const [k, n] of [['font_weight', 'font-weight'], ['font_style', 'font-style'], ['fill', 'fill'], ['stroke', 'stroke'], ['stroke_width', 'stroke-width'], ['paint_order', 'paint-order']]) if (m[k] != null && m[k] !== '') a += ` ${n}="${attr(val(k))}"`;
+  return { size, attrs: a };
+}
 
 const store = {
   get(k, d) { try { const v = localStorage.getItem('bomd.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -1261,6 +1289,8 @@ function translateStatic() {
 /* ---------- Réglages par défaut (identiques à ceux de l'extension) ---------- */
 const DEFAULT_SETTINGS = {
   h: 20, gap: 2, panh: 20, panv: 5, bend: 1, legendscale: 0.8, renderlegend: true,
+  /* de l'extension : vpanfactor (panv = h / vpanfactor), fontdefs (surcharges de polices), revisionstyle (cadre de révision) */
+  vpanfactor: null, fontdefs: {}, revisionstyle: {},
   background: '#ffffff', transparent: false,
   revision: { font: 'white', background: 'dimgrey' },
   /* styles des liens parent → enfant ; « h » est le style par défaut, les autres s'appliquent avec (h:code) */
@@ -1297,7 +1327,7 @@ const DEFAULT_SETTINGS = {
   },
   utf8replacement: { '#oo': '&#x221E;', '->': '&#x2192;', '<-': '&#x2190;' },
 };
-const ADVANCED_KEYS = ['status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement'];
+const ADVANCED_KEYS = ['status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement', 'fontdefs', 'revisionstyle', 'vpanfactor'];
 /* Correspondance des clés de l'extension VS Code (settings.json et blocs ${{ }}$) */
 const LEGACY_KEYS = {
   haslegend: 'renderlegend', Linksdefinition: 'links', satus: 'status', MandatoryDefs: 'mandatoryDefs', UTF8replacement: 'utf8replacement',
@@ -1392,7 +1422,10 @@ const measure = (() => {
 /* =====================================================================
    Analyse du texte BoMarkdown (portage de parseEditor.ts)
    ===================================================================== */
-const ITEM_RE = /^([ \t\-+]*?)\+ (.*)$/;
+/* Le préfixe peut se terminer par une lettre : « a+ » est un raccourci de (h:a) comme dans l'extension ;
+   la lettre occupe un niveau d'indentation, comme le « - » des propriétés « -+ ». */
+const ITEM_RE = /^((?:[ \t\-+]*?)[A-Za-z0-9]?)\+ (.*)$/;
+const prefixKey = p => /[A-Za-z0-9]$/.test(p) ? p.slice(-1) : '';
 
 /* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
    ce qui autorise les parenthèses dans les libellés (comme l'extension). */
@@ -1438,6 +1471,7 @@ function parseBomText(text, baseLine = 0) {
     const level = m[1].length;
     const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', bubbles: [], relatives: [], argOffset: m[1].length + 2 };
     parents[level + 1] = line;
+    if (level > 0) it.hlink = prefixKey(m[1]);
     parseArgs(m[2], it, diags);
     bom.items.push(it);
   }
@@ -1493,11 +1527,13 @@ function effectiveSettings(params) {
   for (const [k0, v] of Object.entries(params || {})) {
     const k = LEGACY_KEYS[k0] || k0;
     if (!(k in DEFAULT_SETTINGS)) continue;
+    if (k === 'fontdefs' && isObj(v)) { S.fontdefs = { ...S.fontdefs }; for (const [fk, fv] of Object.entries(v)) S.fontdefs[fk] = { ...(S.fontdefs[fk] || {}), ...(isObj(fv) ? fv : {}) }; continue; }
     S[k] = isObj(S[k]) && isObj(v) ? { ...S[k], ...v } : v;
   }
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) {
     const v = Number(S[k]); S[k] = Number.isFinite(v) ? v : DEFAULT_SETTINGS[k];
   }
+  const vf = Number(S.vpanfactor); if (S.vpanfactor != null && Number.isFinite(vf) && vf > 0) S.panv = S.h / vf;
   return splitHierarchy(S);
 }
 
@@ -1506,7 +1542,7 @@ function validate(parsed, S) {
   for (const bom of parsed.boms) for (const it of bom.items) {
     if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: T(`Type « ${it.type} » inconnu (icône « ? » affichée)`, `Unknown type “${it.type}” (“?” icon shown)`) });
     if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: T(`Statut « ${it.status} » inconnu`, `Unknown status “${it.status}”`) });
-    if (it.hlink && !has(S.hierarchy, it.hlink)) d.push({ line: it.line, level: 'warn', msg: T(`Style de hiérarchie « ${it.hlink} » inconnu`, `Unknown hierarchy style “${it.hlink}”`) });
+    if (it.hlink && !has(S.hierarchy, it.hlink) && !has(S.links, it.hlink)) d.push({ line: it.line, level: 'warn', msg: T(`Style de hiérarchie « ${it.hlink} » inconnu`, `Unknown hierarchy style “${it.hlink}”`) });
     else if (it.hlink && !bom.items.some(p => p.id === it.parentId)) d.push({ line: it.line, level: 'info', msg: T('« (h:…) » sans effet : cet élément n\'a pas de parent', '“(h:…)” has no effect: this item has no parent') });
     for (const b of it.bubbles) if (!has(S.bubbles, b) && !has(S.mandatoryDefs, b)) d.push({ line: it.line, level: 'warn', msg: T(`Bulle « ${b} » inconnue`, `Unknown bubble “${b}”`) });
     if (it.alias) {
@@ -1558,22 +1594,26 @@ function bezierPoint(p, t) {
 
 function buildSvg(parsed, S, { meta = false } = {}) {
   const { h, gap, panh, panv } = S; const iconw = h; const bend = S.bend; const ty = n2(h / 2 + 5);
-  const icons = iconMap(); const boms = parsed.boms; const links = S.links || {}; const HS = S.hierarchy || {};
+  const icons = iconMap(); const boms = parsed.boms; const links = S.links || {}; const HS = { ...(S.hierarchy || {}) };
+  /* « a+ » / (h:a) peut aussi désigner un type de lien transverse, comme dans l'extension */
+  for (const bom of boms) for (const it of bom.items) if (it.hlink && !has(HS, it.hlink) && has(links, it.hlink)) HS[it.hlink] = links[it.hlink];
   const repl = Object.entries(S.utf8replacement || {}).map(([k, v]) => [k, decodeEntities(String(v))]);
 
+  const FDL = fdef(S, 'label', { font_size: 13 }), FDE = fdef(S, 'eff', { font_size: 13 }), FDG = fdef(S, 'legend', { font_size: 12 });
+  const FDR = fdef(S, 'rev', { font_size: 10, font_weight: 'bold', fill: S.revision?.font || 'white' });
   // 1) mise en page
   boms.forEach((bom, ci) => {
     bom.maxw = 0; bom.maxnegw = 0;
     bom.items.forEach((it, k) => {
       it.lblMarkup = emphasize(escapeXml(it.label), S.emphasis);
-      it.lblw = measure(it.lblMarkup, 13);
+      it.lblw = measure(it.lblMarkup, FDL.size);
       it.x = it.level * panh; it.y = k * (h + panv);
       it.w = it.x + it.lblw + (it.type ? iconw + gap : 0) + (it.revision ? iconw + gap : 0) + (it.status ? iconw + gap : 0);
       it.effText = '';
       if (it.effectivity) {
         let e = it.effectivity; for (const [a, b] of repl) e = e.split(a).join(b);
         it.effText = e;
-        if (e !== 'o') { it.effw = measure(escapeXml(e), 13); bom.maxnegw = Math.max(bom.maxnegw, it.effw); }
+        if (e !== 'o') { it.effw = measure(escapeXml(e), FDE.size); bom.maxnegw = Math.max(bom.maxnegw, it.effw); }
       }
       bom.maxw = Math.max(bom.maxw, it.w);
     });
@@ -1586,7 +1626,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
   let legend = null;
   if (S.renderlegend !== false) {
     const entries = []; const seen = new Set();
-    const add = (kind, name, label) => { const k = kind + ':' + name; if (seen.has(k)) return; seen.add(k); entries.push({ kind, name, label: String(label ?? name), w: measure(escapeXml(label ?? name), 12) + iconw + gap }); };
+    const add = (kind, name, label) => { const k = kind + ':' + name; if (seen.has(k)) return; seen.add(k); entries.push({ kind, name, label: String(label ?? name), w: measure(escapeXml(label ?? name), FDG.size) + iconw + gap }); };
     for (const bom of boms) for (const it of bom.items) { const ic = it.type && icons.get(it.type.toLowerCase()); if (ic) add('type', ic.name, ic.label || ic.name); }
     // styles de hiérarchie : seulement quand le diagramme en utilise plusieurs
     const hier = [];
@@ -1643,11 +1683,11 @@ function buildSvg(parsed, S, { meta = false } = {}) {
       else if (e.kind === 'hier') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(HS[e.name], e.name, 'harrow_')} stroke-linecap="round"/>`);
       else if (e.kind === 'link') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(links[e.name], e.name)} stroke-linecap="round"/>`);
       else if (e.kind === 'bubble') o.push(`<use ${ref('placeholder')} x="${n2(c.x)}" y="${y}"/><use ${ref('b-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
-      o.push(`<text font-family="${FONT}" font-size="12" x="${n2(c.x + iconw + gap)}" y="${y + 15}" fill="black">${escapeXml(e.label)}</text>`);
+      o.push(`<text${fdef(S, 'legend', { font_size: 12, fill: 'black' }).attrs} x="${n2(c.x + iconw + gap)}" y="${y + 15}">${escapeXml(e.label)}</text>`);
     });
     o.push('</g>');
     o.push(`<rect x="18" y="10" width="45" height="5" fill="${S.transparent ? 'none' : attr(S.background || 'white')}"/>`);
-    o.push(`<text font-family="${FONT}" font-size="12" x="20" y="16" fill="grey">${T('Légende', 'Legend')}</text></g>`);
+    o.push(`<text${fdef(S, 'legend', { font_size: 12, fill: 'grey' }).attrs} x="20" y="16">${T('Légende', 'Legend')}</text></g>`);
   }
 
   // liens hiérarchiques (dessinés en premier pour que les éléments passent au-dessus)
@@ -1698,7 +1738,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
       if (r.label) {
         const [lx, ly] = bezierPoint(pts, r.pos === 'b' ? 0.18 : r.pos === 'e' ? 0.82 : 0.5);
         const col = links[r.linktype].Color ?? links[r.linktype].color ?? 'black';
-        labels.push(`<text x="${n2(lx)}" y="${n2(ly - 3)}" text-anchor="middle" font-family="${FONT}" font-size="11" font-style="italic" fill="${attr(col)}" stroke="${S.transparent ? 'white' : attr(S.background || 'white')}" stroke-width="3" stroke-linejoin="round" paint-order="stroke">${escapeXml(r.label)}</text>`);
+        labels.push(`<text x="${n2(lx)}" y="${n2(ly - 3)}" text-anchor="middle"${fdef(S, 'linklabel', { font_size: 11, font_style: 'italic', fill: col, stroke: S.transparent ? 'white' : S.background || 'white', stroke_width: 3, paint_order: 'stroke' }, col).attrs} stroke-linejoin="round">${escapeXml(r.label)}</text>`);
       }
     });
   }
@@ -1710,7 +1750,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     const parts = [];
     const tx = it.type ? iconw + gap : gap;
     parts.push(`<rect width="${n2(it.lblw)}" height="${h}" x="${tx}" fill="url(#grad)"/>`);
-    parts.push(`<text font-family="${FONT}" font-size="13" x="${tx}" y="${ty}" fill="black" stroke="white" stroke-width="${it.type ? 0.25 : 1}" paint-order="stroke">${it.lblMarkup}</text>`);
+    parts.push(`<text${fdef(S, 'label', { font_size: 13, fill: 'black', stroke: 'white', stroke_width: it.type ? 0.25 : 1, paint_order: 'stroke' }).attrs} x="${tx}" y="${ty}">${it.lblMarkup}</text>`);
     let fin;
     if (it.type) {
       const ic = icons.get(it.type.toLowerCase());
@@ -1719,7 +1759,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     } else fin = it.lblw + gap;
     if (it.effText) {
       if (it.effText === 'o') parts.push(`<use ${ref('eff')} x="0" y="0"/>`);
-      else parts.push(`<rect width="${n2(it.effw)}" height="${h}" x="${n2(-panh - it.effw)}" fill="url(#grad)"/><text font-family="${FONT}" text-anchor="end" font-size="13" x="${-panh}" y="${ty}" fill="black">${escapeXml(it.effText)}</text>`);
+      else parts.push(`<rect width="${n2(it.effw)}" height="${h}" x="${n2(-panh - it.effw)}" fill="url(#grad)"/><text${fdef(S, 'eff', { font_size: 13, fill: 'black' }).attrs} text-anchor="end" x="${-panh}" y="${ty}">${escapeXml(it.effText)}</text>`);
     }
     // une bulle peut aussi viser une définition obligatoire, ex. (b:eff), comme dans l'extension
     for (const b of it.bubbles) {
@@ -1728,9 +1768,10 @@ function buildSvg(parsed, S, { meta = false } = {}) {
     }
     if (it.revision) {
       const rv = `<tspan font-weight="bold">${escapeXml(it.revision)}</tspan>`;
-      const fit = measure(rv, 10) > h - 5 ? ` textLength="${h - 5}" lengthAdjust="spacingAndGlyphs"` : '';
-      parts.push(`<rect x="${n2(fin)}" y="1" width="${iconw - 2}" height="${h - 2}" fill="${attr(S.revision?.background || 'dimgrey')}" rx="${n2(h / 5)}"/>`);
-      parts.push(`<text font-family="${FONT}"${fit} dominant-baseline="middle" text-anchor="middle" font-weight="bold" font-size="10" x="${n2(fin + iconw / 2 - 1)}" y="${n2(h / 2 + 1)}" fill="${attr(S.revision?.font || 'white')}">${escapeXml(it.revision)}</text>`);
+      const fit = measure(rv, FDR.size) > h - 5 ? ` textLength="${h - 5}" lengthAdjust="spacingAndGlyphs"` : '';
+      const rs = { fill: S.revision?.background || 'dimgrey', ...(S.revisionstyle || {}) };
+      parts.push(`<rect x="${n2(fin)}" y="1" width="${iconw - 2}" height="${h - 2}"${Object.entries(rs).map(([k, v]) => ` ${k.replace(/_/g, '-')}="${attr(v)}"`).join('')} rx="${n2(h / 5)}"/>`);
+      parts.push(`<text${FDR.attrs}${fit} dominant-baseline="middle" text-anchor="middle" x="${n2(fin + iconw / 2 - 1)}" y="${n2(h / 2 + 1)}">${escapeXml(it.revision)}</text>`);
       fin += iconw + gap;
     }
     if (it.status) {
@@ -2746,13 +2787,13 @@ let toolbarOn = false, linkMode = false, selLink = null, renaming = null;
 function lineStruct(text) {
   const m = ITEM_RE.exec(text || ''); if (!m) return null;
   const s = m[2]; const spans = blockSpans(s);
-  if (!spans.length) return { level: m[1].length, pre: '', blocks: [{ kind: 'i', content: s.trim(), after: '' }] };
+  if (!spans.length) return { level: m[1].length, key: prefixKey(m[1]), pre: '', blocks: [{ kind: 'i', content: s.trim(), after: '' }] };
   return {
-    level: m[1].length, pre: s.slice(0, spans[0].start),
+    level: m[1].length, key: prefixKey(m[1]), pre: s.slice(0, spans[0].start),
     blocks: spans.map((b, k) => ({ kind: b.kind, content: b.content, after: s.slice(b.end, k + 1 < spans.length ? spans[k + 1].start : s.length) })),
   };
 }
-const structText = st => ' '.repeat(st.level) + '+ ' + st.pre + st.blocks.map(b => `(${b.kind}:${b.content})${b.after}`).join('');
+const structText = st => (st.key && st.level > 0 ? ' '.repeat(st.level - 1) + st.key : ' '.repeat(st.level)) + '+ ' + st.pre + st.blocks.map(b => `(${b.kind}:${b.content})${b.after}`).join('');
 function insertBlock(st, idx, blk) {
   const prev = st.blocks[idx - 1];
   blk.after = prev ? prev.after : ''; if (prev) prev.after = '';
@@ -2844,7 +2885,7 @@ function nextSibling(line) {
 const itemType = i => getI(lineStruct(info.lines[i])).type;
 const CHILD_TYPE = { assembly: 'component', folder: 'file', spec: 'req', plant: 'routing', routing: 'function', chapter: 'chapter', function: 'function', logical: 'logical' };
 const newItem = (level, type, label) => ' '.repeat(level) + '+ ' + (type ? `(i:${type},${label})` : `(i:${label})`);
-const reLevel = (i, lv) => ' '.repeat(Math.max(0, lv)) + '+ ' + ITEM_RE.exec(info.lines[i])[2];
+const reLevel = (i, lv) => { const m = ITEM_RE.exec(info.lines[i]), k = prefixKey(m[1]); return (k && lv > 0 ? ' '.repeat(lv - 1) + k : ' '.repeat(Math.max(0, lv))) + '+ ' + m[2]; };
 
 /* --- application d'une modification : remplace les lignes [from, to[ --- */
 function replaceLines(from, to, newLines) {
@@ -3040,7 +3081,7 @@ function openPop(kind, btn, line) {
     html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
       .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
   } else if (kind === 'hlink') {
-    const hk = blockIdx(st, 'h'); const cur = hk >= 0 ? st.blocks[hk].content.trim() : 'h';
+    const hk = blockIdx(st, 'h'); const cur = hk >= 0 ? st.blocks[hk].content.trim() : st.key || 'h';
     html = Object.entries(settings.hierarchy).map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${hierSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml((v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''))}</small></button>`).join('')
       + `<button data-edit="1" class="gpop-edit">✎ <span>${T('Modifier les styles de hiérarchie…', 'Edit hierarchy styles…')}</span></button>`;
   } else {
@@ -3087,6 +3128,7 @@ gpop.addEventListener('click', e => {
   const line = +gpop.dataset.line, v = b.dataset.v, st = lineStruct(info.lines[line]);
   if (gpop.dataset.kind === 'type') { const cur = getI(st); setI(st, { ...cur, type: v }); }
   else if (gpop.dataset.kind === 'hlink') {
+    st.key = '';
     const hk = blockIdx(st, 'h');
     if (v === 'h') { if (hk >= 0) removeBlock(st, hk); }
     else if (hk >= 0) st.blocks[hk].content = v;

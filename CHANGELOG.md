@@ -4,6 +4,23 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-11-03
+
+Premier lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
+([#6](https://github.com/eowindel/bomarkdown-studio/issues/6)).
+
+### Ajouté
+- Préfixe de hiérarchie `a+` : une lettre juste avant le `+` donne le style du lien vers le parent, comme dans
+  l'extension (`a+ (i:component,Alternative)`). C'est un raccourci de `(h:a)` : les deux écritures sont équivalentes.
+  Le code peut être un style de hiérarchie ou un type de lien transverse (`a`, `i`, `c`…). Un code inconnu est signalé
+  dans le panneau *Problèmes*, et le sélecteur graphique du style de lien remplace le préfixe par `(h:…)`.
+- Réglage `vpanfactor` (global, dans le bloc `${{ }}$` ou le JSON avancé) : espacement vertical en fraction de la hauteur
+  d'une ligne (`panv = h / vpanfactor`). La valeur 4 reproduit l'espacement par défaut.
+- Réglage `fontdefs` : surcharge facultative des polices (`label`, `eff`, `rev`, `linklabel`, `legend`) avec les clés
+  `font_family`, `font_size`, `font_weight`, `font_style`, `fill`, `stroke`, `stroke_width`, `paint_order`. Sans surcharge,
+  le rendu est inchangé.
+- Réglage `revisionstyle` : attributs SVG du cadre de la révision (`fill`, `stroke`, `stroke_width`, `fill_opacity`…).
+
 ## [0.3.0] - 2026-11-03
 
 ### Ajouté
@@ -78,6 +95,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.2.0
