@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.5.0
+  BoMarkdown Studio v0.6.0
   Copyright 2026 Arnaud Rousseau
   SPDX-License-Identifier: Apache-2.0
   Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="Arnaud Rousseau">
-<meta name="version" content="0.5.0"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.6.0"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -490,7 +490,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 <header class="topbar">
   <div class="brand" title="BoMarkdown Studio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="8" height="6" rx="1.5" fill="#4f6bed"/><rect x="13" y="10" width="9" height="5" rx="1.5" fill="#94a3b8"/><rect x="13" y="17" width="9" height="5" rx="1.5" fill="#94a3b8"/><path d="M6 8v4.5h7M6 12v7.5h7" stroke="#4f6bed" stroke-width="1.6" fill="none"/></svg>
-    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.5.0</button>
+    BoMarkdown <small>Studio</small> <button type="button" class="ver" id="app-ver" title="Nouveautés : journal des versions">v0.6.0</button>
   </div>
   <div class="docname" id="docname" title="Document courant"><i class="dot"></i><span id="docname-text">document.md</span></div>
 
@@ -531,6 +531,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
     <div class="pane-head">
       <span class="pane-title">Source</span>
       <span class="hint" style="margin:0" id="mode-hint"></span>
+      <button class="btn" id="btn-genbom" title="Générer une nomenclature d'après la ligne « +genbom: » sous le curseur (Ctrl+Maj+G)" style="margin-left:auto"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.7 1.8L21.5 17.5l-1.8.7L19 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg><span class="lbl opt">Générer</span></button>
     </div>
     <div class="editor" id="editor">
       <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="gutter"></div></div>
@@ -1083,6 +1084,20 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.6.0] - 2026-11-03
+
+Troisième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
+([#6](https://github.com/eowindel/bomarkdown-studio/issues/6)).
+
+### Ajouté
+- Génération de nomenclature : une ligne `+genbom:type,nombre,préfixe[,révision[,lien]];…` décrit un niveau par bloc
+  séparé par `;`. Le bouton *Générer* de l'éditeur (ou `Ctrl+Maj+G`) insère sous cette ligne la nomenclature
+  correspondante, annulable avec `Ctrl+Z`. Le nombre peut être une plage (`2-5` : tirage aléatoire), le préfixe est
+  complété par un identifiant `x.y.z`, et le lien (une lettre) donne le style du lien vers le parent, comme `a+`.
+  Exemple : `+genbom:assembly,2-5,Product ,1;component,1-3,Part ,A.1;component,2,Alternatives ,A.1,a`.
+  La ligne peut aussi s'écrire `genbom:`. Une syntaxe invalide ou plus de 5 000 éléments sont refusés avec un
+  message. Coloration et autocomplétion de `+genbom:`.
+
 ## [0.5.0] - 2026-11-03
 
 Deuxième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
@@ -1189,6 +1204,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.3.0
@@ -1213,7 +1229,7 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.5.0';
+const VERSION = '0.6.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 /* fontdefs de l'extension : surcharges facultatives (label, eff, rev, linklabel, legend…) ; sans surcharge, les polices de
    Studio restent inchangées. base : valeurs par défaut de Studio, clés en font_family, font_size, fill, stroke_width… */
@@ -1282,6 +1298,7 @@ const EN = {
   'Liens de hiérarchie (parent → enfant)': 'Hierarchy links (parent → child)', 'Liens transverses (entre structures)': 'Cross links (between structures)',
   'Ajouter un style de hiérarchie': 'Add a hierarchy style',
   'Style du lien vers le parent (P)': 'Style of the link to the parent (P)', 'Étiquette (E)': 'Tag (E)',
+  "Générer une nomenclature d'après la ligne « +genbom: » sous le curseur (Ctrl+Maj+G)": 'Generate a BOM from the “+genbom:” line under the cursor (Ctrl+Shift+G)', 'Générer': 'Generate',
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
   'Importer JSON': 'Import JSON', "Exporter les icônes personnalisées (format compatible avec l'extension)": 'Export custom icons (format compatible with the extension)',
   'Exporter JSON': 'Export JSON', 'Aide : syntaxe BoMarkdown': 'Help: BoMarkdown syntax',
@@ -1914,6 +1931,8 @@ function hlLine(l, kind) {
   if (kind === 'bom') {
     const t = l.trim();
     if (t.startsWith('+newcolumn')) return l.replace(/^(\s*)(\+newcolumn)(\s*)(\d*)(.*)$/, (m, a, b, c, d, e) => `${escapeHtml(a)}<span class="t-kw">${b}</span>${c}<span class="t-num">${d}</span><span class="t-cm">${escapeHtml(e)}</span>`);
+    const gb = /^(\s*\+?genbom:)(.*)$/i.exec(l);
+    if (gb) return `<span class="t-kw">${escapeHtml(gb[1])}</span><span class="t-num">${escapeHtml(gb[2])}</span>`;
     const m = ITEM_RE.exec(l);
     if (!m) return l ? `<span class="t-cm">${escapeHtml(l)}</span>` : '';
     return `<span class="t-plus">${escapeHtml(m[1])}+</span> ${hlItemArgs(m[2])}`;
@@ -2184,6 +2203,7 @@ function acContext() {
   const line = lineOfPos(pos);
   if (kinds[line] !== 'bom') return null;
   let m; const q = s => s.toLowerCase();
+  if ((m = /^\s*(\+g[a-z]*)$/.exec(before))) return { from: pos - m[1].length, q: '', items: [{ label: '+genbom:', detail: T('générer une nomenclature', 'generate a BOM'), insert: '+genbom:type,nombre,préfixe' }] };
   if ((m = /^\s*(\+n[a-z]*)$/.exec(before))) return { from: pos - m[1].length, q: '', items: [{ label: '+newcolumn', detail: 'nouvelle colonne', insert: '+newcolumn ' }] };
   if ((m = /\(i:([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: [...iconMap().values()].map(ic => ({ label: ic.name, detail: ic.label || '', icon: iconImg(ic), insert: ic.name + ',' })) };
   if ((m = /\(s:([^()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.status).map(([k, v]) => ({ label: k, detail: v.label, icon: statusSwatch(k), insert: k + ')' })) };
@@ -3411,12 +3431,52 @@ function setLang(l) {
 }
 $('#lang-sw').addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b && b.dataset.lang !== lang) setLang(b.dataset.lang); });
 
+/* ---------- Génération de nomenclature : +genbom:type,nombre,préfixe[,révision[,lien]];… (comme l'extension) ---------- */
+const GENBOM_MAX = 5000;
+function genBomParse(spec) {
+  const steps = [];
+  spec.split(';').forEach((raw, k) => {
+    if (!raw.trim()) return;
+    const f = raw.split(','), n = k + 1;
+    if (f.length < 3) throw new Error(T(`Bloc ${n} : « type,nombre,préfixe » attendus`, `Block ${n}: “type,count,prefix” expected`));
+    const m = /^\s*(\d+)\s*(?:-\s*(\d+)\s*)?$/.exec(f[1]);
+    if (!m) throw new Error(T(`Bloc ${n} : nombre invalide « ${f[1]} » (3 ou 2-5)`, `Block ${n}: invalid count “${f[1]}” (3 or 2-5)`));
+    const min = +m[1], max = m[2] != null ? +m[2] : min;
+    if (max < min) throw new Error(T(`Bloc ${n} : plage « ${f[1].trim()} » inversée`, `Block ${n}: range “${f[1].trim()}” is reversed`));
+    const link = f[4] == null || !f[4].trim() ? ' ' : f[4].trim();
+    if (!/^[A-Za-z0-9 ]$/.test(link)) throw new Error(T(`Bloc ${n} : le lien doit être une lettre ou un chiffre`, `Block ${n}: the link must be one letter or digit`));
+    steps.push({ type: f[0].trim(), min, max, prefix: f[2], rev: (f[3] || '').trim(), link });
+  });
+  if (!steps.length) throw new Error(T('Rien à générer : « +genbom:type,nombre,préfixe[,révision[,lien]] »', 'Nothing to generate: “+genbom:type,count,prefix[,revision[,link]]”'));
+  let per = 1, total = 0; for (const st of steps) { per *= st.max; total += per; }
+  if (total > GENBOM_MAX) throw new Error(T(`Trop d'éléments (jusqu'à ${total}, maximum ${GENBOM_MAX})`, `Too many items (up to ${total}, maximum ${GENBOM_MAX})`));
+  return steps;
+}
+function genBomLines(steps, lvl = 0, prefix = '') {
+  const [st, ...rest] = steps; if (!st) return [];
+  const out = [], nb = st.min + Math.floor(Math.random() * (st.max - st.min + 1));
+  for (let i = 1; i <= nb; i++) {
+    out.push((lvl > 0 ? ' '.repeat(lvl - 1) + st.link : '') + `+ (i:${st.type},${st.prefix}${prefix}${i}${st.rev ? ',' + st.rev : ''})`);
+    out.push(...genBomLines(rest, lvl + 1, prefix + i + '.'));
+  }
+  return out;
+}
+function generateBom() {
+  const line = lineOfPos(ta.selectionStart), m = /^\s*\+?genbom:(.*)$/i.exec(info.lines[line] || '');
+  if (!m || kinds[line] !== 'bom') return toast(T('Placez le curseur sur une ligne « +genbom:type,nombre,préfixe[,révision[,lien]] » dans un bloc BoMarkdown', 'Put the cursor on a “+genbom:type,count,prefix[,revision[,link]]” line inside a BoMarkdown block'), true);
+  let lines; try { lines = genBomLines(genBomParse(m[1])); } catch (e) { return toast(e.message, true); }
+  applyEdit(line + 1, line + 1, lines, -1);
+  toast(T(`${lines.length} éléments générés`, `${lines.length} items generated`));
+}
+$('#btn-genbom').onclick = generateBom;
+
 /* ---------- Raccourcis globaux ---------- */
 document.addEventListener('keydown', e => {
   const mod = e.ctrlKey || e.metaKey;
   if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); saveFile(e.shiftKey); }
   else if (mod && e.key.toLowerCase() === 'o') { e.preventDefault(); openFile(); }
   else if (mod && e.shiftKey && e.key.toLowerCase() === 'e') { e.preventDefault(); try { actions['export-svg'](); } catch (err) { toast(err.message, true); } }
+  else if (mod && e.shiftKey && e.key.toLowerCase() === 'g') { e.preventDefault(); generateBom(); }
   else if (e.key === 'F1') { e.preventDefault(); $('#dlg-help').showModal(); }
   else if (e.key === 'Escape' && $('#drawer').classList.contains('open') && !document.querySelector('dialog[open]')) $('#drawer').classList.remove('open');
 });
