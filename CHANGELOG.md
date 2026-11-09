@@ -4,6 +4,12 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.6.1] - 2026-11-09
+
+### Modifié
+- Le projet passe sous licence MIT (© 2026 casarou), au lieu d'Apache 2.0.
+- Pied de page casarou dans la barre d'état : copyright, licence, casarou.com et adresse de contact.
+
 ## [0.6.0] - 2026-11-03
 
 Troisième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
@@ -124,6 +130,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.6.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0

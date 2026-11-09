@@ -224,11 +224,9 @@ sur le badge de version, à côté du logo.
 
 ## Licence et crédits
 
-BoMarkdown Studio est © 2026 **Arnaud Rousseau**, distribué sous [licence Apache 2.0](LICENSE).
-Vous pouvez l'utiliser, le modifier et le redistribuer, y compris à des fins commerciales, à condition :
-
-- de conserver le fichier [`NOTICE`](NOTICE) et la mention de l'auteur dans toute redistribution ;
-- d'indiquer les fichiers que vous avez modifiés.
+BoMarkdown Studio est © 2026 **casarou**, distribué sous [licence MIT](LICENSE).
+Vous pouvez l'utiliser, le modifier et le redistribuer, y compris à des fins commerciales, à condition de conserver
+la mention de copyright et le texte de la licence.
 
 La syntaxe BoMarkdown, les icônes par défaut et plusieurs exemples proviennent de l'extension VS Code
 [BoMarkdown](https://github.com/Roeperni/bomarkdown) créée par **[Roeperni](https://github.com/Roeperni)** et ses
