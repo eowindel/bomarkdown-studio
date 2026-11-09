@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.6.0
-  Copyright 2026 Arnaud Rousseau
-  SPDX-License-Identifier: Apache-2.0
-  Licensed under the Apache License, Version 2.0: see the LICENSE and NOTICE files.
+  BoMarkdown Studio v0.6.1
+  Copyright (c) 2026 casarou
+  SPDX-License-Identifier: MIT
+  Licensed under the MIT License: see the LICENSE file.
 
   Derived from BoMarkdown by Roeperni (https://github.com/Roeperni/bomarkdown), MIT License:
   see THIRD_PARTY_LICENSES.
@@ -14,11 +14,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
-<meta name="author" content="Arnaud Rousseau">
-<meta name="version" content="0.6.0"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="author" content="casarou">
+<meta name="version" content="0.6.1"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
+<meta name="portal:repo" content="eowindel/bomarkdown-studio">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='8' height='6' rx='1.5' fill='%234f6bed'/%3E%3Crect x='13' y='10' width='9' height='5' rx='1.5' fill='%2394a3b8'/%3E%3Crect x='13' y='17' width='9' height='5' rx='1.5' fill='%2394a3b8'/%3E%3Cpath d='M6 8v4.5h7M6 12v7.5h7' stroke='%234f6bed' stroke-width='1.6' fill='none'/%3E%3C/svg%3E">
 <style>
 :root {
@@ -351,7 +352,9 @@ select.blocksel {
   background: var(--panel); border-top: 1px solid var(--border); white-space: nowrap; overflow: hidden;
 }
 .statusbar .sp { flex: 1; }
-.statusbar a { color: inherit; }
+.statusbar a { color: inherit; text-underline-offset: 2px; }
+.statusbar .sep { margin: 0 .55em; opacity: .55; }
+@media print { .statusbar .credit { display: none; } }
 
 /* ---------- Dialogues ---------- */
 dialog.modal {
@@ -612,7 +615,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
   <span id="st-items"></span>
   <span class="sp"></span>
   <span id="st-save"></span>
-  <span>© 2026 Arnaud Rousseau · Apache 2.0 · d'après <a href="https://github.com/Roeperni/bomarkdown" target="_blank" rel="noopener">BoMarkdown</a> de <a href="https://github.com/Roeperni" target="_blank" rel="noopener">Roeperni</a> (MIT)</span>
+  <span class="credit"><span>© 2026 casarou</span><span class="sep" aria-hidden="true">·</span><span>Licence MIT</span><span class="sep" aria-hidden="true">·</span><a href="https://casarou.com" target="_blank" rel="noopener noreferrer">casarou.com</a><span class="sep" aria-hidden="true">·</span><a href="mailto:contact@casarou.com">contact@casarou.com</a><span class="sep" aria-hidden="true">·</span><span>d'après <a href="https://github.com/Roeperni/bomarkdown" target="_blank" rel="noopener noreferrer">BoMarkdown</a> de Roeperni (MIT)</span></span>
 </footer>
 
 <!-- Réglages -->
@@ -1084,6 +1087,12 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.6.1] - 2026-11-09
+
+### Modifié
+- Le projet passe sous licence MIT (© 2026 casarou), au lieu d'Apache 2.0.
+- Pied de page casarou dans la barre d'état : copyright, licence, casarou.com et adresse de contact.
+
 ## [0.6.0] - 2026-11-03
 
 Troisième lot de la migration vers l'architecture de rendu de l'extension BoMarkdown 1.x
@@ -1204,6 +1213,7 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.6.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
 [0.4.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.4.0
@@ -1223,13 +1233,13 @@ Première version publique, base de départ pour recueillir vos retours.
    BoMarkdown Studio : revamping web autonome de l'extension VS Code
    « BoMarkdown » de Roeperni (https://github.com/Roeperni/bomarkdown, licence MIT).
    Un seul fichier, aucune dépendance, fonctionne hors ligne.
-   Copyright 2026 Arnaud Rousseau · Apache-2.0 (voir LICENSE et NOTICE).
+   Copyright 2026 casarou · MIT (voir LICENSE).
    ===================================================================== */
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.6.0';
+const VERSION = '0.6.1';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 /* fontdefs de l'extension : surcharges facultatives (label, eff, rev, linklabel, legend…) ; sans surcharge, les polices de
    Studio restent inchangées. base : valeurs par défaut de Studio, clés en font_family, font_size, fill, stroke_width… */
@@ -1286,7 +1296,7 @@ const EN = {
   'Créer un lien (L) : cliquez ensuite sur la cible, ou glissez la poignée bleue': 'Create a link (L): then click the target, or drag the blue handle',
   'Supprimer avec ses enfants (Suppr)': 'Delete with its children (Del)', 'Glisser vers un élément pour créer un lien': 'Drag onto an item to create a link',
   'Actions sur le lien': 'Link actions', 'Type du lien': 'Link type', 'Supprimer le lien (Suppr)': 'Delete link (Del)', 'Supprimer': 'Delete',
-  'Problèmes': 'Problems', "© 2026 Arnaud Rousseau · Apache 2.0 · d'après": '© 2026 Arnaud Rousseau · Apache 2.0 · based on', 'de': 'by',
+  'Problèmes': 'Problems', 'Licence MIT': 'MIT License', "d'après": 'based on', 'de Roeperni (MIT)': 'by Roeperni (MIT)',
   'Fermer': 'Close', 'Mise en page': 'Layout', "Hauteur d'un élément (h)": 'Item height (h)',
   "Espace entre éléments d'une ligne (gap)": 'Space between elements on a row (gap)', 'Décalage horizontal (panh)': 'Horizontal offset (panh)',
   'Espacement vertical (panv)': 'Vertical spacing (panv)', 'Courbure des liens (bend)': 'Link curvature (bend)', 'Échelle de la légende': 'Legend scale',
