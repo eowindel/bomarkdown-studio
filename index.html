@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.6.1
+  BoMarkdown Studio v0.7.0
   Copyright (c) 2026 casarou
   SPDX-License-Identifier: MIT
   Licensed under the MIT License: see the LICENSE file.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="casarou">
-<meta name="version" content="0.6.1"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.7.0"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -184,6 +184,12 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 }
 .pane-title { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
 .splitter { cursor: col-resize; background: var(--border); position: relative; }
+/* source masquée : le volet est replié à largeur nulle (pas display:none) pour que la zone de texte reste utilisable
+   par l'édition depuis le graphe, qui passe par elle */
+main.src-hidden { grid-template-columns: 0 0 minmax(0, 1fr); }
+main.src-hidden > .pane:first-child { overflow: hidden; }
+main.src-hidden > .splitter { pointer-events: none; }
+#src-toggle.on { color: var(--accent); }
 .splitter::after { content: ""; position: absolute; inset: 0 -3px; }
 .splitter:hover, .splitter.drag { background: var(--accent); }
 
@@ -296,6 +302,8 @@ main { display: grid; grid-template-columns: var(--split, 44%) 6px minmax(0, 1fr
 .gpop .gpop-q { position: sticky; top: -4px; z-index: 1; display: block; width: 100%; margin: -4px 0 4px; padding: 7px 10px; border: 0; border-bottom: 1px solid var(--border); border-radius: 10px 10px 0 0; background: var(--panel); color: inherit; font: inherit; font-size: 13px; outline: none; box-sizing: border-box; }
 .gpop .gpop-q:focus { border-bottom-color: var(--accent); }
 .gpop .gpop-empty { padding: 6px 10px; color: var(--muted); font-size: 12.5px; }
+.gpop .gpop-sep { padding: 6px 8px 2px; margin-top: 4px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.gpop button.off { opacity: .6; }
 .gpop .gpop-edit { border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; margin-top: 4px; color: var(--accent); }
 .gpop img, .gpop svg { width: 20px; height: 20px; flex: none; }
 .gpop b { font-family: var(--mono); font-weight: 600; font-size: 12.5px; }
@@ -387,6 +395,27 @@ dialog.modal::backdrop { background: rgba(10, 14, 22, .45); backdrop-filter: blu
 .lk-fixed { font-family: var(--mono); font-size: 13px; padding-left: 8px; color: var(--muted); }
 .lk-add { margin-top: 14px; }
 @media (max-width: 820px) { .lk-grid { grid-template-columns: 104px 1fr 1fr; } .lk-grid .hd { display: none; } }
+.cp-kids { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-height: 32px; padding: 3px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-2); cursor: text; }
+.cp-chip { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 2px 0 7px; border-radius: 999px; background: var(--accent-soft); font-size: 12.5px; white-space: nowrap; cursor: default; }
+.cp-chip.unk { background: transparent; outline: 1px dashed var(--err); outline-offset: -1px; }
+.cp-chip img { width: 16px; height: 16px; }
+.cp-chip button { border: 0; background: none; cursor: pointer; color: var(--muted); width: 18px; height: 18px; border-radius: 50%; font-size: 10px; line-height: 1; padding: 0; }
+.cp-chip button:hover { background: var(--hover); color: var(--err); }
+.cp-none { font-size: 12.5px; font-style: italic; color: var(--muted); padding: 0 4px; }
+.cp-addkid { display: inline-flex; align-items: center; gap: 2px; flex: 1 1 150px; min-width: 150px; }
+.lk-grid .cp-kids input[type=text] { height: 24px; border: 0; background: transparent; padding: 0 4px; flex: 1; outline: none; }
+.cp-addkid .btn.icon { width: 24px; height: 24px; min-width: 24px; padding: 0; }
+.cp-pfx { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.cp-pfx > input, .cp-pfx > select { flex: 1; min-width: 0; }
+.cp-ico { flex: none; width: 22px; height: 22px; display: grid; place-items: center; }
+.cp-ico img, .cp-ico svg { width: 22px; height: 22px; display: block; }
+.cp-q { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; font: 700 12px var(--mono); color: #fff; background: var(--err); }
+.cp-q:empty { background: transparent; outline: 1px dashed var(--border); }
+.cp-any { font-size: 18px; color: var(--muted); line-height: 1; }
+.lk-grid.cp-grid { grid-template-columns: minmax(140px, 1fr) 170px minmax(220px, 2.4fr) 34px; }
+@media (max-width: 820px) { .lk-grid.cp-grid { grid-template-columns: 1fr 1fr; } }
+.lk-grid.tg-grid { grid-template-columns: 104px minmax(90px, 1fr) 62px 62px 76px 172px 34px; }
+@media (max-width: 820px) { .lk-grid.tg-grid { grid-template-columns: 104px 1fr 1fr; } }
 .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
 .field label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; }
 .field input[type=number], .field input[type=text] {
@@ -475,6 +504,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 @media (max-width: 820px) {
   body { overflow: auto; }
   main { grid-template-columns: 1fr; grid-template-rows: minmax(280px, 45vh) minmax(320px, 1fr); }
+  main.src-hidden { grid-template-columns: 1fr; grid-template-rows: 0 minmax(320px, 1fr); }
   .splitter { display: none; }
   .btn .lbl { display: none; }
   .docname { display: none; }
@@ -550,6 +580,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
 
   <section class="pane" aria-label="Aperçu">
     <div class="pane-head">
+      <button class="btn icon" id="src-toggle" title="Masquer le source (Ctrl+B)" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/><path class="chev" d="M15 9l-3 3 3 3"/></svg></button>
       <span class="pane-title">Aperçu</span>
       <select class="blocksel" id="blocksel" title="Bloc affiché"></select>
       <div class="gtools">
@@ -625,6 +656,8 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
     <div class="tabs" role="tablist" id="s-tabs">
       <button data-tab="layout" role="tab">Mise en page</button>
       <button data-tab="links" role="tab">Types de liens</button>
+      <button data-tab="tags" role="tab">Étiquettes</button>
+      <button data-tab="compat" role="tab">Compatibilité</button>
       <button data-tab="adv" role="tab">Avancé (JSON)</button>
     </div>
     <div class="tabpanel" data-panel="layout">
@@ -657,6 +690,30 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
       <button class="btn outline lk-add" id="lk-add" data-list="links"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un type de lien</button>
       <p class="hint" data-only="fr">Changer un code ne modifie pas les documents existants.</p>
       <p class="hint" data-only="en">Changing a code does not update existing documents.</p>
+    </div>
+    <div class="tabpanel" data-panel="tags" hidden>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Styles des étiquettes <code>(t:texte,style)</code>. <code>regular</code> s'applique sans style. Après la dernière virgule, un nom de style ou une couleur (<code>(t:banana,orange)</code>) ; sinon la virgule fait partie du texte (<code>(t:Prix, TTC)</code>). <code>\,</code> <code>\(</code> <code>\)</code> forcent le caractère dans le texte.</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Styles of <code>(t:text,style)</code> tags. <code>regular</code> applies when no style is given. After the last comma, a style name or a color (<code>(t:banana,orange)</code>); otherwise the comma is part of the text (<code>(t:Price, VAT)</code>). <code>\,</code> <code>\(</code> <code>\)</code> force the character into the text.</p>
+      <div class="lk-grid tg-grid" id="tg-rows"></div>
+      <div class="err-msg" id="tg-err"></div>
+      <button class="btn outline lk-add" id="tg-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter un style d'étiquette</button>
+      <p class="hint" data-only="fr">Trait d'épaisseur 0 : pas de contour. Changer un code ne modifie pas les documents existants.</p>
+      <p class="hint" data-only="en">Line width 0: no outline. Changing a code does not update existing documents.</p>
+    </div>
+    <div class="tabpanel" data-panel="compat" hidden>
+      <p class="hint" style="margin:0 0 12px" data-only="fr">Types enfants prévus sous un type parent. Les règles sont indicatives : le graphe et l'autocomplétion proposent d'abord les types prévus, et un enfant hors règles est signalé dans <i>Problèmes</i>. Un type parent sans règle n'est pas contraint. Le lien précise le style du lien vers le parent (<code>h</code> par défaut, <code>a</code> pour <code>a+</code> ou <code>(h:a)</code>).</p>
+      <p class="hint" style="margin:0 0 12px" data-only="en">Child types expected under a parent type. Rules are advisory: the graph and autocompletion offer the expected types first, and a child outside the rules is reported in <i>Problems</i>. A parent type without rules is not constrained. The link sets the style of the link to the parent (<code>h</code> by default, <code>a</code> for <code>a+</code> or <code>(h:a)</code>).</p>
+      <div class="lk-grid cp-grid" id="cp-rows"></div>
+      <datalist id="cp-types"></datalist>
+      <datalist id="cp-kids"></datalist>
+      <div class="err-msg" id="cp-err"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button class="btn outline" id="cp-add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Ajouter une règle</button>
+        <button class="btn" id="cp-import" title="Importer un fichier de règles de compatibilité (JSON propre à Studio)"><svg class="i" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Importer les règles…</button>
+        <button class="btn" id="cp-export" title="Exporter les règles de compatibilité (JSON propre à Studio)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Exporter les règles</button>
+      </div>
+      <p class="hint" data-only="fr">Ces règles sont enregistrées à part, hors des réglages de l'extension. Un document peut les surcharger, type parent par type parent, avec une clé <code>compat</code> dans son bloc <code>${{ }}$</code> : <code>"compat": { "rack": ["component", "cable"], "assembly": { "h": ["component"], "a": ["component"] } }</code>.</p>
+      <p class="hint" data-only="en">These rules are stored separately from the extension settings. A document can override them, parent type by parent type, with a <code>compat</code> key in its <code>${{ }}$</code> block: <code>"compat": { "rack": ["component", "cable"], "assembly": { "h": ["component"], "a": ["component"] } }</code>.</p>
     </div>
     <div class="tabpanel" data-panel="adv" hidden>
     <textarea class="json" id="s-json" spellcheck="false"></textarea>
@@ -757,6 +814,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><kbd>Entrée</kbd></td><td>Nouvel élément au même niveau</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Enregistrer / ouvrir</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>E</kbd></td><td>Exporter le bloc en SVG</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Masquer / afficher le source (bouton à gauche de l'aperçu)</td></tr>
           <tr><td><kbd>Ctrl</kbd>+molette</td><td>Zoom de l'aperçu (glisser pour déplacer)</td></tr>
         </table>
         <p class="hint">Tout est enregistré automatiquement dans le navigateur.</p>
@@ -824,6 +882,7 @@ html[lang="fr"] [data-only="en"], html[lang="en"] [data-only="fr"] { display: no
           <tr><td><kbd>Enter</kbd></td><td>New item at the same level</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> / <kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Save / open</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd></td><td>Export the block as SVG</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd></td><td>Hide / show the source (button left of the preview)</td></tr>
           <tr><td><kbd>Ctrl</kbd>+wheel</td><td>Zoom the preview (drag to pan)</td></tr>
         </table>
         <p class="hint">Everything is saved automatically in the browser.</p>
@@ -1087,6 +1146,40 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.7.0] - 2026-11-13
+
+### Ajouté
+- Réglages → onglet *Étiquettes* : éditeur visuel des styles d'étiquettes (`tagstyles`), sur le modèle des types de
+  liens ([#12](https://github.com/eowindel/bomarkdown-studio/issues/12)). Pour chaque style : code, couleur de fond,
+  trait (couleur et épaisseur, 0 pour aucun contour), police (`wtag` texte blanc, `btag` texte noir ou une clé de
+  `fontdefs`) et aperçu. Ajout, renommage et suppression d'un style ; `regular` ne peut être ni renommé ni supprimé.
+  Les autres clés d'un style (`fill_opacity`, `stroke_linejoin`…) sont conservées. Le bouton *Étiquette* du graphe
+  propose les styles mis à jour et un lien *Modifier les styles d'étiquettes…*. Une clé `tagstyles` collée dans
+  *Avancé (JSON)* remplace toujours le contenu de l'onglet.
+- Règles de compatibilité des types ([#8](https://github.com/eowindel/bomarkdown-studio/issues/8)) : Réglages → onglet
+  *Compatibilité*, une règle par type parent et style de lien (tous les liens, `h`, `a`…), avec la liste des types enfants
+  prévus. Les règles sont indicatives : le sélecteur de type du graphe et l'autocomplétion de `(i:` proposent d'abord les
+  types prévus (les autres restent accessibles, marqués *hors règles*), un nouvel enfant reçoit un type prévu, et un
+  enfant hors règles est signalé dans *Problèmes*. Un type parent sans règle n'est pas contraint. Les règles sont
+  enregistrées à part des réglages de l'extension, avec import et export dans un fichier propre à Studio
+  (`bomarkdown-studio-compat.json`), et un document peut les surcharger par une clé `compat` dans son bloc `${{ }}$`
+  (`"compat": { "rack": ["component", "cable"], "assembly": { "h": ["component"], "a": ["component"] } }`).
+- Bouton à gauche de l'aperçu (ou `Ctrl+B`) pour masquer ou afficher le texte source : l'aperçu prend alors toute la
+  largeur, et l'édition depuis le graphe reste disponible. L'état est mémorisé ; `Ctrl+clic` sur un élément du graphe
+  rouvre le source à la ligne correspondante.
+
+### Modifié
+- `fontdefs` : quand `label.font_size` est défini sans hauteur `h` explicite (bloc `${{ }}$` ou réglage différent de 20),
+  la hauteur de ligne est déduite de la police, avec le rapport 4/3 de l'extension, sans descendre sous 20
+  ([#14](https://github.com/eowindel/bomarkdown-studio/issues/14)). Le texte reste centré verticalement dans la ligne.
+  De même, `legend.font_size` agrandit les lignes de la légende et son cadre. Sans surcharge, le rendu est inchangé.
+- Virgules et parenthèses dans le texte d'une étiquette ([#13](https://github.com/eowindel/bomarkdown-studio/issues/13)).
+  Dans `(t:texte,style)`, la dernière virgule n'introduit le style que si ce qui suit est un style de `tagstyles` (réglages
+  ou bloc `${{ }}$`) ou une couleur ; sinon elle fait partie du texte : `(t:Prix, TTC)` affiche « Prix, TTC ». Les
+  parenthèses sont admises (`(t:Prix (TTC),orange)`), et `\,` `\(` `\)` `\\` forcent le caractère dans le texte. Le bouton
+  *Étiquette* du graphe ne remplace plus ces caractères par des espaces : il n'échappe que le nécessaire. Écart volontaire
+  avec l'extension, qui lit `(t:a,b)` comme le texte `a` avec le style `b`.
+
 ## [0.6.1] - 2026-11-09
 
 ### Modifié
@@ -1239,7 +1332,7 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.6.1';
+const VERSION = '0.7.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 /* fontdefs de l'extension : surcharges facultatives (label, eff, rev, linklabel, legend…) ; sans surcharge, les polices de
    Studio restent inchangées. base : valeurs par défaut de Studio, clés en font_family, font_size, fill, stroke_width… */
@@ -1249,6 +1342,27 @@ function tagStyle(S, name) {
   const st = name && has(ts, name) ? ts[name] : name ? { ...reg, rect: { ...reg.rect, fill: name } } : reg;
   const key = st.fontdef || reg.fontdef || 'wtag';
   return { rect: st.rect || {}, font: fdef(S, key, { font_size: 10, font_weight: 'bold', fill: key === 'btag' ? 'black' : 'white' }) };
+}
+/* ---------- Compatibilité des types (#8), réglage propre à Studio ----------
+   compat : { "parent": ["enfant", …] }  ou  { "parent": { "h": [...], "a": [...], "*": [...] } }
+   Un type parent absent n'est pas contraint. Sinon, la liste du style du lien vers le parent (h par défaut, a pour a+ ou
+   (h:a)) s'applique, à défaut celle de "*" ; sans l'une ni l'autre, ce style n'est pas contraint. Règles indicatives. */
+function normCompat(raw) {
+  const out = {};
+  if (!isObj(raw)) return out;
+  for (const [p, v] of Object.entries(raw)) {
+    const pk = String(p).trim().toLowerCase(); if (!pk) continue;
+    const by = Array.isArray(v) ? { '*': v } : isObj(v) ? v : null; if (!by) continue;
+    const m = {};
+    for (const [st, list] of Object.entries(by)) if (Array.isArray(list)) m[String(st).trim() || '*'] = [...new Set(list.map(x => String(x).trim().toLowerCase()).filter(Boolean))];
+    out[pk] = m;
+  }
+  return out;
+}
+/* types enfants admis sous un parent pour un style de lien, ou null si rien ne contraint */
+function allowedChildren(compat, parentType, style) {
+  const r = compat && parentType ? compat[String(parentType).toLowerCase()] : null; if (!r) return null;
+  return r[style || 'h'] ?? r['*'] ?? null;
 }
 function fdef(S, key, base, subst) {
   const o = {}; for (const [k, v] of Object.entries(((S && S.fontdefs) || {})[key] || {})) o[k.replace(/-/g, '_')] = String(v);
@@ -1306,7 +1420,10 @@ const EN = {
   'Types de liens': 'Link types', 'Avancé (JSON)': 'Advanced (JSON)', 'Ajouter un type de lien': 'Add a link type',
   'Modifier les types de liens': 'Edit link types',
   'Liens de hiérarchie (parent → enfant)': 'Hierarchy links (parent → child)', 'Liens transverses (entre structures)': 'Cross links (between structures)',
-  'Ajouter un style de hiérarchie': 'Add a hierarchy style',
+  'Ajouter un style de hiérarchie': 'Add a hierarchy style', 'Étiquettes': 'Tags', "Ajouter un style d'étiquette": 'Add a tag style',
+  'Compatibilité': 'Compatibility', 'Ajouter une règle': 'Add a rule', 'Importer les règles…': 'Import rules…', 'Exporter les règles': 'Export rules',
+  'Importer un fichier de règles de compatibilité (JSON propre à Studio)': 'Import a compatibility rules file (Studio-specific JSON)',
+  'Exporter les règles de compatibilité (JSON propre à Studio)': 'Export the compatibility rules (Studio-specific JSON)',
   'Style du lien vers le parent (P)': 'Style of the link to the parent (P)', 'Étiquette (E)': 'Tag (E)',
   "Générer une nomenclature d'après la ligne « +genbom: » sous le curseur (Ctrl+Maj+G)": 'Generate a BOM from the “+genbom:” line under the cursor (Ctrl+Shift+G)', 'Générer': 'Generate',
   'Filtrer les icônes…': 'Filter icons…', 'Importer un fichier *_Icons.json / UserIcons.json': 'Import a *_Icons.json / UserIcons.json file',
@@ -1317,8 +1434,8 @@ const EN = {
   'Toutes les versions sur GitHub': 'All releases on GitHub', 'Toutes les versions': 'All releases',
   "Déposez un fichier .md / .bmd pour l'ouvrir": 'Drop a .md / .bmd file to open it',
 };
-const I18N_SKIP = '#changelog-body, #app-ver, #src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #hk-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
-const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #lk-rows, #hk-rows, #changelog-body, [data-only], #toasts';
+const I18N_SKIP = '#changelog-body, #app-ver, #src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #lk-rows, #hk-rows, #tg-rows, #cp-rows, #examples-list, #icon-grid, #gpop, #ltb-type, #linktype, #blocksel, [data-only], script, style, svg, #st-pos, #st-block, #st-items, #st-save, #docname-text, #mode-hint, #zoom-pct, #prob-count, #gbanner, #ghost, #toasts, #lang-sw';
+const I18N_DYNAMIC = '#src, #hl, #gutter, #sheet, #ac, #problems-list, #ref-body, #examples-list, #icon-grid, #gpop, #lk-rows, #hk-rows, #tg-rows, #cp-rows, #changelog-body, [data-only], #toasts';
 const i18nText = new WeakMap(), i18nAttr = new WeakMap();
 function translateStatic() {
   const tr = orig => { const k = orig.trim(); const v = lang === 'en' && k ? EN[k] : null; return v ? orig.replace(k, v) : orig; };
@@ -1332,7 +1449,7 @@ function translateStatic() {
   }
   // infobulles, libellés d'accessibilité et textes indicatifs, y compris sur les éléments au contenu dynamique
   for (const el of document.body.querySelectorAll('[title], [aria-label], [placeholder]')) {
-    if (el.parentElement?.closest(I18N_DYNAMIC) || el.matches('#toasts *')) continue;
+    if (el.parentElement?.closest(I18N_DYNAMIC) || el.matches('#toasts *, #src-toggle')) continue;
     if (!i18nAttr.has(el)) i18nAttr.set(el, Object.fromEntries(['title', 'aria-label', 'placeholder'].filter(a => el.hasAttribute(a)).map(a => [a, el.getAttribute(a)])));
     for (const [a, v] of Object.entries(i18nAttr.get(el))) el.setAttribute(a, tr(v));
   }
@@ -1381,7 +1498,7 @@ const DEFAULT_SETTINGS = {
   },
   utf8replacement: { '#oo': '&#x221E;', '->': '&#x2192;', '<-': '&#x2190;' },
 };
-const ADVANCED_KEYS = ['status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement', 'fontdefs', 'revisionstyle', 'vpanfactor', 'tagstyles'];
+const ADVANCED_KEYS = ['status', 'bubbles', 'emphasis', 'mandatoryDefs', 'utf8replacement', 'fontdefs', 'revisionstyle', 'vpanfactor'];
 /* Correspondance des clés de l'extension VS Code (settings.json et blocs ${{ }}$) */
 const LEGACY_KEYS = {
   haslegend: 'renderlegend', Linksdefinition: 'links', satus: 'status', MandatoryDefs: 'mandatoryDefs', UTF8replacement: 'utf8replacement',
@@ -1418,6 +1535,8 @@ function splitHierarchy(s) {
 }
 
 let settings = normalizeSettings(store.get('settings', null));
+/* #8 : règles de compatibilité des types, propres à Studio (hors réglages de l'extension) */
+let compatRules = isObj(store.get('compat', null)) ? store.get('compat', null) : {};
 const DEFAULT_ICONS = (() => { try { return JSON.parse($('#default-icons').textContent); } catch { return []; } })();
 let userIcons = store.get('icons', []);
 let iconMapCache = null;
@@ -1482,14 +1601,16 @@ const ITEM_RE = /^((?:[ \t\-+]*?)[A-Za-z0-9]?)\+ (.*)$/;
 const prefixKey = p => /[A-Za-z0-9]$/.test(p) ? p.slice(-1) : '';
 
 /* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
-   ce qui autorise les parenthèses dans les libellés (comme l'extension). */
+   ce qui autorise les parenthèses dans les libellés (comme l'extension). Un antislash neutralise le caractère suivant :
+   "\(x:" n'ouvre pas de bloc et "\)" ne le ferme pas (#13). */
+const escapedAt = (s, i) => { let n = 0; while (i - 1 - n >= 0 && s[i - 1 - n] === '\\') n++; return n % 2 === 1; };
 function blockSpans(s) {
   const re = /\(([ialbseht]):/g; const starts = []; let m;
-  while ((m = re.exec(s))) starts.push(m.index);
+  while ((m = re.exec(s))) if (!escapedAt(s, m.index)) starts.push(m.index);
   return starts.map((st, k) => {
     const end = k + 1 < starts.length ? starts[k + 1] : s.length;
     const seg = s.slice(st + 3, end);
-    const close = seg.lastIndexOf(')');
+    let close = seg.lastIndexOf(')'); while (close >= 0 && escapedAt(seg, close)) close = seg.lastIndexOf(')', close - 1);
     return { kind: s[st + 1], start: st, content: close >= 0 ? seg.slice(0, close) : seg, end: close >= 0 ? st + 3 + close + 1 : end, closed: close >= 0 };
   });
 }
@@ -1513,6 +1634,8 @@ function parseBomText(text, baseLine = 0) {
   }
   const boms = []; let bom = { items: [], extraGap: 0 };
   const parents = [-1];
+  // styles d'étiquettes connus : réglages + bloc ${{ }}$ (pour distinguer « texte, style » de « texte, suite »)
+  const tagStyles = { ...(settings.tagstyles || {}), ...(isObj(params.tagstyles) ? params.tagstyles : {}) };
   for (let i = start; i < lines.length; i++) {
     const raw = lines[i]; const line = baseLine + i; const t = raw.trim();
     if (t.startsWith('+newcolumn')) {
@@ -1526,6 +1649,7 @@ function parseBomText(text, baseLine = 0) {
     const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', tags: [], bubbles: [], relatives: [], argOffset: m[1].length + 2 };
     parents[level + 1] = line;
     if (level > 0) it.hlink = prefixKey(m[1]);
+    it.tagstyles = tagStyles;
     parseArgs(m[2], it, diags);
     bom.items.push(it);
   }
@@ -1533,8 +1657,24 @@ function parseBomText(text, baseLine = 0) {
   return { boms, params, diags };
 }
 
-/* étiquette (t:texte,style) : le style est un nom de tagstyles ou, à défaut, une couleur de fond */
-function parseTag(c) { const i = c.lastIndexOf(','); return i < 0 ? { text: c.trim(), style: '' } : { text: c.slice(0, i).trim(), style: c.slice(i + 1).trim() }; }
+/* étiquette (t:texte,style) (#13) : la dernière virgule non échappée introduit le style seulement si ce qui suit est un
+   style de tagstyles ou une couleur CSS ; sinon elle fait partie du texte, ex. (t:Prix, TTC). Dans le texte, \, \( \)
+   et \\ donnent le caractère lui-même (utile pour finir par une virgule suivie d'un nom de couleur). */
+const isCssColor = v => { try { return !!v && CSS.supports('color', v); } catch { return false; } };
+const unescTag = t => t.replace(/\\([\\,()])/g, '$1');
+function parseTag(c, styles = settings.tagstyles) {
+  let i = c.length; do i = c.lastIndexOf(',', i - 1); while (i >= 0 && escapedAt(c, i));
+  const tail = i >= 0 ? unescTag(c.slice(i + 1)).trim() : '';
+  if (i >= 0 && (!tail || has(styles, tail) || isCssColor(tail))) return { text: unescTag(c.slice(0, i)).trim(), style: tail };
+  return { text: unescTag(c).trim(), style: '' };
+}
+/* texte d'étiquette saisi dans le graphe → source, en n'échappant que le nécessaire : l'antislash devant , ( ),
+   un « (x: » qui ouvrirait un bloc et, sans style, la dernière virgule si elle couperait le texte */
+function escTag(text, withStyle) {
+  let t = text.replace(/\\(?=[\\,()]|$)/g, '\\\\').replace(/\(([ialbseht]):/g, '\\($1:');
+  if (!withStyle) { const k = t.lastIndexOf(','); if (k >= 0 && parseTag(t).text !== unescTag(t).trim()) t = t.slice(0, k) + '\\' + t.slice(k); }
+  return t;
+}
 function parseArgs(s, it, diags) {
   const spans = blockSpans(s);
   if (!spans.length) {
@@ -1557,7 +1697,7 @@ function parseArgs(s, it, diags) {
       case 'a': it.alias = c.trim(); break;
       case 's': it.status = c.trim(); break;
       case 'h': it.hlink = c.trim(); break;
-      case 't': it.tags.push(parseTag(c)); break;
+      case 't': it.tags.push(parseTag(c, it.tagstyles)); break;
       case 'e': it.effectivity = c.trim(); break;
       case 'b': it.bubbles.push(...c.split(',').map(x => x.trim()).filter(Boolean)); break;
       case 'l': {
@@ -1590,12 +1730,30 @@ function effectiveSettings(params) {
   for (const k of ['h', 'gap', 'panh', 'panv', 'bend', 'legendscale']) {
     const v = Number(S[k]); S[k] = Number.isFinite(v) ? v : DEFAULT_SETTINGS[k];
   }
+  /* #14 : sans h explicite (bloc ${{ }}$ ou réglage différent du défaut), une police de libellé surchargée fixe la hauteur
+     de ligne (rapport 4/3 de l'extension, jamais sous le défaut) ; idem pour les lignes de la légende */
+  const hSet = has(params, 'h') || Number(settings.h) !== DEFAULT_SETTINGS.h;
+  const fsOf = key => { const f = (S.fontdefs || {})[key] || {}; const v = Number(f.font_size ?? f['font-size']); return v > 0 ? v : 0; };
+  const rowH = fs => Math.max(DEFAULT_SETTINGS.h, Math.round(fs * 4 / 3));
+  if (!hSet && fsOf('label')) S.h = rowH(fsOf('label'));
+  S.legendh = fsOf('legend') ? Math.max(S.h, rowH(fsOf('legend'))) : S.h;
   const vf = Number(S.vpanfactor); if (S.vpanfactor != null && Number.isFinite(vf) && vf > 0) S.panv = S.h / vf;
+  // règles du document (clé compat du bloc ${{ }}$) : remplacent, type parent par type parent, les règles globales
+  S.compat = { ...normCompat(compatRules), ...normCompat((params || {}).compat) };
   return splitHierarchy(S);
 }
 
 function validate(parsed, S) {
   const d = []; const icons = iconMap(); const aliases = new Map();
+  for (const bom of parsed.boms) {
+    const byId = new Map(bom.items.map(x => [x.id, x]));
+    for (const it of bom.items) {
+      const p = it.type && byId.get(it.parentId), hk = it.hlink || 'h', al = p && allowedChildren(S.compat, p.type, hk);
+      if (al && !al.includes(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: al.length
+        ? T(`Type « ${it.type} » hors règles sous « ${p.type} » (lien ${hk}) : attendu ${al.join(', ')}`, `Type “${it.type}” breaks the rules under “${p.type}” (${hk} link): expected ${al.join(', ')}`)
+        : T(`Aucun enfant prévu sous « ${p.type} » (lien ${hk})`, `No child expected under “${p.type}” (${hk} link)`) });
+    }
+  }
   for (const bom of parsed.boms) for (const it of bom.items) {
     if (it.type && !icons.has(it.type.toLowerCase())) d.push({ line: it.line, level: 'warn', msg: T(`Type « ${it.type} » inconnu (icône « ? » affichée)`, `Unknown type “${it.type}” (“?” icon shown)`) });
     if (it.status && !has(S.status, it.status)) d.push({ line: it.line, level: 'warn', msg: T(`Statut « ${it.status} » inconnu`, `Unknown status “${it.status}”`) });
@@ -1651,7 +1809,7 @@ function bezierPoint(p, t) {
 }
 
 function buildSvg(parsed, S, { meta = false } = {}) {
-  const { h, gap, panh, panv } = S; const iconw = h; const bend = S.bend; const ty = n2(h / 2 + 5);
+  const { h, gap, panh, panv } = S; const iconw = h; const bend = S.bend;
   const icons = iconMap(); const boms = parsed.boms; const links = S.links || {}; const HS = { ...(S.hierarchy || {}) };
   /* « a+ » / (h:a) peut aussi désigner un type de lien transverse, comme dans l'extension */
   for (const bom of boms) for (const it of bom.items) if (it.hlink && !has(HS, it.hlink) && has(links, it.hlink)) HS[it.hlink] = links[it.hlink];
@@ -1659,6 +1817,9 @@ function buildSvg(parsed, S, { meta = false } = {}) {
 
   const FDL = fdef(S, 'label', { font_size: 13 }), FDE = fdef(S, 'eff', { font_size: 13 }), FDG = fdef(S, 'legend', { font_size: 12 });
   const FDR = fdef(S, 'rev', { font_size: 10, font_weight: 'bold', fill: S.revision?.font || 'white' });
+  /* ligne de base centrée : décalage 5 pour la police 13 par défaut, proportionnel à la taille de police sinon */
+  const ty = n2(h / 2 + FDL.size * 5 / 13);
+  const lh = S.legendh || h, lty = lh / 2 + FDG.size * 5 / 12;
   // 1) mise en page
   boms.forEach((bom, ci) => {
     bom.maxw = 0; bom.maxnegw = 0;
@@ -1704,7 +1865,8 @@ function buildSvg(parsed, S, { meta = false } = {}) {
         columns.push({ x, w: Math.max(...items.map(e => e.w)) + panh, items });
       }
       const last = columns[columns.length - 1];
-      legend = { w: last.x + last.w, h: per * (h + panv), columns };
+      // lignes plus hautes que h (police de légende surchargée) : la première ligne descend d'autant, le cadre suit
+      legend = { w: last.x + last.w, h: per * (lh + panv) + lh - h, columns };
     }
   }
 
@@ -1735,18 +1897,18 @@ function buildSvg(parsed, S, { meta = false } = {}) {
   if (legend) {
     o.push(`<g id="legend" transform="translate(${gap},${n2(top)}) scale(${ls})">`);
     o.push(`<rect width="${n2(legend.w + gap)}" height="${n2(legend.h + panv + 8)}" x="0" y="12" fill="none" stroke="gray" stroke-width="1"/>`);
-    o.push(`<g transform="translate(5,${panv + h})">`);
+    o.push(`<g transform="translate(5,${panv + lh})">`);
     for (const c of legend.columns) c.items.forEach((e, i) => {
-      const y = i * (h + panv);
-      if (e.kind === 'type') o.push(`<use ${ref('t-' + sid(e.name.toLowerCase()))} x="${n2(c.x)}" y="${y}"/>`);
-      else if (e.kind === 'status') o.push(`<use ${ref('s-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
-      else if (e.kind === 'hier') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(HS[e.name], e.name, 'harrow_')} stroke-linecap="round"/>`);
-      else if (e.kind === 'link') o.push(`<line x1="${n2(c.x)}" y1="${y + h / 2}" x2="${n2(c.x + iconw)}" y2="${y + h / 2}" ${lineProps(links[e.name], e.name)} stroke-linecap="round"/>`);
-      else if (e.kind === 'bubble') o.push(`<use ${ref('placeholder')} x="${n2(c.x)}" y="${y}"/><use ${ref('b-' + sid(e.name))} x="${n2(c.x)}" y="${y}"/>`);
-      o.push(`<text${fdef(S, 'legend', { font_size: 12, fill: 'black' }).attrs} x="${n2(c.x + iconw + gap)}" y="${y + 15}">${escapeXml(e.label)}</text>`);
+      const y = i * (lh + panv), yi = n2((lh - h) / 2);
+      if (e.kind === 'type') o.push(`<use ${ref('t-' + sid(e.name.toLowerCase()))} x="${n2(c.x)}" y="${y + yi}"/>`);
+      else if (e.kind === 'status') o.push(`<use ${ref('s-' + sid(e.name))} x="${n2(c.x)}" y="${y + yi}"/>`);
+      else if (e.kind === 'hier') o.push(`<line x1="${n2(c.x)}" y1="${y + lh / 2}" x2="${n2(c.x + iconw)}" y2="${y + lh / 2}" ${lineProps(HS[e.name], e.name, 'harrow_')} stroke-linecap="round"/>`);
+      else if (e.kind === 'link') o.push(`<line x1="${n2(c.x)}" y1="${y + lh / 2}" x2="${n2(c.x + iconw)}" y2="${y + lh / 2}" ${lineProps(links[e.name], e.name)} stroke-linecap="round"/>`);
+      else if (e.kind === 'bubble') o.push(`<use ${ref('placeholder')} x="${n2(c.x)}" y="${y + yi}"/><use ${ref('b-' + sid(e.name))} x="${n2(c.x)}" y="${y + yi}"/>`);
+      o.push(`<text${fdef(S, 'legend', { font_size: 12, fill: 'black' }).attrs} x="${n2(c.x + iconw + gap)}" y="${n2(y + lty)}">${escapeXml(e.label)}</text>`);
     });
     o.push('</g>');
-    o.push(`<rect x="18" y="10" width="45" height="5" fill="${S.transparent ? 'none' : attr(S.background || 'white')}"/>`);
+    o.push(`<rect x="18" y="10" width="${n2(45 * FDG.size / 12)}" height="5" fill="${S.transparent ? 'none' : attr(S.background || 'white')}"/>`);
     o.push(`<text${fdef(S, 'legend', { font_size: 12, fill: 'grey' }).attrs} x="20" y="16">${T('Légende', 'Legend')}</text></g>`);
   }
 
@@ -2051,6 +2213,7 @@ $('#blocksel').addEventListener('change', e => {
 });
 
 function gotoLine(line, toArgs = true) {
+  if ($('#main').classList.contains('src-hidden')) setSourceHidden(false);
   const p = posOfLine(line);
   let caret = p;
   if (toArgs) { const m = ITEM_RE.exec(info.lines[line] || ''); if (m) caret = p + m[1].length + 2; }
@@ -2157,6 +2320,18 @@ preview.addEventListener('wheel', e => {
   });
 })();
 
+/* masquer / afficher le volet source (bouton de l'aperçu, Ctrl+B) ; l'état est mémorisé */
+function setSourceHidden(hide) {
+  $('#main').classList.toggle('src-hidden', hide);
+  const b = $('#src-toggle'); b.classList.toggle('on', hide); b.setAttribute('aria-pressed', String(hide));
+  b.title = hide ? T('Afficher le source (Ctrl+B)', 'Show source (Ctrl+B)') : T('Masquer le source (Ctrl+B)', 'Hide source (Ctrl+B)');
+  b.querySelector('.chev').setAttribute('d', hide ? 'M12 9l3 3-3 3' : 'M15 9l-3 3 3 3');
+  store.set('srcHidden', hide);
+  if (typeof positionOverlay === 'function') requestAnimationFrame(() => { try { positionOverlay(); } catch { /* pas de sélection */ } });
+}
+$('#src-toggle').onclick = () => setSourceHidden(!$('#main').classList.contains('src-hidden'));
+setSourceHidden(!!store.get('srcHidden', false));
+
 /* ---------- Édition : insertion compatible annuler/rétablir ---------- */
 function insertText(text, from = ta.selectionStart, to = ta.selectionEnd) {
   ta.focus();
@@ -2215,7 +2390,8 @@ function acContext() {
   let m; const q = s => s.toLowerCase();
   if ((m = /^\s*(\+g[a-z]*)$/.exec(before))) return { from: pos - m[1].length, q: '', items: [{ label: '+genbom:', detail: T('générer une nomenclature', 'generate a BOM'), insert: '+genbom:type,nombre,préfixe' }] };
   if ((m = /^\s*(\+n[a-z]*)$/.exec(before))) return { from: pos - m[1].length, q: '', items: [{ label: '+newcolumn', detail: 'nouvelle colonne', insert: '+newcolumn ' }] };
-  if ((m = /\(i:([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: [...iconMap().values()].map(ic => ({ label: ic.name, detail: ic.label || '', icon: iconImg(ic), insert: ic.name + ',' })) };
+  if ((m = /\(i:([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: compatSort([...iconMap().values()], allowedForLine(line))
+    .map(({ ic, off }) => ({ label: ic.name, detail: (ic.label || '') + (off ? T(' · hors règles', ' · outside rules') : ''), icon: iconImg(ic), insert: ic.name + ',' })) };
   if ((m = /\(s:([^()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.status).map(([k, v]) => ({ label: k, detail: v.label, icon: statusSwatch(k), insert: k + ')' })) };
   if ((m = /\(b:(?:[^,()]*,)*([^,()]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: Object.entries(settings.bubbles).map(([k, v]) => ({ label: k, detail: v.label, icon: bubbleSwatch(k), insert: k })) };
   if ((m = /\(l:[^:()]*:(?:[^,()]*,)*([^,()!]*)$/.exec(before))) return { from: pos - m[1].length, q: q(m[1]), items: currentAliases().map(a => ({ label: a.alias, detail: a.label, insert: a.alias })) };
@@ -2561,6 +2737,7 @@ function fillSettingsForm(s) {
   $('#s-json').classList.remove('bad'); $('#s-json-err').textContent = '';
   for (const name of Object.keys(LK)) LK[name].rows = Object.entries(s[name] || {}).map(([key, def]) => ({ key, def: { ...def }, style: detectArrow(def) }));
   renderAllRows();
+  fillTagRows(s);
 }
 /* JSON avancé : tolère les commentaires, les virgules finales et un extrait de settings.json collé sans ses accolades */
 function parseAdvanced(text) {
@@ -2579,7 +2756,11 @@ function readSettingsForm() {
   const advLinks = LINK_KEYS.some(k => isObj(adv[k])), advHier = isObj(adv.hierarchy);
   const links = advLinks ? null : readRows('links'), hierarchy = advHier ? null : readRows('hierarchy');
   if ((!advLinks && !links) || (!advHier && !hierarchy)) { setSettingsTab('links'); return null; }
+  // idem pour les styles d'étiquettes : une clé tagstyles collée dans le JSON avancé remplace l'onglet « Étiquettes »
+  const advTags = isObj(adv.tagstyles), tagstyles = advTags ? null : readTagRows();
+  if (!advTags && !tagstyles) { setSettingsTab('tags'); return null; }
   const base = { ...settings, ...adv };
+  if (!advTags) base.tagstyles = tagstyles;
   if (!advLinks) base.links = links;
   if (!advHier) base.hierarchy = hierarchy;
   const s = normalizeSettings(base);
@@ -2711,6 +2892,200 @@ function readRows(name) {
   }
   return out;
 }
+/* ---------- Éditeur graphique des styles d'étiquettes (tagstyles) ---------- */
+/* r.def garde toutes les clés du style (fill_opacity, stroke_linejoin…) ; seules celles éditées ici changent */
+const TG = { rows: [] };
+const tgFont = r => r.def.fontdef || 'wtag';
+function tagPreview(r) {
+  const fk = tgFont(r), f = fdef(settings, fk, { font_size: 10, font_weight: 'bold', fill: fk === 'btag' ? 'black' : 'white' });
+  const rect = Object.entries(r.def.rect || {}).map(([k, v]) => ` ${k.replace(/_/g, '-')}="${attr(v)}"`).join('');
+  return swatchSvg(`<rect x="22" y="6" width="60" height="20" rx="4"${rect}/><text${f.attrs} dominant-baseline="middle" text-anchor="middle" x="52" y="17">${escapeXml(T('texte', 'text'))}</text>`, '0 0 104 32', 'lk-prev');
+}
+const tgStroke = r => { const s = (r.def.rect || {}).stroke; return !s || s === 'none' ? 0 : Number(r.def.rect.stroke_width ?? 1) || 0; };
+function renderTagRows() {
+  const H = (fr, en) => `<div class="hd">${T(fr, en)}</div>`;
+  let html = H('Aperçu', 'Preview') + H('Code', 'Code') + H('Fond', 'Fill') + H('Trait', 'Line') + H('Épaisseur', 'Width') + H('Police', 'Font') + '<div></div>';
+  const extra = Object.keys(settings.fontdefs || {}).filter(k => !['wtag', 'btag'].includes(k));
+  TG.rows.forEach((r, i) => {
+    const rc = r.def.rect || {}, fixed = r.key === 'regular', fk = tgFont(r);
+    const fonts = [['wtag', T('Texte blanc (wtag)', 'White text (wtag)')], ['btag', T('Texte noir (btag)', 'Black text (btag)')], ...[...new Set([...extra, fk])].filter(k => !['wtag', 'btag'].includes(k)).map(k => [k, k])];
+    html += `<div class="lk-pv" data-i="${i}">${tagPreview(r)}</div>`
+      + (fixed ? `<div class="lk-fixed" title="${attr(T('Style par défaut des étiquettes, non supprimable', 'Default tag style, cannot be deleted'))}">regular</div>`
+        : `<input type="text" data-i="${i}" data-f="key" value="${attr(r.key)}" maxlength="24" spellcheck="false" title="${attr(T('Code utilisé dans (t:texte,code)', 'Code used in (t:text,code)'))}">`)
+      + `<input type="color" data-i="${i}" data-f="fill" value="${cssColorToHex(rc.fill || 'red')}" title="${attr(T('Couleur de fond', 'Fill color'))}">`
+      + `<input type="color" data-i="${i}" data-f="stroke" value="${cssColorToHex(rc.stroke && rc.stroke !== 'none' ? rc.stroke : r.sc || '#000000')}" title="${attr(T('Couleur du trait', 'Line color'))}">`
+      + `<input type="number" data-i="${i}" data-f="sw" value="${tgStroke(r)}" min="0" max="5" step="0.25" title="${attr(T('Épaisseur du trait (0 : aucun)', 'Line width (0: none)'))}">`
+      + `<select data-i="${i}" data-f="font">${fonts.map(([v, l]) => `<option value="${attr(v)}"${v === fk ? ' selected' : ''}>${escapeHtml(l)}</option>`).join('')}</select>`
+      + (fixed ? '<div></div>' : `<button class="btn icon danger" data-i="${i}" data-f="del" title="${attr(T('Supprimer', 'Delete'))}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`);
+  });
+  $('#tg-rows').innerHTML = html;
+  $('#tg-err').textContent = '';
+}
+{
+  const grid = $('#tg-rows');
+  const refresh = i => { const el = grid.querySelector(`.lk-pv[data-i="${i}"]`); if (el) el.innerHTML = tagPreview(TG.rows[i]); };
+  grid.addEventListener('input', e => {
+    const el = e.target, i = +el.dataset.i, f = el.dataset.f, r = TG.rows[i]; if (!r) return;
+    const rc = r.def.rect = { ...(r.def.rect || {}) };
+    if (f === 'key') { r.key = el.value.trim(); validateTagKeys(); return; }
+    if (f === 'fill') rc.fill = el.value;
+    else if (f === 'stroke') { r.sc = el.value; if (tgStroke(r) > 0) rc.stroke = el.value; }
+    else if (f === 'sw') {
+      const v = parseFloat(el.value); if (!(v >= 0)) return;
+      if (v === 0) { if (rc.stroke && rc.stroke !== 'none') r.sc = rc.stroke; rc.stroke = 'none'; } else { rc.stroke = rc.stroke && rc.stroke !== 'none' ? rc.stroke : r.sc || '#000000'; rc.stroke_width = String(v); }
+    } else return;
+    refresh(i);
+  });
+  grid.addEventListener('change', e => {
+    const el = e.target, i = +el.dataset.i, r = TG.rows[i];
+    if (r && el.dataset.f === 'font') { r.def.fontdef = el.value; refresh(i); }
+  });
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('[data-f="del"]'); if (!b) return;
+    TG.rows.splice(+b.dataset.i, 1); renderTagRows();
+  });
+  $('#tg-add').onclick = () => {
+    const used = new Set(TG.rows.map(r => r.key)); let n = 1;
+    while (used.has('style' + n)) n++;
+    TG.rows.push({ key: 'style' + n, def: { rect: { stroke: 'none', stroke_width: '0.25', stroke_linejoin: 'round', fill: '#2563eb', fill_opacity: '1' }, fontdef: 'wtag' } });
+    renderTagRows();
+    grid.querySelector(`input[data-i="${TG.rows.length - 1}"][data-f="key"]`)?.select();
+  };
+}
+function fillTagRows(s) {
+  const ts = isObj(s.tagstyles) ? s.tagstyles : {};
+  TG.rows = Object.entries(ts).filter(([, d]) => isObj(d)).map(([key, def]) => ({ key, def: clone(def) }));
+  if (!TG.rows.some(r => r.key === 'regular')) TG.rows.unshift({ key: 'regular', def: clone(DEFAULT_SETTINGS.tagstyles.regular) });
+  renderTagRows();
+}
+/* code de style : pas de virgule ni de parenthèse (séparateurs de (t:texte,style)) */
+function validateTagKeys() {
+  const seen = new Set(['regular']); let msg = '';
+  $$('#tg-rows input[data-f="key"]').forEach(inp => {
+    const k = inp.value.trim(); let bad = '';
+    if (!/^[\w-]+$/.test(k)) bad = T('Code invalide : lettres, chiffres, - ou _ uniquement', 'Invalid code: letters, digits, - or _ only');
+    else if (seen.has(k)) bad = T(`Le code « ${k} » est déjà utilisé`, `Code “${k}” is already used`);
+    seen.add(k);
+    inp.classList.toggle('bad', !!bad); if (bad && !msg) msg = bad;
+  });
+  $('#tg-err').textContent = msg;
+  return !msg;
+}
+function readTagRows() {
+  if (!validateTagKeys()) return null;
+  return Object.fromEntries(TG.rows.map(r => [r.key, r.def]));
+}
+/* ---------- Éditeur des règles de compatibilité (#8) : une ligne = type parent + style de lien + types enfants ---------- */
+const CP = { rows: [] };
+function fillCompatRows(raw) {
+  CP.rows = [];
+  for (const [p, by] of Object.entries(normCompat(raw))) for (const [st, list] of Object.entries(by)) CP.rows.push({ parent: p, style: st, children: [...list] });
+  renderCompatRows();
+}
+/* icône du type parent et aperçu du trait du style de lien (* : tous les liens) */
+function cpParentIcon(name) {
+  const ic = name && iconMap().get(name.trim().toLowerCase());
+  return ic ? `<img alt="" src="${attr(ic.icon)}">` : `<span class="cp-q" title="${attr(T('Type inconnu (sans icône)', 'Unknown type (no icon)'))}">${name && name.trim() ? '?' : ''}</span>`;
+}
+function cpStyleIcon(k) {
+  if (k === '*') return `<span class="cp-any" title="${attr(T('Tous les liens', 'Any link'))}">∗</span>`;
+  return has(settings.hierarchy, k) ? hierSwatch(k) : has(settings.links, k) ? linkSwatch(k) : '';
+}
+/* types enfants : une pastille par type (✕ pour la retirer), puis un champ avec suggestions et un bouton + pour en ajouter */
+function kidsCell(r, i) {
+  const icons = iconMap();
+  const chips = r.children.map((k, j) => { const ic = icons.get(k.toLowerCase());
+    return `<span class="cp-chip${ic ? '' : ' unk'}" title="${attr(ic ? ic.label || ic.name : T('Type inconnu (sans icône)', 'Unknown type (no icon)'))}">${ic ? `<img alt="" src="${attr(ic.icon)}">` : ''}${escapeHtml(k)}<button type="button" data-i="${i}" data-j="${j}" data-f="rmkid" title="${attr(T('Retirer', 'Remove'))}" aria-label="${attr(T('Retirer', 'Remove') + ' ' + k)}">✕</button></span>`; }).join('');
+  return `<div class="cp-kids" data-i="${i}" data-f="cell">${chips || `<span class="cp-none">${T('aucun enfant prévu', 'no child expected')}</span>`}`
+    + `<span class="cp-addkid"><input type="text" data-i="${i}" data-f="kidin" list="cp-kids" autocomplete="off" spellcheck="false" placeholder="${attr(T('Ajouter un type…', 'Add a type…'))}">`
+    + `<button type="button" class="btn icon" data-i="${i}" data-f="addkid" title="${attr(T('Ajouter ce type enfant', 'Add this child type'))}"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></span></div>`;
+}
+function renderCompatRows() {
+  const H = (fr, en) => `<div class="hd">${T(fr, en)}</div>`;
+  const styles = [['*', T('Tous les liens', 'Any link')], ...Object.entries(settings.hierarchy || {}).map(([k, v]) => [k, `${k} · ${v.label || ''}`]),
+    ...Object.entries(settings.links || {}).filter(([k]) => !has(settings.hierarchy, k)).map(([k, v]) => [k, `${k} · ${v.label || ''}`])];
+  let html = H('Type parent', 'Parent type') + H('Lien', 'Link') + H('Types enfants prévus', 'Expected child types') + '<div></div>';
+  CP.rows.forEach((r, i) => {
+    const opts = styles.some(([k]) => k === r.style) ? styles : [...styles, [r.style, r.style]];
+    html += `<div class="cp-pfx"><span class="cp-ico" data-i="${i}" data-f="pico">${cpParentIcon(r.parent)}</span><input type="text" data-i="${i}" data-f="parent" value="${attr(r.parent)}" list="cp-types" spellcheck="false" placeholder="${attr(T('ex. rack', 'e.g. rack'))}"></div>`
+      + `<div class="cp-pfx"><span class="cp-ico" data-i="${i}" data-f="sico">${cpStyleIcon(r.style)}</span><select data-i="${i}" data-f="style">${opts.map(([k, l]) => `<option value="${attr(k)}"${k === r.style ? ' selected' : ''}>${escapeHtml(l)}</option>`).join('')}</select></div>`
+      + kidsCell(r, i)
+      + `<button class="btn icon danger" data-i="${i}" data-f="del" title="${attr(T('Supprimer la règle', 'Delete the rule'))}"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>`;
+  });
+  if (!CP.rows.length) html += `<p class="hint" style="grid-column:1/-1;margin:4px 0">${T('Aucune règle : tous les types sont proposés partout.', 'No rules: every type is offered everywhere.')}</p>`;
+  $('#cp-rows').innerHTML = html;
+  $('#cp-types').innerHTML = [...iconMap().values()].map(ic => `<option value="${attr(ic.name)}">${escapeHtml(ic.label || '')}</option>`).join('');
+  validateCompat();
+}
+function validateCompat() {
+  const icons = iconMap(), seen = new Set(); let msg = '', warn = '';
+  CP.rows.forEach((r, i) => {
+    const inp = $(`#cp-rows input[data-i="${i}"][data-f="parent"]`); if (!inp) return;
+    const k = r.parent.trim().toLowerCase() + '|' + r.style; let bad = '';
+    if (!r.parent.trim()) bad = T('Type parent manquant', 'Missing parent type');
+    else if (seen.has(k)) bad = T(`Règle en double pour « ${r.parent.trim()} » (${r.style === '*' ? 'tous les liens' : r.style})`, `Duplicate rule for “${r.parent.trim()}” (${r.style === '*' ? 'any link' : r.style})`);
+    seen.add(k); inp.classList.toggle('bad', !!bad); if (bad && !msg) msg = bad;
+    const unknown = [r.parent, ...r.children].map(x => x.trim()).filter(x => x && !icons.has(x.toLowerCase()));
+    if (unknown.length && !warn) warn = T(`Type inconnu (sans icône) : ${unknown.join(', ')}`, `Unknown type (no icon): ${unknown.join(', ')}`);
+  });
+  $('#cp-err').textContent = msg || warn;
+  return !msg;
+}
+/* forme compacte : un tableau quand le parent n'a qu'une règle « tous les liens » ; un type saisi mais pas encore
+   ajouté avec + est pris en compte */
+function readCompatRows() {
+  $$('#cp-rows input[data-f="kidin"]').forEach(inp => { if (inp.value.trim()) addKids(+inp.dataset.i, inp.value, false); });
+  if (!validateCompat()) return null;
+  const by = {};
+  for (const r of CP.rows) (by[r.parent.trim()] ??= {})[r.style] = [...r.children];
+  return Object.fromEntries(Object.entries(by).map(([p, m]) => [p, Object.keys(m).length === 1 && m['*'] ? m['*'] : m]));
+}
+/* ajoute un ou plusieurs types (séparés par des virgules ou des espaces) à une règle, sans doublon ; la cellule est
+   redessinée et le champ garde le focus pour enchaîner les ajouts */
+function addKids(i, text, refocus = true) {
+  const r = CP.rows[i]; if (!r) return;
+  const have = new Set(r.children.map(x => x.toLowerCase()));
+  for (const t of String(text).split(/[,\s]+/).map(x => x.trim()).filter(Boolean)) if (!have.has(t.toLowerCase())) { r.children.push(iconMap().get(t.toLowerCase())?.name || t); have.add(t.toLowerCase()); }
+  const cell = $(`#cp-rows .cp-kids[data-i="${i}"]`); if (!cell) return;
+  cell.outerHTML = kidsCell(r, i);
+  if (refocus) $(`#cp-rows input[data-i="${i}"][data-f="kidin"]`)?.focus();
+  validateCompat();
+}
+{
+  const grid = $('#cp-rows');
+  /* suggestions du champ d'ajout : les types pas encore listés dans la règle */
+  const kids = el => { const r = CP.rows[+el.dataset.i], have = new Set((r?.children || []).map(x => x.toLowerCase()));
+    $('#cp-kids').innerHTML = [...iconMap().values()].filter(ic => !have.has(ic.name.toLowerCase())).map(ic => `<option value="${attr(ic.name)}">${escapeHtml(ic.label || '')}</option>`).join(''); };
+  grid.addEventListener('focusin', e => { if (e.target.dataset.f === 'kidin') kids(e.target); });
+  grid.addEventListener('input', e => {
+    const el = e.target, i = +el.dataset.i, r = CP.rows[i]; if (!r) return;
+    if (el.dataset.f === 'parent') { r.parent = el.value; $(`#cp-rows [data-i="${i}"][data-f="pico"]`).innerHTML = cpParentIcon(r.parent); validateCompat(); }
+    // choix dans la liste de suggestions (pas une frappe) : ajout immédiat
+    else if (el.dataset.f === 'kidin' && !(e.inputType || '').startsWith('insertText') && !(e.inputType || '').startsWith('delete') && iconMap().has(el.value.trim().toLowerCase())) addKids(i, el.value);
+  });
+  grid.addEventListener('keydown', e => {
+    const el = e.target; if (el.dataset.f !== 'kidin') return;
+    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); if (el.value.trim()) addKids(+el.dataset.i, el.value); }
+    else if (e.key === 'Backspace' && !el.value) { const r = CP.rows[+el.dataset.i]; if (r?.children.length) { r.children.pop(); addKids(+el.dataset.i, ''); } }
+  });
+  grid.addEventListener('change', e => { const el = e.target, r = CP.rows[+el.dataset.i]; if (r && el.dataset.f === 'style') { r.style = el.value; $(`#cp-rows [data-i="${el.dataset.i}"][data-f="sico"]`).innerHTML = cpStyleIcon(r.style); validateCompat(); } });
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('[data-f]'); if (!b) return;
+    const i = +b.dataset.i, f = b.dataset.f;
+    if (f === 'del') { CP.rows.splice(i, 1); renderCompatRows(); }
+    else if (f === 'rmkid') { CP.rows[i]?.children.splice(+b.dataset.j, 1); addKids(i, ''); }
+    else if (f === 'addkid') { const inp = $(`#cp-rows input[data-i="${i}"][data-f="kidin"]`); if (inp.value.trim()) addKids(i, inp.value); else { inp.focus(); try { inp.showPicker?.(); } catch { /* non pris en charge */ } } }
+    else if (f === 'cell') b.querySelector('input')?.focus();
+  });
+  $('#cp-add').onclick = () => { CP.rows.push({ parent: '', style: '*', children: [] }); renderCompatRows(); grid.querySelector(`input[data-i="${CP.rows.length - 1}"][data-f="parent"]`)?.focus(); };
+  $('#cp-export').onclick = () => { const c = readCompatRows(); if (c) download('bomarkdown-studio-compat.json', JSON.stringify({ compat: c }, null, 2), 'application/json'); };
+  $('#cp-import').onclick = async () => {
+    const r = await readJsonFile(); if (!r) return;
+    const raw = isObj(r.data) && isObj(r.data.compat) ? r.data.compat : r.data;
+    if (!isObj(raw)) return toast(T('Fichier de règles invalide', 'Invalid rules file'), true);
+    fillCompatRows(raw); toast(T(`Règles importées depuis ${r.name} : cliquez sur Appliquer`, `Rules imported from ${r.name}: click Apply`));
+  };
+}
 function setSettingsTab(t) {
   $$('#s-tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $$('#dlg-settings .tabpanel').forEach(p => { p.hidden = p.dataset.panel !== t; });
@@ -2719,12 +3094,15 @@ function setSettingsTab(t) {
 $('#s-tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) setSettingsTab(b.dataset.tab); });
 function openSettings(tab) {
   fillSettingsForm(settings);
+  fillCompatRows(compatRules);
   setSettingsTab(tab || store.get('settingsTab', 'layout'));
   $('#dlg-settings').showModal();
 }
 $('#lk-edit').onclick = () => openSettings('links');
 $('#s-apply').onclick = () => {
   const s = readSettingsForm(); if (!s) return;
+  const c = readCompatRows(); if (!c) { setSettingsTab('compat'); return; }
+  compatRules = c; store.set('compat', c);
   settings = s; store.set('settings', settings); $('#dlg-settings').close(); fillLinkTypes(); renderPreview(); toast(T('Réglages appliqués', 'Settings applied'));
 };
 $('#s-reset').onclick = () => { fillSettingsForm(clone(DEFAULT_SETTINGS)); toast(T('Valeurs par défaut chargées : cliquez sur Appliquer', 'Defaults loaded: click Apply')); };
@@ -2957,6 +3335,16 @@ function nextSibling(line) {
   return -1;
 }
 const itemType = i => getI(lineStruct(info.lines[i])).type;
+/* compatibilité (#8) : règles du bloc affiché, style du lien vers le parent d'une ligne, types admis sous ce parent */
+const curCompat = () => lastRender?.S?.compat || normCompat(compatRules);
+function lineHier(line) { const st = lineStruct(info.lines[line]); if (!st) return 'h'; const k = blockIdx(st, 'h'); return (k >= 0 && st.blocks[k].content.trim()) || st.key || 'h'; }
+function allowedForLine(line) { const p = parentOf(line); return p < 0 ? null : allowedChildren(curCompat(), itemType(p), lineHier(line)); }
+/* types admis en premier (ordre stable), puis les autres, marqués « hors règles » */
+function compatSort(icons, al) {
+  if (!al) return icons.map(ic => ({ ic, off: false }));
+  const ok = ic => al.includes(ic.name.toLowerCase());
+  return [...icons.filter(ok).map(ic => ({ ic, off: false })), ...icons.filter(ic => !ok(ic)).map(ic => ({ ic, off: true }))];
+}
 const CHILD_TYPE = { assembly: 'component', folder: 'file', spec: 'req', plant: 'routing', routing: 'function', chapter: 'chapter', function: 'function', logical: 'logical' };
 const newItem = (level, type, label) => ' '.repeat(level) + '+ ' + (type ? `(i:${type},${label})` : `(i:${label})`);
 const reLevel = (i, lv) => { const m = ITEM_RE.exec(info.lines[i]), k = prefixKey(m[1]); return (k && lv > 0 ? ' '.repeat(lv - 1) + k : ' '.repeat(Math.max(0, lv))) + '+ ' + m[2]; };
@@ -2989,7 +3377,10 @@ function undoRedo(cmd) {
 const G = {
   child(line) {
     const ch = childrenOf(line), end = subtreeEnd(line);
-    const type = ch.length ? itemType(ch.at(-1)) : (CHILD_TYPE[itemType(line)] ?? itemType(line));
+    let type = ch.length ? itemType(ch.at(-1)) : (CHILD_TYPE[itemType(line)] ?? itemType(line));
+    // règles de compatibilité : à défaut d'un type admis, le premier type prévu sous ce parent (lien h)
+    const al = allowedChildren(curCompat(), itemType(line), 'h');
+    if (al && al.length && !al.includes(String(type).toLowerCase())) type = iconMap().get(al[0])?.name || al[0];
     applyEdit(end + 1, end + 1, [newItem(levelOf(line) + 1, type, T('Nouvel élément', 'New item'))], end + 1, () => startRename(end + 1, line));
   },
   sibling(line) {
@@ -3154,16 +3545,19 @@ function openPop(kind, btn, line) {
   let html = '';
   if (kind === 'type') {
     const cur = getI(st).type.toLowerCase();
-    html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + [...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name))
-      .map(i => `<button data-v="${attr(i.name)}"${i.name.toLowerCase() === cur ? ' class="cur"' : ''}><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`).join('');
+    const btn = ({ ic: i, off }) => `<button data-v="${attr(i.name)}" class="${i.name.toLowerCase() === cur ? 'cur' : ''}${off ? ' off' : ''}"><img alt="" src="${attr(i.icon)}"><b>${escapeHtml(i.name)}</b><small>${escapeHtml(i.label || '')}</small></button>`;
+    const list = compatSort([...iconMap().values()].sort((a, b) => a.name.localeCompare(b.name)), allowedForLine(line)), k = list.findIndex(x => x.off);
+    html = `<button data-v="">— <span>${T('Aucun type', 'No type')}</span></button>` + list.map((x, i) => (i === k ? `<div class="gpop-sep">${T('Hors règles de compatibilité', 'Outside compatibility rules')}</div>` : '') + btn(x)).join('')
+      + `<button data-edit="compat" class="gpop-edit">✎ <span>${T('Règles de compatibilité…', 'Compatibility rules…')}</span></button>`;
   } else if (kind === 'tag') {
     const tk = blockIdx(st, 't'), cur = tk >= 0 ? parseTag(st.blocks[tk].content).style || 'regular' : '';
     html = Object.keys(settings.tagstyles || {}).map(k => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${tagSwatch(k)}<b>${escapeHtml(k)}</b></button>`).join('')
-      + (tk >= 0 ? `<button data-v="" class="gpop-edit">✕ <span>${T('Retirer l\'étiquette', 'Remove the tag')}</span></button>` : '');
+      + (tk >= 0 ? `<button data-v="" class="gpop-edit">✕ <span>${T('Retirer l\'étiquette', 'Remove the tag')}</span></button>` : '')
+      + `<button data-edit="tags" class="gpop-edit">✎ <span>${T('Modifier les styles d\'étiquettes…', 'Edit tag styles…')}</span></button>`;
   } else if (kind === 'hlink') {
     const hk = blockIdx(st, 'h'); const cur = hk >= 0 ? st.blocks[hk].content.trim() : st.key || 'h';
     html = Object.entries(settings.hierarchy).map(([k, v]) => `<button data-v="${attr(k)}"${k === cur ? ' class="cur"' : ''}>${hierSwatch(k)}<b>${escapeHtml(k)}</b><small>${escapeHtml((v.label || '') + (k === 'h' ? T(' (par défaut)', ' (default)') : ''))}</small></button>`).join('')
-      + `<button data-edit="1" class="gpop-edit">✎ <span>${T('Modifier les styles de hiérarchie…', 'Edit hierarchy styles…')}</span></button>`;
+      + `<button data-edit="links" class="gpop-edit">✎ <span>${T('Modifier les styles de hiérarchie…', 'Edit hierarchy styles…')}</span></button>`;
   } else {
     const sk = blockIdx(st, 's'); const cur = sk >= 0 ? st.blocks[sk].content.trim() : '';
     html = `<button data-v="">— <span>${T('Aucun statut', 'No status')}</span></button>` + Object.entries(settings.status)
@@ -3208,15 +3602,17 @@ gpop.addEventListener('keydown', e => {
   else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); gpop.hidden = true; preview.focus(); }
 });
 gpop.addEventListener('click', e => {
-  if (e.target.closest('[data-edit]')) { gpop.hidden = true; openSettings('links'); return; }
+  { const ed = e.target.closest('[data-edit]'); if (ed) { gpop.hidden = true; openSettings(ed.dataset.edit); return; } }
   const b = e.target.closest('button[data-v]'); if (!b) return;
   const line = +gpop.dataset.line, v = b.dataset.v, st = lineStruct(info.lines[line]);
   if (gpop.dataset.kind === 'tag') {
-    const q = gpop.querySelector('.gpop-q'), text = q.value.replace(/[(),]/g, ' ').replace(/\s+/g, ' ').trim(), tk = blockIdx(st, 't');
+    const q = gpop.querySelector('.gpop-q'), text = q.value.replace(/\s+/g, ' ').trim(), tk = blockIdx(st, 't');
     if (v && !text) { q.focus(); return toast(T('Saisissez le texte de l\'étiquette', 'Enter the tag text'), true); }
     if (!v) { if (tk >= 0) removeBlock(st, tk); }
-    else if (tk >= 0) st.blocks[tk].content = v === 'regular' ? text : `${text},${v}`;
-    else insertBlock(st, st.blocks.length, { kind: 't', content: v === 'regular' ? text : `${text},${v}` });
+    else {
+      const content = v === 'regular' ? escTag(text, false) : `${escTag(text, true)},${v}`;
+      if (tk >= 0) st.blocks[tk].content = content; else insertBlock(st, st.blocks.length, { kind: 't', content });
+    }
   } else if (gpop.dataset.kind === 'type') { const cur = getI(st); setI(st, { ...cur, type: v }); }
   else if (gpop.dataset.kind === 'hlink') {
     st.key = '';
@@ -3430,6 +3826,7 @@ function setLang(l) {
   $$('#lang-sw button').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
   translateStatic();
   applyTheme(theme);
+  setSourceHidden($('#main').classList.contains('src-hidden'));
   renderExamples();
   updateBlockSelect();
   setDirty(docState.dirty);
@@ -3488,6 +3885,7 @@ document.addEventListener('keydown', e => {
   else if (mod && e.shiftKey && e.key.toLowerCase() === 'e') { e.preventDefault(); try { actions['export-svg'](); } catch (err) { toast(err.message, true); } }
   else if (mod && e.shiftKey && e.key.toLowerCase() === 'g') { e.preventDefault(); generateBom(); }
   else if (e.key === 'F1') { e.preventDefault(); $('#dlg-help').showModal(); }
+  else if (mod && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'b') { e.preventDefault(); $('#src-toggle').click(); }
   else if (e.key === 'Escape' && $('#drawer').classList.contains('open') && !document.querySelector('dialog[open]')) $('#drawer').classList.remove('open');
 });
 
@@ -3509,7 +3907,7 @@ document.addEventListener('keydown', e => {
     setDirty(store.get('docDirty', false));
   } else loadText(demo.text, demo.file);
   applyZoom();
-  if (!info.markdown) ta.focus();
+  if (!info.markdown && !$('#main').classList.contains('src-hidden')) ta.focus();
 })();
 </script>
 </body>
