@@ -4,6 +4,40 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.7.0] - 2026-11-13
+
+### Ajouté
+- Réglages → onglet *Étiquettes* : éditeur visuel des styles d'étiquettes (`tagstyles`), sur le modèle des types de
+  liens ([#12](https://github.com/eowindel/bomarkdown-studio/issues/12)). Pour chaque style : code, couleur de fond,
+  trait (couleur et épaisseur, 0 pour aucun contour), police (`wtag` texte blanc, `btag` texte noir ou une clé de
+  `fontdefs`) et aperçu. Ajout, renommage et suppression d'un style ; `regular` ne peut être ni renommé ni supprimé.
+  Les autres clés d'un style (`fill_opacity`, `stroke_linejoin`…) sont conservées. Le bouton *Étiquette* du graphe
+  propose les styles mis à jour et un lien *Modifier les styles d'étiquettes…*. Une clé `tagstyles` collée dans
+  *Avancé (JSON)* remplace toujours le contenu de l'onglet.
+- Règles de compatibilité des types ([#8](https://github.com/eowindel/bomarkdown-studio/issues/8)) : Réglages → onglet
+  *Compatibilité*, une règle par type parent et style de lien (tous les liens, `h`, `a`…), avec la liste des types enfants
+  prévus. Les règles sont indicatives : le sélecteur de type du graphe et l'autocomplétion de `(i:` proposent d'abord les
+  types prévus (les autres restent accessibles, marqués *hors règles*), un nouvel enfant reçoit un type prévu, et un
+  enfant hors règles est signalé dans *Problèmes*. Un type parent sans règle n'est pas contraint. Les règles sont
+  enregistrées à part des réglages de l'extension, avec import et export dans un fichier propre à Studio
+  (`bomarkdown-studio-compat.json`), et un document peut les surcharger par une clé `compat` dans son bloc `${{ }}$`
+  (`"compat": { "rack": ["component", "cable"], "assembly": { "h": ["component"], "a": ["component"] } }`).
+- Bouton à gauche de l'aperçu (ou `Ctrl+B`) pour masquer ou afficher le texte source : l'aperçu prend alors toute la
+  largeur, et l'édition depuis le graphe reste disponible. L'état est mémorisé ; `Ctrl+clic` sur un élément du graphe
+  rouvre le source à la ligne correspondante.
+
+### Modifié
+- `fontdefs` : quand `label.font_size` est défini sans hauteur `h` explicite (bloc `${{ }}$` ou réglage différent de 20),
+  la hauteur de ligne est déduite de la police, avec le rapport 4/3 de l'extension, sans descendre sous 20
+  ([#14](https://github.com/eowindel/bomarkdown-studio/issues/14)). Le texte reste centré verticalement dans la ligne.
+  De même, `legend.font_size` agrandit les lignes de la légende et son cadre. Sans surcharge, le rendu est inchangé.
+- Virgules et parenthèses dans le texte d'une étiquette ([#13](https://github.com/eowindel/bomarkdown-studio/issues/13)).
+  Dans `(t:texte,style)`, la dernière virgule n'introduit le style que si ce qui suit est un style de `tagstyles` (réglages
+  ou bloc `${{ }}$`) ou une couleur ; sinon elle fait partie du texte : `(t:Prix, TTC)` affiche « Prix, TTC ». Les
+  parenthèses sont admises (`(t:Prix (TTC),orange)`), et `\,` `\(` `\)` `\\` forcent le caractère dans le texte. Le bouton
+  *Étiquette* du graphe ne remplace plus ces caractères par des espaces : il n'échappe que le nécessaire. Écart volontaire
+  avec l'extension, qui lit `(t:a,b)` comme le texte `a` avec le style `b`.
+
 ## [0.6.1] - 2026-11-09
 
 ### Modifié

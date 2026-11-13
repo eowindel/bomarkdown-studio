@@ -75,11 +75,15 @@ On complète une ligne avec des blocs entre parenthèses, dans n'importe quel or
 | `(b:bulle1,bulle2)` | Pictogrammes sur l'icône (`lock`, `unlock`, `matrice`, `context`, `noway`) | `(b:lock)` |
 | `(e:effectivité)` | Plage d'effectivité affichée à gauche, ou `o` pour une simple pastille | `(e:[A -> #oo[)` |
 | `(h:style)` | Style du lien vers le parent, parmi les styles de hiérarchie (`o` optionnel, `v` variante…) | `(h:o)` |
+| `(t:texte,style)` | Étiquette colorée en fin de ligne ; le style est un style d'étiquette ou une couleur | `(t:urgent,orange)` |
 
 Quelques compléments :
 
 - **Étiquettes de lien** : `(l:i:cadre!implémente)` place une étiquette sur le lien. `!<texte` la place au
   départ, `!>texte` à l'arrivée.
+- **Étiquettes** : sans style, `(t:texte)` prend le style `regular` (rouge). Une virgule n'introduit le style que si
+  ce qui suit est un style d'étiquette ou une couleur : `(t:Prix, TTC)` affiche « Prix, TTC ». Les parenthèses sont
+  admises, et `\,` `\(` `\)` forcent le caractère dans le texte.
 - **Mise en forme des libellés** : `*italique*`, `**gras**`, `***gras italique***`.
 - **Symboles d'effectivité** : `->` devient →, `<-` devient ← et `#oo` devient ∞.
 - **Styles de hiérarchie** : par défaut, un enfant est relié à son parent par un trait plein (`h`). `(h:o)` le relie
@@ -118,6 +122,10 @@ ${{
 }}$
 + (i:assembly,Vélo)
 ```
+
+On y trouve aussi les réglages de l'extension (`h`, `vpanfactor`, `fontdefs`, `tagstyles`…). Une police de libellé
+agrandie (`"fontdefs": { "label": { "font_size": 20 } }`) agrandit la hauteur des lignes en conséquence, sauf si `h`
+est fixé. La clé `compat` y définit des règles de compatibilité propres au diagramme (voir *Personnaliser*).
 
 ### Plusieurs diagrammes dans un document Markdown
 
@@ -187,6 +195,14 @@ documentation ou un traitement de texte.
   structures). Pour chacun, on règle le code, le libellé, la couleur, l'épaisseur, le trait
   (continu, tirets, pointillés, tiret-point ou motif libre) et l'extrémité (flèche pleine ou ouverte, triangle
   creux, losange, rond, barre), éventuellement aux deux bouts, avec un aperçu immédiat.
+- **Styles d'étiquettes** : Réglages → *Étiquettes* règle, pour chaque style, la couleur de fond, le trait et la
+  police (texte blanc ou noir), avec un aperçu.
+- **Compatibilité des types** : Réglages → *Compatibilité* indique, pour un type parent et un style de lien, les
+  types enfants prévus (par exemple, sous un `rack` : `component` et `cable`). Les règles sont indicatives : le
+  sélecteur de type et l'autocomplétion proposent d'abord les types prévus, un nouvel enfant reçoit un type prévu,
+  et un enfant hors règles est signalé dans *Problèmes*. Les règles s'importent et s'exportent dans un fichier propre
+  à Studio, et un diagramme peut les surcharger avec une clé `compat` :
+  `"compat": { "rack": ["component", "cable"], "assembly": { "h": ["component"], "a": ["component"] } }`.
 - **Réglages** : dimensions et espacements, courbure des liens, légende, couleurs, fond transparent. Les statuts,
   bulles et règles de mise en forme se définissent en JSON. Les réglages s'exportent et s'importent.
 - **Référence** : le panneau *Référence* liste tous les types, statuts, bulles et liens disponibles. Un clic les
@@ -201,6 +217,7 @@ documentation ou un traitement de texte.
 | `Entrée` | Dans le texte : nouvel élément au même niveau |
 | `Ctrl+S` / `Ctrl+O` | Enregistrer / ouvrir |
 | `Ctrl+Maj+E` | Exporter le diagramme courant en SVG |
+| `Ctrl+B` | Masquer ou afficher le texte source (l'aperçu prend toute la largeur) |
 | `Ctrl+molette` | Zoomer dans l'aperçu (glisser le fond pour se déplacer) |
 | `F1` | Aide complète |
 
