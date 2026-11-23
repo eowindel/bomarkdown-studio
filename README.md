@@ -84,6 +84,8 @@ Quelques compléments :
 - **Étiquettes** : sans style, `(t:texte)` prend le style `regular` (rouge). Une virgule n'introduit le style que si
   ce qui suit est un style d'étiquette ou une couleur : `(t:Prix, TTC)` affiche « Prix, TTC ». Les parenthèses sont
   admises, et `\,` `\(` `\)` forcent le caractère dans le texte.
+- **Properties** : une ligne `-+ **clé:** valeur` sous un item s'affiche sous son libellé (une ligne par property ; polices
+  `propkey` et `propvalue` de `fontdefs`).
 - **Mise en forme des libellés** : `*italique*`, `**gras**`, `***gras italique***`.
 - **Symboles d'effectivité** : `->` devient →, `<-` devient ← et `#oo` devient ∞.
 - **Styles de hiérarchie** : par défaut, un enfant est relié à son parent par un trait plein (`h`). `(h:o)` le relie

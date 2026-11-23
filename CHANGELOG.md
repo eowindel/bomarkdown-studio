@@ -4,6 +4,18 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.8.0] - 2026-11-23
+
+### Ajouté
+- Properties d'un item ([#19](https://github.com/eowindel/bomarkdown-studio/issues/19)), comme dans l'extension
+  BoMarkdown : une ligne `-+ **clé:** valeur` sous un item s'affiche sous son libellé, en petits caractères (clé en gras
+  bleu foncé, valeur en bleu). L'item grandit en hauteur et les suivants sont décalés. Les polices se règlent par les
+  clés `propkey` et `propvalue` de `fontdefs`. Une ligne `-+` sans item au-dessus est signalée dans *Problèmes*.
+  Les properties suivent leur item quand on le déplace, l'indente ou le supprime depuis le graphe.
+
+### Modifié
+- Une ligne `-+` n'est plus lue comme un item enfant : c'est une property.
+
 ## [0.7.0] - 2026-11-13
 
 ### Ajouté
@@ -164,6 +176,8 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.8.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.8.0
+[0.7.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
