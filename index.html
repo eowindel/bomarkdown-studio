@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  BoMarkdown Studio v0.7.0
+  BoMarkdown Studio v0.8.0
   Copyright (c) 2026 casarou
   SPDX-License-Identifier: MIT
   Licensed under the MIT License: see the LICENSE file.
@@ -15,7 +15,7 @@
 <title>BoMarkdown Studio</title>
 <meta name="description" content="Éditeur autonome de nomenclatures (BOM) en texte, rendu SVG en direct. Revamping web de l'extension VS Code BoMarkdown.">
 <meta name="author" content="casarou">
-<meta name="version" content="0.7.0"><!-- à garder aligné sur const VERSION (script) -->
+<meta name="version" content="0.8.0"><!-- à garder aligné sur const VERSION (script) -->
 <meta name="portal:category" content="Outils">
 <meta name="portal:tags" content="bom, nomenclature, markdown, svg, diagramme">
 <meta name="portal:color" content="#4f6bed">
@@ -1146,6 +1146,18 @@ Toutes les évolutions notables de BoMarkdown Studio sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et la numérotation
 [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [0.8.0] - 2026-11-23
+
+### Ajouté
+- Properties d'un item ([#19](https://github.com/eowindel/bomarkdown-studio/issues/19)), comme dans l'extension
+  BoMarkdown : une ligne `-+ **clé:** valeur` sous un item s'affiche sous son libellé, en petits caractères (clé en gras
+  bleu foncé, valeur en bleu). L'item grandit en hauteur et les suivants sont décalés. Les polices se règlent par les
+  clés `propkey` et `propvalue` de `fontdefs`. Une ligne `-+` sans item au-dessus est signalée dans *Problèmes*.
+  Les properties suivent leur item quand on le déplace, l'indente ou le supprime depuis le graphe.
+
+### Modifié
+- Une ligne `-+` n'est plus lue comme un item enfant : c'est une property.
+
 ## [0.7.0] - 2026-11-13
 
 ### Ajouté
@@ -1306,6 +1318,8 @@ Première version publique, base de départ pour recueillir vos retours.
 - Réglages de mise en page, statuts, bulles et règles de mise en forme ; import/export des réglages.
 - Interface en français ou en anglais, thème clair ou sombre.
 
+[0.8.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.8.0
+[0.7.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.7.0
 [0.6.1]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.1
 [0.6.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.6.0
 [0.5.0]: https://github.com/eowindel/bomarkdown-studio/releases/tag/v0.5.0
@@ -1332,7 +1346,7 @@ Première version publique, base de départ pour recueillir vos retours.
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const NS = 'http://www.w3.org/2000/svg';
-const VERSION = '0.7.0';
+const VERSION = '0.8.0';
 const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 /* fontdefs de l'extension : surcharges facultatives (label, eff, rev, linklabel, legend…) ; sans surcharge, les polices de
    Studio restent inchangées. base : valeurs par défaut de Studio, clés en font_family, font_size, fill, stroke_width… */
@@ -1597,7 +1611,13 @@ const measure = (() => {
    ===================================================================== */
 /* Le préfixe peut se terminer par une lettre : « a+ » est un raccourci de (h:a) comme dans l'extension ;
    la lettre occupe un niveau d'indentation, comme le « - » des propriétés « -+ ». */
-const ITEM_RE = /^((?:[ \t\-+]*?)[A-Za-z0-9]?)\+ (.*)$/;
+const ITEM_RE = /^((?:[ \t\-+]*?)[A-Za-z0-9]?)(?<!-)\+ (.*)$/;
+/* #19 : « -+ **clé:** valeur » est une property de l'item au-dessus, pas un item */
+const PROP_RE = /^[ \t]*-\+[ \t]+(.*)$/;
+function parseProp(text) {
+  const m = /^\*\*(.*?)\*\*[ \t]*(.*)$/.exec(text.trim());
+  return m ? { key: m[1].replace(/\s*:\s*$/, '').trim(), value: m[2].trim() } : { key: '', value: text.trim() };
+}
 const prefixKey = p => /[A-Za-z0-9]$/.test(p) ? p.slice(-1) : '';
 
 /* Repère les blocs (x:…) d'une ligne : un bloc va de "(x:" jusqu'à la dernière ")" avant le bloc suivant,
@@ -1643,10 +1663,17 @@ function parseBomText(text, baseLine = 0) {
       bom = { items: [], extraGap: Number(t.slice(10).trim()) || 0 };
       continue;
     }
+    const pm = PROP_RE.exec(raw);
+    if (pm) {
+      const last = bom.items[bom.items.length - 1];
+      if (last) last.props.push({ line, ...parseProp(pm[1]) });
+      else diags.push({ line, level: 'warn', msg: T('Property « -+ » sans item au-dessus', 'Property “-+” without an item above') });
+      continue;
+    }
     const m = ITEM_RE.exec(raw);
     if (!m) continue;
     const level = m[1].length;
-    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', tags: [], bubbles: [], relatives: [], argOffset: m[1].length + 2 };
+    const it = { id: line, line, level, parentId: parents[level] ?? -1, label: '', type: '', revision: '', alias: '', status: '', effectivity: '', hlink: '', tags: [], bubbles: [], relatives: [], props: [], argOffset: m[1].length + 2 };
     parents[level + 1] = line;
     if (level > 0) it.hlink = prefixKey(m[1]);
     it.tagstyles = tagStyles;
@@ -1820,14 +1847,25 @@ function buildSvg(parsed, S, { meta = false } = {}) {
   /* ligne de base centrée : décalage 5 pour la police 13 par défaut, proportionnel à la taille de police sinon */
   const ty = n2(h / 2 + FDL.size * 5 / 13);
   const lh = S.legendh || h, lty = lh / 2 + FDG.size * 5 / 12;
+  /* properties (#19) : lignes sous le libellé, police plus petite ; clé en gras, valeur en couleur */
+  const FDPK = fdef(S, 'propkey', { font_size: 10, font_weight: 'bold', fill: '#00008b' }), FDPV = fdef(S, 'propvalue', { font_size: 10, fill: '#0000cd' });
+  const ph = Math.max(12, Math.round(Math.max(FDPK.size, FDPV.size) * 1.3));
   // 1) mise en page
   boms.forEach((bom, ci) => {
     bom.maxw = 0; bom.maxnegw = 0;
+    let yy = 0;
     bom.items.forEach((it, k) => {
       it.lblMarkup = emphasize(escapeXml(it.label), S.emphasis);
       it.lblw = measure(it.lblMarkup, FDL.size);
-      it.x = it.level * panh; it.y = k * (h + panv);
+      it.x = it.level * panh; it.y = yy;
+      it.propsH = it.props.length ? it.props.length * ph + 2 : 0;
+      yy += h + it.propsH + panv;
       it.w = it.x + it.lblw + (it.type ? iconw + gap : 0) + (it.revision ? iconw + gap : 0) + (it.status ? iconw + gap : 0);
+      it.propsR = it.props.map(pr => {
+        const kk = pr.key ? escapeXml(pr.key) + ':' : '', vv = escapeXml(pr.value);
+        return { kk, vv, w: (kk ? measure(kk, FDPK.size) + 4 : 0) + measure(vv, FDPV.size) };
+      });
+      for (const pr of it.propsR) it.w = Math.max(it.w, it.x + (it.type ? iconw + gap : gap) + pr.w + gap);
       it.tagsR = it.tags.filter(t => t.text).map(t => { const st = tagStyle(S, t.style); return { st, text: t.text, w: Math.round(measure(escapeXml(t.text), st.font.size) * 1.1 + 8) }; });
       for (const t of it.tagsR) it.w += gap + t.w;
       it.effText = '';
@@ -1838,6 +1876,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
       }
       bom.maxw = Math.max(bom.maxw, it.w);
     });
+    bom.height = yy;
     bom.y = 2 * panv;
     bom.x = ci === 0 ? panh + bom.maxnegw
       : bom.extraGap + panh + boms[ci - 1].x + boms[ci - 1].maxw + (bom.maxnegw ? bom.maxnegw + panh : 0);
@@ -1871,8 +1910,7 @@ function buildSvg(parsed, S, { meta = false } = {}) {
   }
 
   // 3) dimensions
-  const maxitem = Math.max(0, ...boms.map(b => b.items.length));
-  const top = maxitem * (h + panv) + 2 * panv;
+  const top = Math.max(0, ...boms.map(b => b.height || 0)) + 2 * panv;
   const ls = S.legendscale || 0.8;
   let W = Math.max(0, ...boms.map(b => b.x + b.maxw)) + panh + gap;
   let H = top;
@@ -2006,7 +2044,11 @@ function buildSvg(parsed, S, { meta = false } = {}) {
       parts.push(`<text${t.st.font.attrs} dominant-baseline="middle" text-anchor="middle" x="${n2(fin + t.w / 2)}" y="${n2(h / 2 + 1)}">${escapeXml(t.text)}</text>`);
       fin += t.w + gap;
     }
-    const hit = meta ? `<rect class="hit" x="-3" y="-2" width="${n2(fin + 4)}" height="${h + 4}" rx="4"/>` : '';
+    it.propsR.forEach((pr, i) => {
+      const py = h + 1 + i * ph + ph / 2;
+      parts.push(`<text dominant-baseline="middle" x="${tx}" y="${n2(py)}">${pr.kk ? `<tspan${FDPK.attrs}>${pr.kk}</tspan><tspan${FDPV.attrs} dx="4">${pr.vv}</tspan>` : `<tspan${FDPV.attrs}>${pr.vv}</tspan>`}</text>`);
+    });
+    const hit = meta ? `<rect class="hit" x="-3" y="-2" width="${n2(Math.max(fin, ...it.propsR.map(r => tx + r.w)) + 4)}" height="${h + it.propsH + 4}" rx="4"/>` : '';
     o.push(`<g id="item-${it.line + 1}" transform="translate(${X},${Y})"${meta ? ` data-line="${it.line}"` : ''}>${hit}${parts.join('')}</g>`);
   }
   o.push('</svg>');
@@ -2105,6 +2147,8 @@ function hlLine(l, kind) {
     if (t.startsWith('+newcolumn')) return l.replace(/^(\s*)(\+newcolumn)(\s*)(\d*)(.*)$/, (m, a, b, c, d, e) => `${escapeHtml(a)}<span class="t-kw">${b}</span>${c}<span class="t-num">${d}</span><span class="t-cm">${escapeHtml(e)}</span>`);
     const gb = /^(\s*\+?genbom:)(.*)$/i.exec(l);
     if (gb) return `<span class="t-kw">${escapeHtml(gb[1])}</span><span class="t-num">${escapeHtml(gb[2])}</span>`;
+    const pr = PROP_RE.exec(l);
+    if (pr) return `<span class="t-plus">${escapeHtml(l.slice(0, l.indexOf('-+') + 2))}</span> <span class="t-md">${escapeHtml(pr[1])}</span>`;
     const m = ITEM_RE.exec(l);
     if (!m) return l ? `<span class="t-cm">${escapeHtml(l)}</span>` : '';
     return `<span class="t-plus">${escapeHtml(m[1])}+</span> ${hlItemArgs(m[2])}`;
@@ -3298,6 +3342,7 @@ function removeLinkEntry(st, type, alias) {
 /* --- navigation dans les lignes du bloc courant --- */
 const blk = () => info.blocks[curBlock];
 const isNewCol = i => (info.lines[i] || '').trim().startsWith('+newcolumn');
+const isProp = i => { const b = blk(); return !!b && i >= b.start && i < b.end && kinds[i] === 'bom' && PROP_RE.test(info.lines[i]); };
 const isItem = i => { const b = blk(); return !!b && i >= b.start && i < b.end && kinds[i] === 'bom' && ITEM_RE.test(info.lines[i]); };
 const levelOf = i => ITEM_RE.exec(info.lines[i])[1].length;
 function bodyStart(b) {
@@ -3312,10 +3357,11 @@ function colRange(line) {
   return [s, e];
 }
 function blockItems() { const b = blk(), r = []; for (let i = bodyStart(b); i < b.end; i++) if (isItem(i)) r.push(i); return r; }
-function lastItemIn(s, e) { for (let i = e; i >= s; i--) if (isItem(i)) return i; return -1; }
+function lastItemIn(s, e) { for (let i = e; i >= s; i--) if (isItem(i)) { while (i + 1 <= e && isProp(i + 1)) i++; return i; } return -1; }
 function subtreeEnd(line) {
   const L = levelOf(line), [, ce] = colRange(line); let last = line;
   for (let i = line + 1; i <= ce; i++) { if (!isItem(i)) continue; if (levelOf(i) <= L) break; last = i; }
+  while (last + 1 <= ce && isProp(last + 1)) last++; // les properties « -+ » suivent leur item
   return last;
 }
 function childrenOf(line) { const L = levelOf(line), end = subtreeEnd(line), r = []; for (let i = line + 1; i <= end; i++) if (isItem(i) && levelOf(i) === L + 1) r.push(i); return r; }
